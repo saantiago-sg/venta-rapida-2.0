@@ -1,0 +1,33 @@
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@import "tailwindcss/theme.css" layer(tailwind-base);
+@import "tailwindcss/preflight.css" layer(tailwind-base);
+@import "tailwindcss/utilities.css" layer(tailwind-utilities);
+@import "primeicons/primeicons.css";
+
+@theme {
+  --color-brand: #f97316;
+  --color-brand-hover: #ea580c;
+
+  --color-bg: #0f172a;
+  --color-bg-sidebar: #111827;
+  --color-card: #1e293b;
+  --color-card-hover: #273449;
+  --color-border: #334155;
+
+  --color-text: #f8fafc;
+  --color-text-secondary: #94a3b8;
+
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #facc15;
+  --color-info: #0ea5e9;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
