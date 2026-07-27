@@ -1,0 +1,68 @@
+<div class="min-h-screen bg-bg text-text p-6 flex flex-col gap-8">
+  <h1 class="text-xl font-semibold text-brand">Panel Super Admin</h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <section class="bg-card border border-border rounded-lg p-6">
+      <h2 class="text-lg font-medium mb-4">Crear negocio nuevo</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Nombre del negocio</label>
+          <input type="text" pInputText formControlName="businessName" placeholder="Mercado La Loma" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Nombre del dueño (opcional)</label>
+          <input type="text" pInputText formControlName="ownerFullName" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Email del dueño</label>
+          <input type="email" pInputText formControlName="ownerEmail" autocomplete="off" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Contraseña temporal</label>
+          <input type="text" pInputText formControlName="ownerPassword" autocomplete="off" />
+        </div>
+
+        @if (errorMessage()) {
+          <p class="text-sm text-error">{{ errorMessage() }}</p>
+        }
+        @if (successMessage()) {
+          <p class="text-sm text-success">{{ successMessage() }}</p>
+        }
+
+        <p-button type="submit" label="Crear negocio" [loading]="saving()" styleClass="w-full" />
+      </form>
+    </section>
+
+    <section class="bg-card border border-border rounded-lg p-6">
+      <h2 class="text-lg font-medium mb-4">Negocios</h2>
+
+      <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Nombre</th>
+            <th>Suscripción</th>
+            <th class="w-24 text-center">Activo</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-business>
+          <tr>
+            <td>{{ business.name }}</td>
+            <td><p-tag [value]="business.subscriptionStatus" /></td>
+            <td class="text-center">
+              <i class="pi" [class.pi-check]="business.active" [class.pi-times]="!business.active"></i>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="text-center text-text-secondary">Todavía no hay negocios.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  </div>
+</div>

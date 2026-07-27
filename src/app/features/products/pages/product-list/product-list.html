@@ -1,0 +1,107 @@
+<div class="flex flex-col gap-4">
+  <div class="flex justify-end">
+    <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="productsStore.products()" [loading]="productsStore.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th class="text-right">Precio</th>
+        <th class="text-right">Stock</th>
+        <th class="w-24 text-center">Activo</th>
+        <th class="w-16"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-product>
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.categoryName || 'Sin categoría' }}</td>
+        <td class="text-right">{{ product.price | number: '1.2-2' }}</td>
+        <td class="text-right" [class.text-error]="product.stock < 0">
+          {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
+        </td>
+        <td class="text-center">
+          <p-toggleswitch [ngModel]="product.active" (ngModelChange)="onToggleActive(product.id, $event)" />
+        </td>
+        <td>
+          <button type="button" class="pi pi-pencil cursor-pointer text-text-secondary hover:text-text" (click)="openEdit(product)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center text-text-secondary">Todavía no hay productos cargados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [header]="editingProduct() ? 'Editar producto' : 'Nuevo producto'"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Nombre</label>
+      <input type="text" pInputText formControlName="name" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Categoría (opcional)</label>
+      <p-select
+        formControlName="categoryId"
+        [options]="categoriesStore.activeCategories()"
+        optionLabel="name"
+        optionValue="id"
+        [showClear]="true"
+        placeholder="Sin categoría"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
+      <input type="text" pInputText formControlName="barcode" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Tipo de venta</label>
+      <p-select
+        formControlName="saleType"
+        [options]="saleTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Precio</label>
+        <p-inputnumber formControlName="price" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Costo</label>
+        <p-inputnumber formControlName="cost" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <label class="text-sm text-text-secondary">Controla stock</label>
+      <p-toggleswitch formControlName="trackStock" />
+    </div>
+
+    @if (!editingProduct() && form.controls.trackStock.value) {
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Stock inicial</label>
+        <p-inputnumber formControlName="initialStock" styleClass="w-full" />
+      </div>
+    }
+
+    <p-button type="submit" label="Guardar" [loading]="saving()" styleClass="w-full" />
+  </form>
+</p-dialog>

@@ -1,0 +1,39 @@
+<div class="flex flex-col gap-4 max-w-xl">
+  <div class="flex gap-2">
+    <input
+      type="text"
+      pInputText
+      placeholder="Nombre de la categoría"
+      [ngModel]="newCategoryName()"
+      (ngModelChange)="newCategoryName.set($event)"
+      (keyup.enter)="onCreate()"
+      class="flex-1"
+    />
+    <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
+  </div>
+
+  <p-table [value]="store.categories()" [loading]="store.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th class="w-32 text-center">Activa</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-category>
+      <tr>
+        <td>{{ category.name }}</td>
+        <td class="text-center">
+          <p-toggleswitch
+            [ngModel]="category.active"
+            (ngModelChange)="onToggleActive(category.id, $event)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-center text-text-secondary">Todavía no hay categorías.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

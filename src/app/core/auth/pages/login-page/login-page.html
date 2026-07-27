@@ -1,0 +1,46 @@
+<div class="min-h-screen flex items-center justify-center bg-bg text-text">
+  <form
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    class="w-full max-w-sm bg-card border border-border rounded-lg p-8 flex flex-col gap-4"
+  >
+    <h1 class="text-xl font-semibold text-brand text-center mb-2">VentaRapida</h1>
+
+    <div class="flex flex-col gap-1">
+      <label for="email" class="text-sm text-text-secondary">Email</label>
+      <input
+        id="email"
+        type="email"
+        pInputText
+        formControlName="email"
+        class="w-full"
+        autocomplete="username"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="password" class="text-sm text-text-secondary">Contraseña</label>
+      <p-password
+        inputId="password"
+        formControlName="password"
+        [feedback]="false"
+        [toggleMask]="true"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        autocomplete="current-password"
+      />
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-error">{{ errorMessage() }}</p>
+    }
+
+    <p-button
+      type="submit"
+      label="Ingresar"
+      styleClass="w-full"
+      [loading]="loading()"
+      [disabled]="loading()"
+    />
+  </form>
+</div>
