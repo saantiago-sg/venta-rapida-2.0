@@ -37,7 +37,7 @@ export class LoginPage {
     try {
       const { email, password } = this.form.getRawValue();
       await this.authService.signIn(email, password);
-      await this.router.navigateByUrl('/pos');
+      await this.router.navigateByUrl('/dashboard');
     } catch {
       this.errorMessage.set('Email o contraseña incorrectos.');
     } finally {

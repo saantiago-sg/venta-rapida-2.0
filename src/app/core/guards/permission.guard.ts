@@ -12,6 +12,6 @@ export function permissionGuard(permission: string): CanActivateFn {
     const authStore = inject(AuthStore);
     const router = inject(Router);
 
-    return authStore.hasPermission(permission) || router.parseUrl('/pos');
+    return authStore.hasPermission(permission) || router.parseUrl('/dashboard');
   };
 }

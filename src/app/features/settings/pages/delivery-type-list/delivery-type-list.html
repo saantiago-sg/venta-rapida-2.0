@@ -1,0 +1,36 @@
+<div class="flex flex-col gap-4 max-w-xl">
+  <div class="flex gap-2">
+    <input
+      type="text"
+      pInputText
+      placeholder="Nombre (ej. Envío)"
+      [ngModel]="newName()"
+      (ngModelChange)="newName.set($event)"
+      (keyup.enter)="onCreate()"
+      class="flex-1"
+    />
+    <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
+  </div>
+
+  <p-table [value]="store.deliveryTypes()" [loading]="store.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th class="w-32 text-center">Activo</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-type>
+      <tr>
+        <td>{{ type.name }}</td>
+        <td class="text-center">
+          <p-toggleswitch [ngModel]="type.active" (ngModelChange)="onToggleActive(type.id, $event)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-center text-text-secondary">Todavía no hay tipos de entrega cargados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

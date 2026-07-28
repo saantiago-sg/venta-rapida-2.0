@@ -20,7 +20,11 @@ export const routes: Routes = [
     component: Shell,
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'pos' },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadChildren: () => import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES)
+      },
       { path: 'pos', loadChildren: () => import('./features/pos/pos.routes').then((m) => m.POS_ROUTES) },
       {
         path: 'productos',
@@ -29,10 +33,6 @@ export const routes: Routes = [
       {
         path: 'clientes',
         loadChildren: () => import('./features/customers/customers.routes').then((m) => m.CUSTOMERS_ROUTES)
-      },
-      {
-        path: 'caja',
-        loadChildren: () => import('./features/cash-register/cash-register.routes').then((m) => m.CASH_REGISTER_ROUTES)
       },
       {
         path: 'ventas',
@@ -49,5 +49,5 @@ export const routes: Routes = [
     ]
   },
 
-  { path: '**', redirectTo: 'pos' }
+  { path: '**', redirectTo: 'dashboard' }
 ];

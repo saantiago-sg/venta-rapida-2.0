@@ -1,0 +1,70 @@
+<h1 class="text-xl font-semibold mb-4">Negocios</h1>
+
+<div class="flex flex-col gap-4">
+  <div class="flex justify-end">
+    <p-button label="Nuevo negocio" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th class="w-48">Suscripción</th>
+        <th class="w-32 text-center">Activo</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-business>
+      <tr>
+        <td>{{ business.name }}</td>
+        <td>
+          <p-select
+            [ngModel]="business.subscriptionStatus"
+            (ngModelChange)="onStatusChange(business.id, $event)"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+          />
+        </td>
+        <td class="text-center">
+          <p-toggleswitch [ngModel]="business.active" (ngModelChange)="onToggleActive(business.id, $event)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3" class="text-center text-text-secondary">Todavía no hay negocios.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '28rem' }" header="Crear negocio nuevo">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Nombre del negocio</label>
+      <input type="text" pInputText formControlName="businessName" placeholder="Mercado La Loma" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Nombre del dueño (opcional)</label>
+      <input type="text" pInputText formControlName="ownerFullName" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Email del dueño</label>
+      <input type="email" pInputText formControlName="ownerEmail" autocomplete="off" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Contraseña temporal</label>
+      <input type="text" pInputText formControlName="ownerPassword" autocomplete="off" />
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-error">{{ errorMessage() }}</p>
+    }
+
+    <p-button type="submit" label="Crear negocio" [loading]="saving()" styleClass="w-full" />
+  </form>
+</p-dialog>

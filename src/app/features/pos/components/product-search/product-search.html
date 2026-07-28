@@ -1,0 +1,34 @@
+<div class="flex flex-col gap-3 h-full">
+  <input
+    #searchInput
+    type="text"
+    pInputText
+    placeholder="Buscar por nombre o escanear código de barras..."
+    [ngModel]="query()"
+    (ngModelChange)="query.set($event); notFound.set(false)"
+    (keyup.enter)="onBarcodeEnter()"
+    class="w-full"
+    autofocus
+  />
+
+  @if (notFound()) {
+    <p class="text-sm text-error">No se encontró ningún producto con ese código.</p>
+  }
+
+  <div class="flex-1 overflow-auto grid grid-cols-2 sm:grid-cols-3 gap-2 content-start">
+    @for (product of results(); track product.id) {
+      <button
+        type="button"
+        (click)="onSelect(product.id)"
+        class="text-left bg-card border border-border rounded-md p-3 hover:bg-card-hover transition-colors flex flex-col gap-1"
+      >
+        <span class="text-sm font-medium truncate">{{ product.name }}</span>
+        <span class="text-xs text-text-secondary">
+          {{ product.price | number: '1.2-2' }}{{ product.saleType === 'weight' ? ' / kg' : '' }}
+        </span>
+      </button>
+    } @empty {
+      <p class="text-sm text-text-secondary col-span-full">No se encontraron productos.</p>
+    }
+  </div>
+</div>

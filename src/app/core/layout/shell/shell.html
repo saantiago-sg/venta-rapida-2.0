@@ -15,6 +15,20 @@
         </a>
       }
     </nav>
+
+    <div class="border-t border-border p-3 flex flex-col gap-2">
+      @if (authStore.userEmail()) {
+        <span class="px-1 text-xs text-text-secondary truncate">{{ authStore.userEmail() }}</span>
+      }
+      <button
+        type="button"
+        (click)="onLogout()"
+        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
+      >
+        <i class="pi pi-sign-out"></i>
+        Cerrar sesión
+      </button>
+    </div>
   </aside>
 
   <div class="flex-1 flex flex-col min-w-0">
@@ -39,6 +53,20 @@
         {{ authStore.activeMembership()?.role }}
       </span>
     </header>
+
+    @if (subscriptionBanner(); as banner) {
+      <div
+        class="px-6 py-2 text-sm flex items-center gap-2"
+        [class.bg-warning]="banner.severity === 'warn'"
+        [class.text-bg]="banner.severity === 'warn'"
+        [class.bg-error]="banner.severity === 'error'"
+        [class.text-text]="banner.severity === 'error' || banner.severity === 'info'"
+        [class.bg-info]="banner.severity === 'info'"
+      >
+        <i class="pi pi-exclamation-triangle"></i>
+        {{ banner.message }}
+      </div>
+    }
 
     <main class="flex-1 overflow-auto p-6">
       <router-outlet />

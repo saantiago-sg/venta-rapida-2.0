@@ -1,0 +1,32 @@
+<div class="flex flex-col gap-2 h-full overflow-auto">
+  @for (item of store.cart(); track item.product.id) {
+    <div class="flex items-center gap-2 bg-card border border-border rounded-md p-2">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium truncate">{{ item.product.name }}</p>
+        <p class="text-xs text-text-secondary">
+          {{ item.product.price | number: '1.2-2' }}{{ item.product.saleType === 'weight' ? ' / kg' : '' }}
+        </p>
+      </div>
+
+      <p-inputnumber
+        [ngModel]="item.quantity"
+        (ngModelChange)="onQuantityChange(item.product.id, $event)"
+        [min]="0"
+        [minFractionDigits]="item.product.saleType === 'weight' ? 3 : 0"
+        styleClass="w-24"
+      />
+
+      <span class="text-sm font-medium w-20 text-right">
+        {{ item.product.price * item.quantity | number: '1.2-2' }}
+      </span>
+
+      <button
+        type="button"
+        class="pi pi-times cursor-pointer text-text-secondary hover:text-error"
+        (click)="onRemove(item.product.id)"
+      ></button>
+    </div>
+  } @empty {
+    <p class="text-sm text-text-secondary">El carrito está vacío. Buscá un producto para empezar.</p>
+  }
+</div>

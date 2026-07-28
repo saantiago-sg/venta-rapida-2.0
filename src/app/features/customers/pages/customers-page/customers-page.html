@@ -1,0 +1,82 @@
+<h1 class="text-xl font-semibold mb-4">Clientes</h1>
+
+<div class="flex flex-col gap-4">
+  <div class="flex justify-end">
+    <p-button label="Nuevo cliente" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <p-table [value]="store.customers()" [loading]="store.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th class="w-24 text-center">Activo</th>
+        <th class="w-16"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-customer>
+      <tr>
+        <td>{{ customer.name }}</td>
+        <td>{{ customer.phone || '-' }}</td>
+        <td>{{ customer.email || '-' }}</td>
+        <td class="text-center">
+          <p-toggleswitch [ngModel]="customer.active" (ngModelChange)="onToggleActive(customer.id, $event)" />
+        </td>
+        <td>
+          <button
+            type="button"
+            class="pi pi-pencil cursor-pointer text-text-secondary hover:text-text"
+            (click)="openEdit(customer)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center text-text-secondary">Todavía no hay clientes cargados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [header]="editingCustomer() ? 'Editar cliente' : 'Nuevo cliente'"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Nombre</label>
+      <input type="text" pInputText formControlName="name" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Teléfono</label>
+      <input type="text" pInputText formControlName="phone" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Email</label>
+      <input type="email" pInputText formControlName="email" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Documento</label>
+      <input type="text" pInputText formControlName="document" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Dirección</label>
+      <input type="text" pInputText formControlName="address" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Notas</label>
+      <input type="text" pInputText formControlName="notes" />
+    </div>
+
+    <p-button type="submit" label="Guardar" [loading]="saving()" styleClass="w-full" />
+  </form>
+</p-dialog>

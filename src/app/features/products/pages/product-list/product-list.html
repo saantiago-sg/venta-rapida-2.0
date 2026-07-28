@@ -8,6 +8,7 @@
       <tr>
         <th>Nombre</th>
         <th>Categoría</th>
+        <th>Código de barras</th>
         <th class="text-right">Precio</th>
         <th class="text-right">Stock</th>
         <th class="w-24 text-center">Activo</th>
@@ -18,6 +19,13 @@
       <tr>
         <td>{{ product.name }}</td>
         <td>{{ product.categoryName || 'Sin categoría' }}</td>
+        <td>
+          @if (product.barcode) {
+            <span class="font-mono text-xs">{{ product.barcode }}</span>
+          } @else {
+            <span class="text-xs text-warning">Sin código</span>
+          }
+        </td>
         <td class="text-right">{{ product.price | number: '1.2-2' }}</td>
         <td class="text-right" [class.text-error]="product.stock < 0">
           {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
@@ -32,7 +40,7 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="6" class="text-center text-text-secondary">Todavía no hay productos cargados.</td>
+        <td colspan="7" class="text-center text-text-secondary">Todavía no hay productos cargados.</td>
       </tr>
     </ng-template>
   </p-table>
@@ -51,6 +59,19 @@
     </div>
 
     <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
+      <input
+        type="text"
+        pInputText
+        formControlName="barcode"
+        placeholder="Escaneá el código acá o escribilo a mano"
+      />
+      <span class="text-xs text-text-secondary">
+        Sin esto no vas a poder buscar el producto escaneándolo en el Punto de Venta.
+      </span>
+    </div>
+
+    <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Categoría (opcional)</label>
       <p-select
         formControlName="categoryId"
@@ -61,11 +82,6 @@
         placeholder="Sin categoría"
         styleClass="w-full"
       />
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
-      <input type="text" pInputText formControlName="barcode" />
     </div>
 
     <div class="flex flex-col gap-1">

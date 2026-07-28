@@ -12,5 +12,5 @@ export const superAdminGuard: CanActivateFn = () => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  return authStore.isSuperAdmin() || router.parseUrl('/pos');
+  return authStore.isSuperAdmin() || router.parseUrl('/dashboard');
 };

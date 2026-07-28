@@ -1,0 +1,95 @@
+<h1 class="text-xl font-semibold mb-4">Ventas</h1>
+
+<p-table [value]="store.sales()" [loading]="store.loading()" dataKey="id" [rowHover]="true">
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="w-20">#</th>
+      <th>Fecha</th>
+      <th>Cliente</th>
+      <th>Medio de pago</th>
+      <th class="text-right">Total</th>
+      <th class="w-32">Estado</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-sale>
+    <tr class="cursor-pointer" (click)="openDetail(sale)">
+      <td>{{ sale.saleNumber }}</td>
+      <td>{{ sale.createdAt | date: 'short' }}</td>
+      <td>{{ sale.customerName || 'Consumidor final' }}</td>
+      <td>{{ sale.paymentMethodName }}</td>
+      <td class="text-right">{{ sale.total | number: '1.2-2' }}</td>
+      <td>
+        @if (sale.status === 'completed') {
+          <p-tag severity="success" value="Completada" />
+        } @else {
+          <p-tag severity="danger" value="Cancelada" />
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="6" class="text-center text-text-secondary">Todavía no hay ventas registradas.</td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="detailVisible"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [header]="'Venta #' + selectedSale()?.saleNumber"
+>
+  @if (selectedSale(); as sale) {
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1 text-sm">
+        <div class="flex justify-between">
+          <span class="text-text-secondary">Cliente</span>
+          <span>{{ sale.customerName || 'Consumidor final' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-text-secondary">Medio de pago</span>
+          <span>{{ sale.paymentMethodName }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-text-secondary">Entrega</span>
+          <span>{{ sale.deliveryTypeName }}</span>
+        </div>
+      </div>
+
+      <p-table [value]="store.selectedItems()" [loading]="store.itemsLoading()" dataKey="id">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Producto</th>
+            <th class="text-right">Cant.</th>
+            <th class="text-right">Subtotal</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.productName }}</td>
+            <td class="text-right">{{ item.quantity }}</td>
+            <td class="text-right">{{ item.subtotal | number: '1.2-2' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="flex justify-between text-lg font-bold border-t border-border pt-2">
+        <span>Total</span>
+        <span>{{ sale.total | number: '1.2-2' }}</span>
+      </div>
+
+      @if (sale.status === 'cancelled') {
+        <p class="text-sm text-error">Cancelada{{ sale.cancelReason ? ': ' + sale.cancelReason : '' }}</p>
+      } @else if (canCancelSales()) {
+        <div class="flex flex-col gap-2 border-t border-border pt-3">
+          <input type="text" pInputText placeholder="Motivo de la cancelación (opcional)" [(ngModel)]="cancelReason" />
+          @if (errorMessage()) {
+            <p class="text-sm text-error">{{ errorMessage() }}</p>
+          }
+          <p-button label="Cancelar venta" severity="danger" [loading]="cancelling()" (onClick)="onCancel()" />
+        </div>
+      }
+    </div>
+  }
+</p-dialog>

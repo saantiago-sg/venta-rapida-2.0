@@ -1,0 +1,45 @@
+<div class="flex flex-col gap-4 max-w-xl">
+  <div class="flex gap-2">
+    <input
+      type="text"
+      pInputText
+      placeholder="Nombre (ej. IVA 21%)"
+      [ngModel]="newName()"
+      (ngModelChange)="newName.set($event)"
+      class="flex-1"
+    />
+    <p-inputnumber
+      [ngModel]="newRate()"
+      (ngModelChange)="newRate.set($event)"
+      suffix="%"
+      [min]="0"
+      [max]="100"
+      styleClass="w-28"
+    />
+    <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
+  </div>
+
+  <p-table [value]="store.taxes()" [loading]="store.loading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th class="text-right">Tasa</th>
+        <th class="w-32 text-center">Activo</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-tax>
+      <tr>
+        <td>{{ tax.name }}</td>
+        <td class="text-right">{{ tax.rate }}%</td>
+        <td class="text-center">
+          <p-toggleswitch [ngModel]="tax.active" (ngModelChange)="onToggleActive(tax.id, $event)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3" class="text-center text-text-secondary">Todavía no hay impuestos cargados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
