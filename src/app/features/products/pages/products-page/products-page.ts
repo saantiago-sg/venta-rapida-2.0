@@ -8,7 +8,7 @@ import { ProductList } from '../product-list/product-list';
   selector: 'app-products-page',
   imports: [TabsModule, ProductList, CategoryList],
   template: `
-    <h1 class="text-xl font-semibold mb-4">Productos</h1>
+    <h1 class="text-xl font-semibold tracking-tight mb-4">Productos</h1>
 
     <p-tabs value="0">
       <p-tablist>

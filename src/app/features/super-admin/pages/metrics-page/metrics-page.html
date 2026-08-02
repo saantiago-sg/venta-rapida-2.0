@@ -1,28 +1,28 @@
-<h1 class="text-xl font-semibold">Métricas globales</h1>
+<h1 class="text-xl font-semibold tracking-tight">Métricas globales</h1>
 <p class="text-sm text-text-secondary mb-6">Visión global de la plataforma</p>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-  <div class="bg-brand rounded-lg p-5 flex flex-col gap-2">
+<div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+  <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-2">
     <div class="flex items-center justify-between text-sm text-white/90">
       <span>Negocios totales</span>
       <i class="pi pi-building"></i>
     </div>
-    <span class="text-3xl font-bold text-white">{{ store.metrics()?.totalBusinesses ?? '-' }}</span>
+    <span class="text-3xl font-semibold tabular-nums text-white">{{ store.metrics()?.totalBusinesses ?? '-' }}</span>
   </div>
 
-  <div class="bg-card border border-border rounded-lg p-5 flex flex-col gap-2">
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-2">
     <div class="flex items-center justify-between text-sm text-text-secondary">
       <span>Negocios activos</span>
       <i class="pi pi-check-circle text-success"></i>
     </div>
-    <span class="text-3xl font-bold">{{ store.metrics()?.activeBusinesses ?? '-' }}</span>
+    <span class="text-3xl font-semibold tabular-nums">{{ store.metrics()?.activeBusinesses ?? '-' }}</span>
   </div>
 
-  <div class="bg-card border border-border rounded-lg p-5 flex flex-col gap-2">
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-2">
     <div class="flex items-center justify-between text-sm text-text-secondary">
       <span>Usuarios</span>
       <i class="pi pi-users text-info"></i>
     </div>
-    <span class="text-3xl font-bold">{{ store.metrics()?.totalUsers ?? '-' }}</span>
+    <span class="text-3xl font-semibold tabular-nums">{{ store.metrics()?.totalUsers ?? '-' }}</span>
   </div>
 </div>

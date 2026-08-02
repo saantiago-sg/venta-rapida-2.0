@@ -1,15 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
 
 import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, PasswordModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './login-page.html'
 })
 export class LoginPage {

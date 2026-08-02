@@ -25,9 +25,23 @@
     </ng-template>
     <ng-template pTemplate="body" let-method>
       <tr>
-        <td>{{ method.name }}</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <span
+              class="flex items-center justify-center w-7 h-7 rounded-full shrink-0"
+              [class]="method.isCash ? 'bg-success/10 text-success' : 'bg-info/10 text-info'"
+            >
+              <i class="pi text-xs" [class.pi-wallet]="method.isCash" [class.pi-credit-card]="!method.isCash"></i>
+            </span>
+            {{ method.name }}
+          </div>
+        </td>
         <td class="text-center">
-          <i class="pi" [class.pi-check]="method.isCash" [class.pi-minus]="!method.isCash"></i>
+          @if (method.isCash) {
+            <p-tag value="Sí" severity="success" />
+          } @else {
+            <p-tag value="No" severity="secondary" />
+          }
         </td>
         <td class="text-center">
           <p-toggleswitch [ngModel]="method.active" (ngModelChange)="onToggleActive(method.id, $event)" />
@@ -36,7 +50,12 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="3" class="text-center text-text-secondary">Todavía no hay medios de pago cargados.</td>
+        <td colspan="3">
+          <div class="flex flex-col items-center gap-2 py-10 text-center">
+            <i class="pi pi-wallet text-2xl text-text-secondary"></i>
+            <p class="text-sm text-text-secondary">Todavía no hay medios de pago cargados.</p>
+          </div>
+        </td>
       </tr>
     </ng-template>
   </p-table>

@@ -1,8 +1,10 @@
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 
+import { primitives, semanticColors } from './design-tokens';
+
 /**
- * Preset de PrimeNG basado en la paleta de marca de VentaRapida.
+ * Preset de PrimeNG basado en los Design Tokens de VentaRapida (ver design-tokens.ts).
  * La app siempre corre en modo oscuro (ver `app-dark` en index.html + darkModeSelector en app.config.ts),
  * por eso el foco está puesto en `colorScheme.dark`.
  */
@@ -14,8 +16,8 @@ export const VentaRapidaPreset = definePreset(Aura, {
       200: '#fed7aa',
       300: '#fdba74',
       400: '#fb923c',
-      500: '#f97316',
-      600: '#ea580c',
+      500: primitives.orange500,
+      600: primitives.orange600,
       700: '#c2410c',
       800: '#9a3412',
       900: '#7c2d12',
@@ -24,29 +26,45 @@ export const VentaRapidaPreset = definePreset(Aura, {
     colorScheme: {
       dark: {
         primary: {
-          color: '#f97316',
+          color: semanticColors.brand,
           contrastColor: '#ffffff',
-          hoverColor: '#ea580c',
-          activeColor: '#ea580c'
+          hoverColor: semanticColors.brandHover,
+          activeColor: semanticColors.brandHover
         },
         surface: {
-          0: '#f8fafc',
-          50: '#f8fafc',
-          100: '#94a3b8',
-          200: '#334155',
-          300: '#273449',
-          400: '#1e293b',
-          500: '#111827',
-          600: '#0f172a',
-          700: '#0b1220',
-          800: '#080d17',
-          900: '#05070d',
-          950: '#020306'
+          0: semanticColors.textPrimary,
+          50: semanticColors.textPrimary,
+          100: semanticColors.textSecondary,
+          200: semanticColors.border,
+          300: semanticColors.bgCardHover,
+          400: semanticColors.bgCard,
+          500: semanticColors.bgSidebar,
+          600: semanticColors.bgCanvas,
+          700: '#080d17',
+          800: '#05070d',
+          900: '#03050a',
+          950: '#010204'
         },
         formField: {
-          background: '#1e293b',
-          borderColor: '#334155',
-          color: '#f8fafc'
+          background: semanticColors.bgCard,
+          borderColor: semanticColors.border,
+          color: semanticColors.textPrimary,
+          placeholderColor: semanticColors.textSecondary,
+          iconColor: semanticColors.textSecondary
+        },
+        text: {
+          mutedColor: semanticColors.textSecondary,
+          hoverMutedColor: semanticColors.textPrimary
+        },
+        content: {
+          background: semanticColors.bgCard,
+          hoverBackground: semanticColors.bgCardHover,
+          borderColor: semanticColors.border
+        },
+        overlay: {
+          select: { background: semanticColors.bgCard, borderColor: semanticColors.border },
+          popover: { background: semanticColors.bgCard, borderColor: semanticColors.border },
+          modal: { background: semanticColors.bgCard, borderColor: semanticColors.border }
         }
       }
     }
@@ -56,10 +74,10 @@ export const VentaRapidaPreset = definePreset(Aura, {
       colorScheme: {
         dark: {
           root: {
-            success: { background: '#22c55e' },
-            danger: { background: '#ef4444' },
-            warn: { background: '#facc15' },
-            info: { background: '#0ea5e9' }
+            success: { background: semanticColors.success },
+            danger: { background: semanticColors.error },
+            warn: { background: semanticColors.warning },
+            info: { background: semanticColors.info }
           }
         }
       }

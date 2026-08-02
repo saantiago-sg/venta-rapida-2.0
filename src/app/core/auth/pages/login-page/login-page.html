@@ -1,46 +1,91 @@
-<div class="min-h-screen flex items-center justify-center bg-bg text-text">
-  <form
-    [formGroup]="form"
-    (ngSubmit)="onSubmit()"
-    class="w-full max-w-sm bg-card border border-border rounded-lg p-8 flex flex-col gap-4"
+<div class="min-h-screen grid md:grid-cols-2">
+  <div
+    class="hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-brand to-brand-hover relative overflow-hidden"
+    style="background-image: radial-gradient(rgba(255,255,255,0.16) 1px, transparent 1.5px), linear-gradient(to bottom right, var(--color-brand), var(--color-brand-hover)); background-size: 22px 22px, auto;"
   >
-    <h1 class="text-xl font-semibold text-brand text-center mb-2">VentaRapida</h1>
-
-    <div class="flex flex-col gap-1">
-      <label for="email" class="text-sm text-text-secondary">Email</label>
-      <input
-        id="email"
-        type="email"
-        pInputText
-        formControlName="email"
-        class="w-full"
-        autocomplete="username"
-      />
+    <div class="flex items-center gap-3">
+      <img src="images/logovrnav.png" alt="VentaRapida" class="h-10 w-10 rounded-xl shadow-lg" />
+      <span class="text-xl font-bold text-white tracking-tight">VentaRapida</span>
     </div>
 
-    <div class="flex flex-col gap-1">
-      <label for="password" class="text-sm text-text-secondary">Contraseña</label>
-      <p-password
-        inputId="password"
-        formControlName="password"
-        [feedback]="false"
-        [toggleMask]="true"
-        styleClass="w-full"
-        inputStyleClass="w-full"
-        autocomplete="current-password"
-      />
+    <div class="flex flex-col gap-6">
+      <h1 class="text-4xl font-bold text-white tracking-tight leading-tight">
+        Vendé rápido.<br />
+        Cobrá sin vueltas.
+      </h1>
+      <p class="text-white/80 text-base max-w-sm">
+        El sistema de punto de venta simple para pollerías, carnicerías, kioscos y almacenes.
+      </p>
+      <ul class="flex flex-col gap-2 text-white/90 text-sm">
+        <li class="flex items-center gap-2">
+          <i class="pi pi-check text-xs"></i>
+          Escaneá productos con lector de código de barras
+        </li>
+        <li class="flex items-center gap-2">
+          <i class="pi pi-check text-xs"></i>
+          Calculá el vuelto al instante
+        </li>
+        <li class="flex items-center gap-2">
+          <i class="pi pi-check text-xs"></i>
+          Productos por unidad o por kg
+        </li>
+      </ul>
     </div>
 
-    @if (errorMessage()) {
-      <p class="text-sm text-error">{{ errorMessage() }}</p>
-    }
+    <p class="text-white/60 text-xs">© 2026 VentaRapida — POS para comercios</p>
+  </div>
 
-    <p-button
-      type="submit"
-      label="Ingresar"
-      styleClass="w-full"
-      [loading]="loading()"
-      [disabled]="loading()"
-    />
-  </form>
+  <div class="flex items-center justify-center bg-[#F5F3EF] p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      animate.enter="enter-fade"
+      class="w-full max-w-sm bg-white border border-black/5 rounded-2xl shadow-xl p-8 flex flex-col gap-4"
+    >
+      <div class="mb-1">
+        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Iniciar sesión</h2>
+        <p class="text-sm text-slate-500">Ingresá a tu caja</p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="email" class="text-sm font-medium text-slate-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="tu@comercio.com"
+          autocomplete="username"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="password" class="text-sm font-medium text-slate-700">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+        />
+      </div>
+
+      @if (errorMessage()) {
+        <p class="text-sm text-error">{{ errorMessage() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="w-full rounded-lg bg-gradient-to-r from-brand to-orange-400 text-white font-semibold text-sm py-2.5 shadow-lg shadow-brand/30 hover:opacity-95 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+      >
+        @if (loading()) {
+          <i class="pi pi-spin pi-spinner"></i>
+        }
+        Entrar
+      </button>
+
+      <p class="text-xs text-slate-500 text-center">¿No tenés cuenta? Contactá a tu administrador.</p>
+    </form>
+  </div>
 </div>

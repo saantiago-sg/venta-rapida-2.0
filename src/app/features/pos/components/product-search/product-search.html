@@ -18,17 +18,21 @@
   <div class="flex-1 overflow-auto grid grid-cols-2 sm:grid-cols-3 gap-2 content-start">
     @for (product of results(); track product.id) {
       <button
+        animate.enter="enter-fade"
         type="button"
         (click)="onSelect(product.id)"
-        class="text-left bg-card border border-border rounded-md p-3 hover:bg-card-hover transition-colors flex flex-col gap-1"
+        class="text-left bg-card border border-border rounded-lg p-3 hover:bg-card-hover hover:border-brand/40 transition-colors flex flex-col gap-1"
       >
         <span class="text-sm font-medium truncate">{{ product.name }}</span>
-        <span class="text-xs text-text-secondary">
+        <span class="text-xs text-text-secondary tabular-nums">
           {{ product.price | number: '1.2-2' }}{{ product.saleType === 'weight' ? ' / kg' : '' }}
         </span>
       </button>
     } @empty {
-      <p class="text-sm text-text-secondary col-span-full">No se encontraron productos.</p>
+      <div class="col-span-full flex flex-col items-center gap-2 py-10 text-center">
+        <i class="pi pi-search text-2xl text-text-secondary"></i>
+        <p class="text-sm text-text-secondary">No se encontraron productos.</p>
+      </div>
     }
   </div>
 </div>

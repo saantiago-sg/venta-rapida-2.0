@@ -1,5 +1,5 @@
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Reportes</h1>
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-semibold tracking-tight">Reportes</h1>
   <div class="flex gap-2">
     <p-button label="Exportar CSV" icon="pi pi-file" [outlined]="true" (onClick)="onExportCsv()" />
     <p-button label="Exportar PDF" icon="pi pi-print" [outlined]="true" (onClick)="onExportPdf()" />
@@ -11,7 +11,7 @@
     <button
       type="button"
       (click)="onPresetChange(option.value)"
-      class="px-3 py-1.5 rounded-md text-sm border border-border transition-colors hover:opacity-90"
+      class="px-3 py-1.5 rounded-lg text-sm border border-border transition-colors hover:opacity-90"
       [class.bg-brand]="store.preset() === option.value"
       [class.text-white]="store.preset() === option.value"
       [class.text-text-secondary]="store.preset() !== option.value"
@@ -21,22 +21,22 @@
   }
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="bg-brand rounded-lg p-5 flex flex-col gap-1">
+<div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-white/90">Ventas</span>
-    <span class="text-2xl font-bold text-white">{{ store.summary()?.totalSales ?? 0 | number: '1.2-2' }}</span>
+    <span class="text-3xl font-semibold tabular-nums text-white">{{ store.summary()?.totalSales ?? 0 | number: '1.2-2' }}</span>
   </div>
-  <div class="bg-card border border-border rounded-lg p-5 flex flex-col gap-1">
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Ganancia</span>
-    <span class="text-2xl font-bold text-success">{{ store.summary()?.totalProfit ?? 0 | number: '1.2-2' }}</span>
+    <span class="text-3xl font-semibold tabular-nums text-success">{{ store.summary()?.totalProfit ?? 0 | number: '1.2-2' }}</span>
   </div>
-  <div class="bg-card border border-border rounded-lg p-5 flex flex-col gap-1">
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Impuestos</span>
-    <span class="text-2xl font-bold">{{ store.summary()?.totalTax ?? 0 | number: '1.2-2' }}</span>
+    <span class="text-3xl font-semibold tabular-nums">{{ store.summary()?.totalTax ?? 0 | number: '1.2-2' }}</span>
   </div>
-  <div class="bg-card border border-border rounded-lg p-5 flex flex-col gap-1">
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Cantidad de ventas</span>
-    <span class="text-2xl font-bold">{{ store.summary()?.saleCount ?? 0 }}</span>
+    <span class="text-3xl font-semibold tabular-nums">{{ store.summary()?.saleCount ?? 0 }}</span>
   </div>
 </div>
 
@@ -52,13 +52,18 @@
   <ng-template pTemplate="body" let-product>
     <tr>
       <td>{{ product.productName }}</td>
-      <td class="text-right">{{ product.quantitySold }}</td>
-      <td class="text-right">{{ product.revenue | number: '1.2-2' }}</td>
+      <td class="text-right tabular-nums">{{ product.quantitySold }}</td>
+      <td class="text-right tabular-nums">{{ product.revenue | number: '1.2-2' }}</td>
     </tr>
   </ng-template>
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="3" class="text-center text-text-secondary">No hay ventas en el período seleccionado.</td>
+      <td colspan="3">
+        <div class="flex flex-col items-center gap-2 py-10 text-center">
+          <i class="pi pi-chart-bar text-2xl text-text-secondary"></i>
+          <p class="text-sm text-text-secondary">No hay ventas en el período seleccionado.</p>
+        </div>
+      </td>
     </tr>
   </ng-template>
 </p-table>

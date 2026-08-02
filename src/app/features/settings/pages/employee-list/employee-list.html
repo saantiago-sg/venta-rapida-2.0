@@ -1,0 +1,128 @@
+<div class="flex flex-col gap-4">
+  <div class="flex justify-end">
+    <p-button label="Invitar empleado" icon="pi pi-plus" (onClick)="openInvite()" />
+  </div>
+
+  <p-table [value]="store.employees()" [loading]="store.loading()" dataKey="membershipId">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th class="w-48">Rol</th>
+        <th class="w-24 text-center">Activo</th>
+        <th class="w-32"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-employee>
+      <tr>
+        <td>
+          <div class="flex items-center gap-2">
+            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-brand/10 text-brand text-xs font-semibold uppercase shrink-0">
+              {{ (employee.fullName || employee.email).charAt(0) }}
+            </span>
+            {{ employee.fullName || '-' }}
+          </div>
+        </td>
+        <td>{{ employee.email }}</td>
+        <td>
+          @if (employee.role === 'owner') {
+            <p-tag value="Dueño" severity="warn" />
+          } @else {
+            <p-select
+              [ngModel]="employee.role"
+              (ngModelChange)="onRoleChange(employee, $event)"
+              [options]="roleOptions"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full"
+            />
+          }
+        </td>
+        <td class="text-center">
+          <p-toggleswitch
+            [ngModel]="employee.active"
+            [disabled]="employee.role === 'owner'"
+            (ngModelChange)="onToggleActive(employee, $event)"
+          />
+        </td>
+        <td>
+          @if (employee.role !== 'owner') {
+            <button
+              type="button"
+              class="text-xs text-text-secondary hover:text-text underline cursor-pointer"
+              (click)="openPermissions(employee)"
+            >
+              Permisos
+            </button>
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">
+          <div class="flex flex-col items-center gap-2 py-10 text-center">
+            <i class="pi pi-users text-2xl text-text-secondary"></i>
+            <p class="text-sm text-text-secondary">Todavía no hay empleados cargados.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="inviteDialogVisible" [modal]="true" [style]="{ width: '26rem' }" header="Invitar empleado">
+  <form [formGroup]="inviteForm" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Email</label>
+      <input type="email" pInputText formControlName="email" autocomplete="off" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Nombre (opcional)</label>
+      <input type="text" pInputText formControlName="fullName" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Rol</label>
+      <p-select formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" styleClass="w-full" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Contraseña temporal</label>
+      <input type="text" pInputText formControlName="password" autocomplete="off" />
+      <span class="text-xs text-text-secondary">
+        Si el email ya tiene cuenta en VentaRapida (por ejemplo, es dueño de otro negocio), esta
+        contraseña no se usa: solo se agrega como empleado de este negocio con su cuenta existente.
+      </span>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-error">{{ errorMessage() }}</p>
+    }
+
+    <p-button type="submit" label="Invitar" [loading]="saving()" styleClass="w-full" />
+  </form>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="permissionsDialogVisible"
+  [modal]="true"
+  [style]="{ width: '22rem' }"
+  [header]="'Permisos de ' + (editingEmployee()?.fullName || editingEmployee()?.email)"
+>
+  <div class="flex flex-col gap-3">
+    @for (permission of permissionCatalog; track permission.key) {
+      <label class="flex items-center gap-2 text-sm cursor-pointer">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="isPermissionChecked(permission.key)"
+          (ngModelChange)="togglePermission(permission.key, $event)"
+        />
+        {{ permission.label }}
+      </label>
+    }
+
+    <p-button label="Guardar" [loading]="saving()" styleClass="w-full mt-2" (onClick)="onSavePermissions()" />
+  </div>
+</p-dialog>

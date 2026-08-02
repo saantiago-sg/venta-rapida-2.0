@@ -11,7 +11,7 @@ interface SaleRow {
   created_at: string;
   cancel_reason: string | null;
   customers: { name: string } | { name: string }[] | null;
-  payment_methods: { name: string } | { name: string }[] | null;
+  payment_methods: { name: string; is_cash: boolean } | { name: string; is_cash: boolean }[] | null;
   delivery_types: { name: string } | { name: string }[] | null;
 }
 
@@ -33,6 +33,7 @@ function mapSale(row: SaleRow): SaleListItem {
     saleNumber: row.sale_number,
     customerName: first(row.customers)?.name ?? null,
     paymentMethodName: first(row.payment_methods)?.name ?? '',
+    paymentMethodIsCash: first(row.payment_methods)?.is_cash ?? false,
     deliveryTypeName: first(row.delivery_types)?.name ?? '',
     status: row.status,
     total: row.total,
@@ -49,7 +50,7 @@ export class SalesHistoryRepository {
     const { data, error } = await this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, total, created_at, cancel_reason, customers(name), payment_methods(name), delivery_types(name)'
+        'id, sale_number, status, total, created_at, cancel_reason, customers(name), payment_methods(name, is_cash), delivery_types(name)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });

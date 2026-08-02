@@ -1,14 +1,14 @@
 <div class="flex h-screen bg-bg text-text">
   <aside class="w-60 shrink-0 bg-bg-sidebar border-r border-border flex flex-col">
-    <div class="h-16 flex items-center px-4 text-lg font-semibold text-brand">
-      VentaRapida
+    <div class="h-16 flex items-center px-4">
+      <img src="images/logovr-transparent.png" alt="VentaRapida" class="h-10 w-auto" />
     </div>
     <nav class="flex-1 px-2 space-y-1">
       @for (item of navItems; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="bg-card text-text"
-          class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
+          class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
         >
           <i [class]="item.icon"></i>
           {{ item.label }}
@@ -23,7 +23,7 @@
       <button
         type="button"
         (click)="onLogout()"
-        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
+        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
       >
         <i class="pi pi-sign-out"></i>
         Cerrar sesión
@@ -35,7 +35,7 @@
     <header class="h-16 shrink-0 border-b border-border flex items-center justify-between px-6">
       @if (authStore.memberships().length > 1) {
         <select
-          class="bg-card border border-border rounded-md px-3 py-1.5 text-sm text-text"
+          class="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text"
           [value]="authStore.activeBusinessId()"
           (change)="onBusinessChange($event)"
         >

@@ -3,13 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { PaymentMethodsStore } from '../../state/payment-methods.store';
 
 @Component({
   selector: 'app-payment-method-list',
-  imports: [FormsModule, ButtonModule, InputTextModule, TableModule, ToggleSwitchModule],
+  imports: [FormsModule, ButtonModule, InputTextModule, TableModule, TagModule, ToggleSwitchModule],
   templateUrl: './payment-method-list.html'
 })
 export class PaymentMethodList {

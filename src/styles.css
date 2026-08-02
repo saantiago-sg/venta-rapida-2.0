@@ -5,15 +5,27 @@
 @import "tailwindcss/utilities.css" layer(tailwind-utilities);
 @import "primeicons/primeicons.css";
 
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-variable.woff2") format("woff2-variations");
+}
+
+/* Paleta: fuente de verdad en src/app/core/theme/design-tokens.ts (se sincroniza a mano
+   con estos valores -- ver el comentario en ese archivo sobre por que no se genera). */
 @theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
   --color-brand: #f97316;
   --color-brand-hover: #ea580c;
 
-  --color-bg: #0f172a;
+  --color-bg: #0b1220;
   --color-bg-sidebar: #111827;
-  --color-card: #1e293b;
-  --color-card-hover: #273449;
-  --color-border: #334155;
+  --color-card: #162033;
+  --color-card-hover: #1c2a3f;
+  --color-border: #27364c;
 
   --color-text: #f8fafc;
   --color-text-secondary: #94a3b8;
@@ -30,4 +42,46 @@ body {
   margin: 0;
   background-color: var(--color-bg);
   color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Micro-animaciones de entrada. Las cards estaticas usan esto directo (se disparan solas
+   al montar, no necesitan animate.enter). Los items de listas @for usan animate.enter
+   en el template porque esos si se agregan/quitan del DOM despues del render inicial. */
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.enter-fade {
+  animation: enter-fade 0.35s ease-out both;
+}
+
+.enter-fade-stagger > * {
+  animation: enter-fade 0.4s ease-out both;
+}
+.enter-fade-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.enter-fade-stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.enter-fade-stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.enter-fade-stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+/* "glass" sutil: un highlight de 1px arriba + sombra profunda, en vez de un borde plano */
+.surface-card {
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 4%),
+    0 8px 20px -12px rgb(0 0 0 / 60%);
 }

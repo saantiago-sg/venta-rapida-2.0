@@ -56,22 +56,22 @@
   <div class="border-t border-border pt-3 flex flex-col gap-1">
     <div class="flex justify-between text-sm text-text-secondary">
       <span>Subtotal</span>
-      <span>{{ store.subtotal() | number: '1.2-2' }}</span>
+      <span class="tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</span>
     </div>
     @if (store.discount() > 0) {
       <div class="flex justify-between text-sm text-success">
         <span>Descuento efectivo</span>
-        <span>-{{ store.discount() | number: '1.2-2' }}</span>
+        <span class="tabular-nums">-{{ store.discount() | number: '1.2-2' }}</span>
       </div>
     }
-    <div class="flex justify-between text-lg font-bold">
+    <div class="flex justify-between text-lg font-semibold tracking-tight">
       <span>Total</span>
-      <span>{{ store.total() | number: '1.2-2' }}</span>
+      <span class="tabular-nums">{{ store.total() | number: '1.2-2' }}</span>
     </div>
     @if (store.changeDue(); as change) {
       <div class="flex justify-between text-sm" [class.text-error]="change < 0">
         <span>Vuelto</span>
-        <span>{{ change | number: '1.2-2' }}</span>
+        <span class="tabular-nums">{{ change | number: '1.2-2' }}</span>
       </div>
     }
   </div>

@@ -1,16 +1,16 @@
 <div class="h-full flex flex-col">
-  <h1 class="text-xl font-semibold mb-4">Punto de venta</h1>
+  <h1 class="text-xl font-semibold tracking-tight mb-4">Punto de venta</h1>
 
   <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_18rem] gap-4 min-h-0">
-    <div class="bg-card border border-border rounded-lg p-4 min-h-0">
+    <div class="surface-card bg-card border border-border rounded-xl p-5 min-h-0">
       <app-product-search />
     </div>
 
-    <div class="bg-card border border-border rounded-lg p-4 min-h-0">
+    <div class="surface-card bg-card border border-border rounded-xl p-5 min-h-0">
       <app-cart />
     </div>
 
-    <div class="bg-card border border-border rounded-lg p-4 overflow-auto">
+    <div class="surface-card bg-card border border-border rounded-xl p-5 overflow-auto">
       <app-payment-panel (saleConfirmed)="onSaleConfirmed($event)" />
     </div>
   </div>
@@ -19,15 +19,15 @@
 <p-dialog [(visible)]="confirmationVisible" [modal]="true" [style]="{ width: '24rem' }" header="Venta confirmada">
   @if (lastSale(); as sale) {
     <div class="flex flex-col gap-2">
-      <p class="text-2xl font-bold text-brand">Venta #{{ sale.saleNumber }}</p>
+      <p class="text-2xl font-semibold tracking-tight text-brand">Venta #{{ sale.saleNumber }}</p>
       <div class="flex justify-between text-sm">
         <span class="text-text-secondary">Total</span>
-        <span>{{ sale.total | number: '1.2-2' }}</span>
+        <span class="tabular-nums">{{ sale.total | number: '1.2-2' }}</span>
       </div>
       @if (sale.changeGiven !== null) {
         <div class="flex justify-between text-sm">
           <span class="text-text-secondary">Vuelto</span>
-          <span>{{ sale.changeGiven | number: '1.2-2' }}</span>
+          <span class="tabular-nums">{{ sale.changeGiven | number: '1.2-2' }}</span>
         </div>
       }
       <p-button label="Cerrar" styleClass="w-full mt-2" (onClick)="confirmationVisible.set(false)" />
