@@ -5,8 +5,9 @@ import { primitives, semanticColors } from './design-tokens';
 
 /**
  * Preset de PrimeNG basado en los Design Tokens de VentaRapida (ver design-tokens.ts).
- * La app siempre corre en modo oscuro (ver `app-dark` en index.html + darkModeSelector en app.config.ts),
- * por eso el foco está puesto en `colorScheme.dark`.
+ * La app es clara (ver darkModeSelector en app.config.ts, que no matchea nada a proposito),
+ * por eso el foco esta puesto en `colorScheme.light`. El rail de navegacion oscuro se
+ * pinta aparte con `sidebarColors`, directo en los templates -- no depende de este preset.
  */
 export const VentaRapidaPreset = definePreset(Aura, {
   semantic: {
@@ -24,7 +25,7 @@ export const VentaRapidaPreset = definePreset(Aura, {
       950: '#431407'
     },
     colorScheme: {
-      dark: {
+      light: {
         primary: {
           color: semanticColors.brand,
           contrastColor: '#ffffff',
@@ -32,18 +33,18 @@ export const VentaRapidaPreset = definePreset(Aura, {
           activeColor: semanticColors.brandHover
         },
         surface: {
-          0: semanticColors.textPrimary,
-          50: semanticColors.textPrimary,
-          100: semanticColors.textSecondary,
+          0: semanticColors.bgCard,
+          50: semanticColors.bgCard,
+          100: semanticColors.bgCardHover,
           200: semanticColors.border,
-          300: semanticColors.bgCardHover,
-          400: semanticColors.bgCard,
-          500: semanticColors.bgSidebar,
-          600: semanticColors.bgCanvas,
-          700: '#080d17',
-          800: '#05070d',
-          900: '#03050a',
-          950: '#010204'
+          300: semanticColors.textSecondary,
+          400: semanticColors.textSecondary,
+          500: semanticColors.textSecondary,
+          600: semanticColors.textPrimary,
+          700: semanticColors.textPrimary,
+          800: semanticColors.textPrimary,
+          900: semanticColors.textPrimary,
+          950: semanticColors.textPrimary
         },
         formField: {
           background: semanticColors.bgCard,
@@ -65,6 +66,13 @@ export const VentaRapidaPreset = definePreset(Aura, {
           select: { background: semanticColors.bgCard, borderColor: semanticColors.border },
           popover: { background: semanticColors.bgCard, borderColor: semanticColors.border },
           modal: { background: semanticColors.bgCard, borderColor: semanticColors.border }
+        },
+        // Mask: fondo detras de spinners de carga (tablas) y del backdrop de dialogos.
+        // El default de Aura es negro 40% -- acá va un velo claro y calido en vez de oscurecer,
+        // con el spinner en naranja de marca en vez de gris generico.
+        mask: {
+          background: 'rgba(253, 251, 248, 0.85)',
+          color: semanticColors.brand
         }
       }
     }
@@ -72,7 +80,7 @@ export const VentaRapidaPreset = definePreset(Aura, {
   components: {
     button: {
       colorScheme: {
-        dark: {
+        light: {
           root: {
             success: { background: semanticColors.success },
             danger: { background: semanticColors.error },

@@ -12,6 +12,9 @@ export interface Product {
   businessId: string;
   categoryId: string | null;
   categoryName: string | null;
+  taxId: string | null;
+  taxName: string | null;
+  taxRate: number | null;
   name: string;
   barcode: string | null;
   saleType: SaleType;
@@ -24,6 +27,7 @@ export interface Product {
 
 export interface ProductFormValue {
   categoryId: string | null;
+  taxId: string | null;
   name: string;
   barcode: string | null;
   saleType: SaleType;

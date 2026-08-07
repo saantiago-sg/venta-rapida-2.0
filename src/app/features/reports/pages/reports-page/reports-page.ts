@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 
+import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
 import { ReportRangePreset } from '../../data-access/models';
 import { ReportsStore } from '../../state/reports.store';
 
@@ -14,7 +15,7 @@ const PRESET_OPTIONS: { label: string; value: ReportRangePreset }[] = [
 
 @Component({
   selector: 'app-reports-page',
-  imports: [DecimalPipe, ButtonModule, TableModule],
+  imports: [DecimalPipe, ButtonModule, TableModule, CountUpDirective],
   templateUrl: './reports-page.html'
 })
 export class ReportsPage {

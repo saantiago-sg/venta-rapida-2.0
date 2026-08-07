@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -14,6 +14,8 @@ import { BusinessSettingsStore } from '../../state/business-settings.store';
 export class BusinessForm {
   private readonly fb = inject(FormBuilder);
   protected readonly store = inject(BusinessSettingsStore);
+
+  protected readonly saving = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -50,15 +52,20 @@ export class BusinessForm {
       return;
     }
 
-    const raw = this.form.getRawValue();
-    await this.store.update({
-      name: raw.name,
-      legalName: raw.legalName || null,
-      taxId: raw.taxId || null,
-      email: raw.email || null,
-      phone: raw.phone || null,
-      address: raw.address || null,
-      cashDiscountPercentage: raw.cashDiscountPercentage
-    });
+    this.saving.set(true);
+    try {
+      const raw = this.form.getRawValue();
+      await this.store.update({
+        name: raw.name,
+        legalName: raw.legalName || null,
+        taxId: raw.taxId || null,
+        email: raw.email || null,
+        phone: raw.phone || null,
+        address: raw.address || null,
+        cashDiscountPercentage: raw.cashDiscountPercentage
+      });
+    } finally {
+      this.saving.set(false);
+    }
   }
 }

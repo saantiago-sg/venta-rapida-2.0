@@ -10,6 +10,7 @@ interface SaleRow {
   total: number;
   created_at: string;
   cancel_reason: string | null;
+  payment_method_id: string | null;
   customers: { name: string } | { name: string }[] | null;
   payment_methods: { name: string; is_cash: boolean } | { name: string; is_cash: boolean }[] | null;
   delivery_types: { name: string } | { name: string }[] | null;
@@ -32,6 +33,7 @@ function mapSale(row: SaleRow): SaleListItem {
     id: row.id,
     saleNumber: row.sale_number,
     customerName: first(row.customers)?.name ?? null,
+    paymentMethodId: row.payment_method_id,
     paymentMethodName: first(row.payment_methods)?.name ?? '',
     paymentMethodIsCash: first(row.payment_methods)?.is_cash ?? false,
     deliveryTypeName: first(row.delivery_types)?.name ?? '',
@@ -46,14 +48,19 @@ function mapSale(row: SaleRow): SaleListItem {
 export class SalesHistoryRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
-  async list(businessId: string): Promise<SaleListItem[]> {
-    const { data, error } = await this.supabase
+  async list(businessId: string, dateFrom?: Date, dateTo?: Date): Promise<SaleListItem[]> {
+    let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, total, created_at, cancel_reason, customers(name), payment_methods(name, is_cash), delivery_types(name)'
+        'id, sale_number, status, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });
+
+    if (dateFrom) query = query.gte('created_at', dateFrom.toISOString());
+    if (dateTo) query = query.lt('created_at', dateTo.toISOString());
+
+    const { data, error } = await query;
     if (error) throw error;
     return (data as unknown as SaleRow[]).map(mapSale);
   }

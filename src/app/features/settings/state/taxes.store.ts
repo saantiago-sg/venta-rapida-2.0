@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { TaxRepository } from '../data-access/tax.repository';
@@ -14,6 +14,7 @@ export class TaxesStore {
 
   readonly taxes = this._taxes.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly activeTaxes = computed(() => this._taxes().filter((t) => t.active));
 
   async load(): Promise<void> {
     const businessId = this.authStore.activeBusinessId();

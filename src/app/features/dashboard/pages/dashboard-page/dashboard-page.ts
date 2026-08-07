@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
 import { ReportsRepository } from '../../../reports/data-access/reports.repository';
 import { SalesSummary, TopProduct } from '../../../reports/data-access/models';
 
@@ -25,7 +26,7 @@ function capitalizeFirst(text: string): string {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [DecimalPipe, RouterLink, ButtonModule],
+  imports: [DecimalPipe, RouterLink, ButtonModule, CountUpDirective],
   templateUrl: './dashboard-page.html'
 })
 export class DashboardPage {

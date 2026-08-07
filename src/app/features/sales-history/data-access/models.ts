@@ -4,6 +4,7 @@ export interface SaleListItem {
   id: string;
   saleNumber: number;
   customerName: string | null;
+  paymentMethodId: string | null;
   paymentMethodName: string;
   paymentMethodIsCash: boolean;
   deliveryTypeName: string;

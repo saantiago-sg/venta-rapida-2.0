@@ -5,6 +5,7 @@
     <p-button label="Nuevo negocio" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
+  <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
   <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -49,6 +50,7 @@
       </tr>
     </ng-template>
   </p-table>
+  </div>
 </div>
 
 <p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '28rem' }" header="Crear negocio nuevo">

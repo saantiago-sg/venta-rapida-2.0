@@ -1,5 +1,5 @@
 <div class="flex h-screen bg-bg text-text">
-  <aside class="w-60 shrink-0 bg-bg-sidebar border-r border-border flex flex-col">
+  <aside class="w-60 shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col">
     <div class="h-16 flex flex-col justify-center gap-1 px-4">
       <img src="images/logovr-transparent.png" alt="VentaRapida" class="h-6 w-auto self-start" />
       <span class="text-xs font-semibold text-info tracking-wide">SUPER ADMIN</span>
@@ -9,8 +9,8 @@
       @for (item of navItems; track item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="bg-card text-text"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
+          routerLinkActive="bg-sidebar-active text-sidebar-text before:h-5"
+          class="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-1 before:rounded-full before:bg-brand before:transition-all before:duration-300"
         >
           <i [class]="item.icon"></i>
           {{ item.label }}
@@ -18,14 +18,14 @@
       }
     </nav>
 
-    <div class="border-t border-border p-3 flex flex-col gap-2">
+    <div class="border-t border-sidebar-border p-3 flex flex-col gap-2">
       @if (authStore.userEmail()) {
-        <span class="px-1 text-xs text-text-secondary truncate">{{ authStore.userEmail() }}</span>
+        <span class="px-1 text-xs text-sidebar-text-secondary truncate">{{ authStore.userEmail() }}</span>
       }
       <button
         type="button"
         (click)="onLogout()"
-        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-card-hover hover:text-text transition-colors"
+        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors"
       >
         <i class="pi pi-sign-out"></i>
         Cerrar sesión

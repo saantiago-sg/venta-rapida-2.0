@@ -24,23 +24,40 @@
 <div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
   <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-white/90">Ventas</span>
-    <span class="text-3xl font-semibold tabular-nums text-white">{{ store.summary()?.totalSales ?? 0 | number: '1.2-2' }}</span>
+    @if (store.loading()) {
+      <div class="h-9 w-28 rounded-md bg-white/20 animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums text-white" [appCountUp]="store.summary()?.totalSales ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Ganancia</span>
-    <span class="text-3xl font-semibold tabular-nums text-success">{{ store.summary()?.totalProfit ?? 0 | number: '1.2-2' }}</span>
+    @if (store.loading()) {
+      <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums text-success" [appCountUp]="store.summary()?.totalProfit ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Impuestos</span>
-    <span class="text-3xl font-semibold tabular-nums">{{ store.summary()?.totalTax ?? 0 | number: '1.2-2' }}</span>
+    @if (store.loading()) {
+      <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="store.summary()?.totalTax ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Cantidad de ventas</span>
-    <span class="text-3xl font-semibold tabular-nums">{{ store.summary()?.saleCount ?? 0 }}</span>
+    @if (store.loading()) {
+      <div class="h-9 w-16 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="store.summary()?.saleCount ?? 0" [decimals]="0"></span>
+    }
   </div>
 </div>
 
 <h2 class="text-sm font-medium text-text-secondary mb-3">Productos más vendidos</h2>
+<div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
 <p-table [value]="store.topProducts()" [loading]="store.loading()" dataKey="productName">
   <ng-template pTemplate="header">
     <tr>
@@ -67,3 +84,4 @@
     </tr>
   </ng-template>
 </p-table>
+</div>

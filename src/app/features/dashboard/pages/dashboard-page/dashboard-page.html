@@ -12,20 +12,36 @@
 <div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
   <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-white/90">Ventas del día</span>
-    <span class="text-3xl font-semibold tabular-nums text-white">{{ summary()?.totalSales ?? 0 | number: '1.2-2' }}</span>
+    @if (loading()) {
+      <div class="h-9 w-28 rounded-md bg-white/20 animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums text-white" [appCountUp]="summary()?.totalSales ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Ganancia</span>
-    <span class="text-3xl font-semibold tabular-nums text-success">{{ summary()?.totalProfit ?? 0 | number: '1.2-2' }}</span>
+    @if (loading()) {
+      <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums text-success" [appCountUp]="summary()?.totalProfit ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Impuestos</span>
-    <span class="text-3xl font-semibold tabular-nums">{{ summary()?.totalTax ?? 0 | number: '1.2-2' }}</span>
+    @if (loading()) {
+      <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="summary()?.totalTax ?? 0"></span>
+    }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-text-secondary">Pedidos</span>
-    <span class="text-3xl font-semibold tabular-nums">{{ summary()?.saleCount ?? 0 }}</span>
-    <span class="text-xs text-text-secondary tabular-nums">Ticket prom: {{ averageTicket() | number: '1.2-2' }}</span>
+    @if (loading()) {
+      <div class="h-9 w-16 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="summary()?.saleCount ?? 0" [decimals]="0"></span>
+      <span class="text-xs text-text-secondary tabular-nums">Ticket prom: {{ averageTicket() | number: '1.2-2' }}</span>
+    }
   </div>
 </div>
 
@@ -33,22 +49,28 @@
   <div class="surface-card bg-card border border-border rounded-xl p-6">
     <h2 class="text-sm font-medium text-text-secondary mb-4">Productos más rentables</h2>
     <div class="flex flex-col gap-2">
-      @for (product of mostProfitable(); track product.productName; let i = $index) {
-        <div animate.enter="enter-fade" class="flex items-center gap-3 bg-bg rounded-lg p-3">
-          <span class="w-6 h-6 rounded-full bg-success/15 text-success text-xs font-semibold flex items-center justify-center shrink-0">
-            {{ i + 1 }}
-          </span>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{{ product.productName }}</p>
-            <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
+      @if (loading()) {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="h-[52px] rounded-lg bg-bg animate-pulse"></div>
+        }
+      } @else {
+        @for (product of mostProfitable(); track product.productName; let i = $index) {
+          <div animate.enter="enter-fade" class="flex items-center gap-3 bg-bg rounded-lg p-3">
+            <span class="w-6 h-6 rounded-full bg-success/15 text-success text-xs font-semibold flex items-center justify-center shrink-0">
+              {{ i + 1 }}
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">{{ product.productName }}</p>
+              <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
+            </div>
+            <span class="text-sm font-medium tabular-nums text-success">{{ product.profit | number: '1.2-2' }}</span>
           </div>
-          <span class="text-sm font-medium tabular-nums text-success">{{ product.profit | number: '1.2-2' }}</span>
-        </div>
-      } @empty {
-        <div class="flex flex-col items-center gap-2 py-8 text-center">
-          <i class="pi pi-chart-line text-2xl text-text-secondary"></i>
-          <p class="text-sm text-text-secondary">Todavía no hay ventas hoy.</p>
-        </div>
+        } @empty {
+          <div class="flex flex-col items-center gap-2 py-8 text-center">
+            <i class="pi pi-chart-line text-2xl text-text-secondary"></i>
+            <p class="text-sm text-text-secondary">Todavía no hay ventas hoy.</p>
+          </div>
+        }
       }
     </div>
   </div>
@@ -56,19 +78,25 @@
   <div class="surface-card bg-card border border-border rounded-xl p-6">
     <h2 class="text-sm font-medium text-text-secondary mb-4">Menor rentabilidad</h2>
     <div class="flex flex-col gap-2">
-      @for (product of leastProfitable(); track product.productName) {
-        <div animate.enter="enter-fade" class="flex items-center gap-3 bg-bg rounded-lg p-3">
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{{ product.productName }}</p>
-            <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
+      @if (loading()) {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="h-[52px] rounded-lg bg-bg animate-pulse"></div>
+        }
+      } @else {
+        @for (product of leastProfitable(); track product.productName) {
+          <div animate.enter="enter-fade" class="flex items-center gap-3 bg-bg rounded-lg p-3">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">{{ product.productName }}</p>
+              <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
+            </div>
+            <span class="text-sm font-medium tabular-nums text-error">{{ product.profit | number: '1.2-2' }}</span>
           </div>
-          <span class="text-sm font-medium tabular-nums text-error">{{ product.profit | number: '1.2-2' }}</span>
-        </div>
-      } @empty {
-        <div class="flex flex-col items-center gap-2 py-8 text-center">
-          <i class="pi pi-chart-line text-2xl text-text-secondary"></i>
-          <p class="text-sm text-text-secondary">Todavía no hay ventas hoy.</p>
-        </div>
+        } @empty {
+          <div class="flex flex-col items-center gap-2 py-8 text-center">
+            <i class="pi pi-chart-line text-2xl text-text-secondary"></i>
+            <p class="text-sm text-text-secondary">Todavía no hay ventas hoy.</p>
+          </div>
+        }
       }
     </div>
   </div>

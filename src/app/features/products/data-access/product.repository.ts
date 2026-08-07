@@ -7,6 +7,7 @@ interface ProductRow {
   id: string;
   business_id: string;
   category_id: string | null;
+  tax_id: string | null;
   name: string;
   barcode: string | null;
   sale_type: 'unit' | 'weight';
@@ -16,17 +17,27 @@ interface ProductRow {
   track_stock: boolean;
   active: boolean;
   categories: { name: string } | { name: string }[] | null;
+  taxes: { name: string; rate: number } | { name: string; rate: number }[] | null;
 }
 
-const SELECT_COLUMNS = 'id, business_id, category_id, name, barcode, sale_type, price, cost, stock, track_stock, active, categories(name)';
+const SELECT_COLUMNS =
+  'id, business_id, category_id, tax_id, name, barcode, sale_type, price, cost, stock, track_stock, active, categories(name), taxes(name, rate)';
+
+function first<T>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
 
 function mapRow(row: ProductRow): Product {
-  const category = Array.isArray(row.categories) ? row.categories[0] : row.categories;
+  const category = first(row.categories);
+  const tax = first(row.taxes);
   return {
     id: row.id,
     businessId: row.business_id,
     categoryId: row.category_id,
     categoryName: category?.name ?? null,
+    taxId: row.tax_id,
+    taxName: tax?.name ?? null,
+    taxRate: tax?.rate ?? null,
     name: row.name,
     barcode: row.barcode,
     saleType: row.sale_type,
@@ -58,6 +69,7 @@ export class ProductRepository {
       .insert({
         business_id: businessId,
         category_id: input.categoryId,
+        tax_id: input.taxId,
         name: input.name,
         barcode: input.barcode || null,
         sale_type: input.saleType,
@@ -84,6 +96,7 @@ export class ProductRepository {
       .from('products')
       .update({
         category_id: input.categoryId,
+        tax_id: input.taxId,
         name: input.name,
         barcode: input.barcode || null,
         sale_type: input.saleType,

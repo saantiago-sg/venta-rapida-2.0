@@ -7,7 +7,11 @@
       <span>Negocios totales</span>
       <i class="pi pi-building"></i>
     </div>
-    <span class="text-3xl font-semibold tabular-nums text-white">{{ store.metrics()?.totalBusinesses ?? '-' }}</span>
+    @if (store.metricsLoading()) {
+      <div class="h-9 w-16 rounded-md bg-white/20 animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums text-white" [appCountUp]="store.metrics()?.totalBusinesses ?? 0" [decimals]="0"></span>
+    }
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-2">
@@ -15,7 +19,11 @@
       <span>Negocios activos</span>
       <i class="pi pi-check-circle text-success"></i>
     </div>
-    <span class="text-3xl font-semibold tabular-nums">{{ store.metrics()?.activeBusinesses ?? '-' }}</span>
+    @if (store.metricsLoading()) {
+      <div class="h-9 w-16 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="store.metrics()?.activeBusinesses ?? 0" [decimals]="0"></span>
+    }
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-2">
@@ -23,6 +31,10 @@
       <span>Usuarios</span>
       <i class="pi pi-users text-info"></i>
     </div>
-    <span class="text-3xl font-semibold tabular-nums">{{ store.metrics()?.totalUsers ?? '-' }}</span>
+    @if (store.metricsLoading()) {
+      <div class="h-9 w-16 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="store.metrics()?.totalUsers ?? 0" [decimals]="0"></span>
+    }
   </div>
 </div>

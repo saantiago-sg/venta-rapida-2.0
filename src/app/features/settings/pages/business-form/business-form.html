@@ -1,39 +1,71 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 max-w-xl">
-  <div class="flex flex-col gap-1">
-    <label class="text-sm text-text-secondary">Nombre del negocio</label>
-    <input type="text" pInputText formControlName="name" />
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
+  <div class="mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Datos generales</h3>
   </div>
 
-  <div class="flex flex-col gap-1">
-    <label class="text-sm text-text-secondary">Razón social (opcional)</label>
-    <input type="text" pInputText formControlName="legalName" />
-  </div>
-
-  <div class="flex flex-col gap-1">
-    <label class="text-sm text-text-secondary">CUIT / documento fiscal (opcional)</label>
-    <input type="text" pInputText formControlName="taxId" />
-  </div>
-
-  <div class="grid grid-cols-2 gap-3">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Email</label>
-      <input type="email" pInputText formControlName="email" />
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Nombre del negocio</label>
+      <p class="text-xs text-text-secondary mt-0.5">Cómo aparece en tickets y en el panel.</p>
     </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Teléfono</label>
-      <input type="text" pInputText formControlName="phone" />
+    <input type="text" pInputText formControlName="name" class="w-full max-w-md" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Razón social</label>
+      <p class="text-xs text-text-secondary mt-0.5">Opcional. Para la factura o el ticket fiscal.</p>
     </div>
+    <input type="text" pInputText formControlName="legalName" class="w-full max-w-md" />
   </div>
 
-  <div class="flex flex-col gap-1">
-    <label class="text-sm text-text-secondary">Dirección</label>
-    <input type="text" pInputText formControlName="address" />
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">CUIT / documento fiscal</label>
+      <p class="text-xs text-text-secondary mt-0.5">Opcional.</p>
+    </div>
+    <input type="text" pInputText formControlName="taxId" class="w-full max-w-md" />
   </div>
 
-  <div class="flex flex-col gap-1">
-    <label class="text-sm text-text-secondary">Descuento por pago en efectivo (%)</label>
+  <div class="mt-8 mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Contacto</h3>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Email</label>
+      <p class="text-xs text-text-secondary mt-0.5">Para novedades sobre tu cuenta.</p>
+    </div>
+    <input type="email" pInputText formControlName="email" class="w-full max-w-md" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Teléfono</label>
+    </div>
+    <input type="text" pInputText formControlName="phone" class="w-full max-w-md" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Dirección</label>
+    </div>
+    <input type="text" pInputText formControlName="address" class="w-full max-w-md" />
+  </div>
+
+  <div class="mt-8 mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Ventas</h3>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
+    <div>
+      <label class="text-sm font-medium text-text">Descuento por pago en efectivo</label>
+      <p class="text-xs text-text-secondary mt-0.5">Se aplica solo cuando el cliente paga con un medio marcado como efectivo.</p>
+    </div>
     <p-inputnumber formControlName="cashDiscountPercentage" suffix="%" [min]="0" [max]="100" styleClass="w-40" />
   </div>
 
-  <p-button type="submit" label="Guardar cambios" styleClass="w-full" />
+  <div class="flex justify-end pt-6 mt-2 border-t border-border">
+    <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+  </div>
 </form>

@@ -1,13 +1,27 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from '../../auth/auth.service';
-import { AuthStore } from '../../auth/auth.store';
+import { AuthStore, MembershipRole } from '../../auth/auth.store';
+
+const ROLE_LABELS: Record<MembershipRole, string> = {
+  owner: 'Dueño',
+  admin: 'Administrador',
+  cashier: 'Cajero'
+};
+
+type BannerSeverity = 'info' | 'warn' | 'error';
 
 interface SubscriptionBanner {
-  severity: 'info' | 'warn' | 'error';
+  severity: BannerSeverity;
   message: string;
 }
+
+const BANNER_STYLES: Record<BannerSeverity, { wrap: string; icon: string; iconName: string }> = {
+  info: { wrap: 'bg-info/10 border-info/20', icon: 'bg-info/15 text-info', iconName: 'pi-info-circle' },
+  warn: { wrap: 'bg-warning/10 border-warning/20', icon: 'bg-warning/15 text-warning', iconName: 'pi-exclamation-triangle' },
+  error: { wrap: 'bg-error/10 border-error/20', icon: 'bg-error/15 text-error', iconName: 'pi-times-circle' }
+};
 
 function formatDate(isoDate: string): string {
   const date = new Date(isoDate);
@@ -20,14 +34,29 @@ interface NavItem {
   icon: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-th-large' },
-  { label: 'Punto de venta', path: '/pos', icon: 'pi pi-shopping-cart' },
-  { label: 'Productos', path: '/productos', icon: 'pi pi-tag' },
-  { label: 'Clientes', path: '/clientes', icon: 'pi pi-users' },
-  { label: 'Ventas', path: '/ventas', icon: 'pi pi-receipt' },
-  { label: 'Reportes', path: '/reportes', icon: 'pi pi-chart-bar' },
-  { label: 'Configuración', path: '/configuracion', icon: 'pi pi-cog' }
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: 'Operación',
+    items: [
+      { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-th-large' },
+      { label: 'Punto de venta', path: '/pos', icon: 'pi pi-shopping-cart' },
+      { label: 'Productos', path: '/productos', icon: 'pi pi-tag' },
+      { label: 'Ventas', path: '/ventas', icon: 'pi pi-receipt' }
+    ]
+  },
+  {
+    label: 'Administración',
+    items: [
+      { label: 'Clientes', path: '/clientes', icon: 'pi pi-users' },
+      { label: 'Reportes', path: '/reportes', icon: 'pi pi-chart-bar' },
+      { label: 'Configuración', path: '/configuracion', icon: 'pi pi-cog' }
+    ]
+  }
 ];
 
 @Component({
@@ -37,7 +66,8 @@ const NAV_ITEMS: NavItem[] = [
 })
 export class Shell {
   protected readonly authStore = inject(AuthStore);
-  protected readonly navItems = NAV_ITEMS;
+  protected readonly navSections = NAV_SECTIONS;
+  protected readonly sidebarOpen = signal(true);
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
@@ -68,6 +98,30 @@ export class Shell {
         return null;
     }
   });
+
+  // En memoria nomas (nada de sessionStorage/localStorage): al cerrar el aviso se oculta
+  // mientras navegues dentro de la app, pero un F5 reinstancia el Shell y vuelve a aparecer.
+  private readonly bannerDismissed = signal(false);
+
+  protected readonly visibleBanner = computed(() =>
+    this.bannerDismissed() ? null : this.subscriptionBanner()
+  );
+
+  protected bannerStyles(severity: BannerSeverity) {
+    return BANNER_STYLES[severity];
+  }
+
+  protected dismissBanner(): void {
+    this.bannerDismissed.set(true);
+  }
+
+  protected roleLabel(role: MembershipRole): string {
+    return ROLE_LABELS[role];
+  }
+
+  protected toggleSidebar(): void {
+    this.sidebarOpen.update((open) => !open);
+  }
 
   protected onBusinessChange(event: Event): void {
     const businessId = (event.target as HTMLSelectElement).value;

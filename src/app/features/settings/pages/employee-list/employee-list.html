@@ -3,6 +3,7 @@
     <p-button label="Invitar empleado" icon="pi pi-plus" (onClick)="openInvite()" />
   </div>
 
+  <div class="border border-border rounded-lg overflow-hidden">
   <p-table [value]="store.employees()" [loading]="store.loading()" dataKey="membershipId">
     <ng-template pTemplate="header">
       <tr>
@@ -69,6 +70,7 @@
       </tr>
     </ng-template>
   </p-table>
+  </div>
 </div>
 
 <p-dialog [(visible)]="inviteDialogVisible" [modal]="true" [style]="{ width: '26rem' }" header="Invitar empleado">

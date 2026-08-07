@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -9,6 +9,7 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+import { TaxesStore } from '../../../settings/state/taxes.store';
 import { Product } from '../../data-access/models';
 import { CategoriesStore } from '../../state/categories.store';
 import { ProductsStore } from '../../state/products.store';
@@ -17,6 +18,11 @@ const SALE_TYPE_OPTIONS = [
   { label: 'Por unidad', value: 'unit' },
   { label: 'Por peso', value: 'weight' }
 ];
+
+// Compara sin importar mayusculas/acentos: "poller" tiene que encontrar "Pollería".
+function normalize(text: string): string {
+  return text.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
 
 @Component({
   selector: 'app-product-list',
@@ -38,15 +44,25 @@ export class ProductList {
   private readonly fb = inject(FormBuilder);
   protected readonly productsStore = inject(ProductsStore);
   protected readonly categoriesStore = inject(CategoriesStore);
+  protected readonly taxesStore = inject(TaxesStore);
 
   protected readonly saleTypeOptions = SALE_TYPE_OPTIONS;
   protected readonly dialogVisible = signal(false);
   protected readonly saving = signal(false);
   protected readonly editingProduct = signal<Product | null>(null);
 
+  protected readonly searchQuery = signal('');
+  protected readonly filteredProducts = computed(() => {
+    const query = normalize(this.searchQuery().trim());
+    const products = this.productsStore.products();
+    if (!query) return products;
+    return products.filter((p) => normalize(p.name).includes(query));
+  });
+
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     categoryId: this.fb.control<string | null>(null),
+    taxId: this.fb.control<string | null>(null),
     barcode: [''],
     saleType: this.fb.nonNullable.control<'unit' | 'weight'>('unit'),
     price: [0, [Validators.required, Validators.min(0)]],
@@ -58,6 +74,7 @@ export class ProductList {
   constructor() {
     this.productsStore.load();
     this.categoriesStore.load();
+    this.taxesStore.load();
   }
 
   protected openCreate(): void {
@@ -65,6 +82,7 @@ export class ProductList {
     this.form.reset({
       name: '',
       categoryId: null,
+      taxId: null,
       barcode: '',
       saleType: 'unit',
       price: 0,
@@ -80,6 +98,7 @@ export class ProductList {
     this.form.reset({
       name: product.name,
       categoryId: product.categoryId,
+      taxId: product.taxId,
       barcode: product.barcode ?? '',
       saleType: product.saleType,
       price: product.price,

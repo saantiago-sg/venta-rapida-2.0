@@ -21,19 +21,25 @@
   --color-brand: #f97316;
   --color-brand-hover: #ea580c;
 
-  --color-bg: #0b1220;
-  --color-bg-sidebar: #111827;
-  --color-card: #162033;
-  --color-card-hover: #1c2a3f;
-  --color-border: #27364c;
+  --color-bg: #fdfbf8;
+  --color-card: #ffffff;
+  --color-card-hover: #f5f1ec;
+  --color-border: #e7dfd3;
 
-  --color-text: #f8fafc;
-  --color-text-secondary: #94a3b8;
+  --color-text: #241e18;
+  --color-text-secondary: #8a7f73;
 
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #facc15;
-  --color-info: #0ea5e9;
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
+
+  /* Rail de navegacion: siempre oscuro, tokens propios (ver sidebarColors en design-tokens.ts) */
+  --color-sidebar: #1c1713;
+  --color-sidebar-active: #2d2620;
+  --color-sidebar-border: #3d332b;
+  --color-sidebar-text: #faf6f1;
+  --color-sidebar-text-secondary: #a89a8c;
 }
 
 html,
@@ -79,9 +85,54 @@ body {
   animation-delay: 180ms;
 }
 
-/* "glass" sutil: un highlight de 1px arriba + sombra profunda, en vez de un borde plano */
+/* sombra suave y calida en vez de un borde plano -- da elevacion sin pesar sobre fondo claro.
+   El hover levanta un poco la card: detalle "vivo" en vez de una superficie estatica. */
 .surface-card {
   box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 4%),
-    0 8px 20px -12px rgb(0 0 0 / 60%);
+    0 1px 2px 0 rgb(36 30 24 / 4%),
+    0 4px 12px -4px rgb(36 30 24 / 8%);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.surface-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px 0 rgb(36 30 24 / 5%),
+    0 16px 28px -10px rgb(36 30 24 / 16%);
+}
+
+/* Entrada "premium": rise + easing tipo expo-out, para hitos puntuales (ej. la card del login)
+   en vez del fade generico de arriba. */
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.enter-rise {
+  animation: enter-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.enter-fade-d1 { animation: enter-fade 0.5s ease-out both; animation-delay: 80ms; }
+.enter-fade-d2 { animation: enter-fade 0.5s ease-out both; animation-delay: 200ms; }
+.enter-fade-d3 { animation: enter-fade 0.5s ease-out both; animation-delay: 320ms; }
+
+/* Blobs decorativos flotando en el panel del login -- mesh gradient animado en vez de un
+   degrade estatico. Movimiento lento y sutil a proposito, no debe competir con el formulario. */
+@keyframes blob-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -50px) scale(1.12); }
+}
+@keyframes blob-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 40px) scale(1.08); }
+}
+.blob-float-a {
+  animation: blob-float-a 16s ease-in-out infinite;
+}
+.blob-float-b {
+  animation: blob-float-b 20s ease-in-out infinite;
 }

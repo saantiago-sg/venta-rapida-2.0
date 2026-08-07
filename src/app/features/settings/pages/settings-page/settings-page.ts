@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { TabsModule } from 'primeng/tabs';
+import { Component, signal } from '@angular/core';
 
 import { BusinessForm } from '../business-form/business-form';
 import { DeliveryTypeList } from '../delivery-type-list/delivery-type-list';
@@ -7,28 +6,28 @@ import { EmployeeList } from '../employee-list/employee-list';
 import { PaymentMethodList } from '../payment-method-list/payment-method-list';
 import { TaxList } from '../tax-list/tax-list';
 
+type SettingsSectionId = 'negocio' | 'impuestos' | 'medios-pago' | 'entrega' | 'empleados';
+
+interface SettingsSection {
+  id: SettingsSectionId;
+  label: string;
+  icon: string;
+}
+
+const SECTIONS: SettingsSection[] = [
+  { id: 'negocio', label: 'Negocio', icon: 'pi pi-building' },
+  { id: 'impuestos', label: 'Impuestos', icon: 'pi pi-percentage' },
+  { id: 'medios-pago', label: 'Medios de pago', icon: 'pi pi-wallet' },
+  { id: 'entrega', label: 'Tipos de entrega', icon: 'pi pi-truck' },
+  { id: 'empleados', label: 'Empleados', icon: 'pi pi-users' }
+];
+
 @Component({
   selector: 'app-settings-page',
-  imports: [TabsModule, BusinessForm, TaxList, PaymentMethodList, DeliveryTypeList, EmployeeList],
-  template: `
-    <h1 class="text-xl font-semibold tracking-tight mb-4">Configuración</h1>
-
-    <p-tabs value="0">
-      <p-tablist>
-        <p-tab value="0">Negocio</p-tab>
-        <p-tab value="1">Impuestos</p-tab>
-        <p-tab value="2">Medios de pago</p-tab>
-        <p-tab value="3">Tipos de entrega</p-tab>
-        <p-tab value="4">Empleados</p-tab>
-      </p-tablist>
-      <p-tabpanels>
-        <p-tabpanel value="0"><app-business-form /></p-tabpanel>
-        <p-tabpanel value="1"><app-tax-list /></p-tabpanel>
-        <p-tabpanel value="2"><app-payment-method-list /></p-tabpanel>
-        <p-tabpanel value="3"><app-delivery-type-list /></p-tabpanel>
-        <p-tabpanel value="4"><app-employee-list /></p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
-  `
+  imports: [BusinessForm, TaxList, PaymentMethodList, DeliveryTypeList, EmployeeList],
+  templateUrl: './settings-page.html'
 })
-export class SettingsPage {}
+export class SettingsPage {
+  protected readonly sections = SECTIONS;
+  protected readonly activeSection = signal<SettingsSectionId>('negocio');
+}

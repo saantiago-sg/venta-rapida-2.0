@@ -5,6 +5,7 @@
     <p-button label="Nuevo cliente" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
 
+  <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
   <p-table [value]="store.customers()" [loading]="store.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -50,6 +51,7 @@
       </tr>
     </ng-template>
   </p-table>
+  </div>
 </div>
 
 <p-dialog

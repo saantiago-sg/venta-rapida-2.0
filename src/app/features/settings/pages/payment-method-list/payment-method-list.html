@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-4 max-w-xl">
+<div class="flex flex-col gap-4">
   <div class="flex items-center gap-2">
     <input
       type="text"
@@ -15,6 +15,7 @@
     <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
   </div>
 
+  <div class="border border-border rounded-lg overflow-hidden">
   <p-table [value]="store.paymentMethods()" [loading]="store.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -59,4 +60,5 @@
       </tr>
     </ng-template>
   </p-table>
+  </div>
 </div>
