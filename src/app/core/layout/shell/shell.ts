@@ -44,7 +44,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Operación',
     items: [
       { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-th-large' },
-      { label: 'Punto de venta', path: '/pos', icon: 'pi pi-shopping-cart' },
+      { label: 'Vender', path: '/pos', icon: 'pi pi-shopping-cart' },
       { label: 'Productos', path: '/productos', icon: 'pi pi-tag' },
       { label: 'Ventas', path: '/ventas', icon: 'pi pi-receipt' }
     ]

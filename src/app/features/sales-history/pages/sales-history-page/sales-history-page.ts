@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -12,7 +13,7 @@ import { AuthStore } from '../../../../core/auth/auth.store';
 import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
 import { PaymentMethodsStore } from '../../../settings/state/payment-methods.store';
 import { SaleListItem } from '../../data-access/models';
-import { SalesHistoryStore } from '../../state/sales-history.store';
+import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/sales-history.store';
 
 @Component({
   selector: 'app-sales-history-page',
@@ -21,6 +22,7 @@ import { SalesHistoryStore } from '../../state/sales-history.store';
     DecimalPipe,
     FormsModule,
     ButtonModule,
+    DatePickerModule,
     DialogModule,
     InputTextModule,
     SelectModule,
@@ -34,6 +36,25 @@ export class SalesHistoryPage {
   protected readonly store = inject(SalesHistoryStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly paymentMethodsStore = inject(PaymentMethodsStore);
+
+  // El datepicker de PrimeNG trabaja con Date, pero el store guarda 'yyyy-mm-dd' (mismo
+  // formato que ya esperan load()/repository) -- se convierte acá en los dos sentidos.
+  protected readonly dateFromValue = computed(() => {
+    const value = this.store.dateFrom();
+    return value ? parseLocalDate(value) : null;
+  });
+  protected readonly dateToValue = computed(() => {
+    const value = this.store.dateTo();
+    return value ? parseLocalDate(value) : null;
+  });
+
+  protected onDateFromChange(date: Date | null): void {
+    this.store.setDateFrom(date ? formatLocalDate(date) : null);
+  }
+
+  protected onDateToChange(date: Date | null): void {
+    this.store.setDateTo(date ? formatLocalDate(date) : null);
+  }
 
   protected readonly detailVisible = signal(false);
   protected readonly selectedSale = signal<SaleListItem | null>(null);

@@ -10,9 +10,18 @@ import { SaleItem, SaleListItem } from '../data-access/models';
 // lo que corre el dia en zonas horarias negativas (Argentina, UTC-3) -- "Desde: 6 de agosto"
 // terminaria incluyendo parte del 5 de agosto a la noche. Con año/mes/dia sueltos, Date
 // arma la fecha en el huso horario local, que es lo que el usuario espera.
-function parseLocalDate(isoDate: string): Date {
+export function parseLocalDate(isoDate: string): Date {
   const [year, month, day] = isoDate.split('-').map(Number);
   return new Date(year, month - 1, day);
+}
+
+// Inversa de parseLocalDate: arma el string 'yyyy-mm-dd' a partir de los componentes locales
+// del Date, sin pasar por toISOString() (que convierte a UTC y puede correr el dia).
+export function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function nextDay(date: Date): Date {

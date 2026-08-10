@@ -56,7 +56,9 @@ export class ProductList {
     const query = normalize(this.searchQuery().trim());
     const products = this.productsStore.products();
     if (!query) return products;
-    return products.filter((p) => normalize(p.name).includes(query));
+    return products.filter(
+      (p) => normalize(p.name).includes(query) || (p.barcode && normalize(p.barcode).includes(query))
+    );
   });
 
   protected readonly form = this.fb.nonNullable.group({

@@ -1,11 +1,11 @@
 <div class="flex flex-col gap-4">
   <div class="flex justify-between items-center gap-3">
-    <span class="relative w-full max-w-xs">
+    <span class="relative w-full max-w-md">
       <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
       <input
         type="text"
         pInputText
-        placeholder="Buscar por nombre..."
+        placeholder="Buscar por nombre o código de barras..."
         [ngModel]="searchQuery()"
         (ngModelChange)="searchQuery.set($event)"
         class="w-full pl-9"
@@ -99,13 +99,13 @@
 <p-dialog
   [(visible)]="dialogVisible"
   [modal]="true"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '34rem', maxWidth: '95vw' }"
   [header]="editingProduct() ? 'Editar producto' : 'Nuevo producto'"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Nombre</label>
-      <input type="text" pInputText formControlName="name" />
+      <input type="text" pInputText formControlName="name" class="w-full" />
     </div>
 
     <div class="flex flex-col gap-1">
@@ -115,50 +115,60 @@
         pInputText
         formControlName="barcode"
         placeholder="Escaneá el código acá o escribilo a mano"
+        class="w-full"
       />
       <span class="text-xs text-text-secondary">
-        Sin esto no vas a poder buscar el producto escaneándolo en el Punto de Venta.
+        Sin esto no vas a poder buscar el producto escaneándolo en Vender.
       </span>
     </div>
 
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Categoría (opcional)</label>
-      <p-select
-        formControlName="categoryId"
-        [options]="categoriesStore.activeCategories()"
-        optionLabel="name"
-        optionValue="id"
-        [showClear]="true"
-        placeholder="Sin categoría"
-        styleClass="w-full"
-      />
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Categoría (opcional)</label>
+        <p-select
+          formControlName="categoryId"
+          [options]="categoriesStore.activeCategories()"
+          optionLabel="name"
+          optionValue="id"
+          [showClear]="true"
+          placeholder="Sin categoría"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Impuesto (opcional)</label>
+        <p-select
+          formControlName="taxId"
+          [options]="taxesStore.activeTaxes()"
+          optionLabel="name"
+          optionValue="id"
+          [showClear]="true"
+          placeholder="Sin impuesto"
+          styleClass="w-full"
+        />
+      </div>
     </div>
+    <span class="text-xs text-text-secondary -mt-2">
+      El precio de abajo ya incluye el impuesto elegido — no se suma nada al cobrar.
+    </span>
 
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Impuesto (opcional)</label>
-      <p-select
-        formControlName="taxId"
-        [options]="taxesStore.activeTaxes()"
-        optionLabel="name"
-        optionValue="id"
-        [showClear]="true"
-        placeholder="Sin impuesto"
-        styleClass="w-full"
-      />
-      <span class="text-xs text-text-secondary">
-        El precio de abajo ya incluye este impuesto — no se suma nada al cobrar.
-      </span>
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Tipo de venta</label>
-      <p-select
-        formControlName="saleType"
-        [options]="saleTypeOptions"
-        optionLabel="label"
-        optionValue="value"
-        styleClass="w-full"
-      />
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Tipo de venta</label>
+        <p-select
+          formControlName="saleType"
+          [options]="saleTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Controla stock</label>
+        <div class="flex items-center h-10">
+          <p-toggleswitch formControlName="trackStock" />
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-3">
@@ -170,11 +180,6 @@
         <label class="text-sm text-text-secondary">Costo</label>
         <p-inputnumber formControlName="cost" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
       </div>
-    </div>
-
-    <div class="flex items-center justify-between">
-      <label class="text-sm text-text-secondary">Controla stock</label>
-      <p-toggleswitch formControlName="trackStock" />
     </div>
 
     @if (!editingProduct() && form.controls.trackStock.value) {

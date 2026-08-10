@@ -41,24 +41,30 @@
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
     <div class="flex flex-col gap-1">
       <label for="dateFrom" class="text-xs text-text-secondary">Desde</label>
-      <input
-        id="dateFrom"
-        type="date"
-        [ngModel]="store.dateFrom()"
-        (ngModelChange)="store.setDateFrom($event)"
-        [max]="store.dateTo() ?? undefined"
-        class="border border-border rounded-lg px-3 py-2 text-sm bg-card text-text"
+      <p-datepicker
+        inputId="dateFrom"
+        [ngModel]="dateFromValue()"
+        (ngModelChange)="onDateFromChange($event)"
+        [maxDate]="dateToValue() ?? undefined"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+        appendTo="body"
+        styleClass="w-full"
       />
     </div>
     <div class="flex flex-col gap-1">
       <label for="dateTo" class="text-xs text-text-secondary">Hasta</label>
-      <input
-        id="dateTo"
-        type="date"
-        [ngModel]="store.dateTo()"
-        (ngModelChange)="store.setDateTo($event)"
-        [min]="store.dateFrom() ?? undefined"
-        class="border border-border rounded-lg px-3 py-2 text-sm bg-card text-text"
+      <p-datepicker
+        inputId="dateTo"
+        [ngModel]="dateToValue()"
+        (ngModelChange)="onDateToChange($event)"
+        [minDate]="dateFromValue() ?? undefined"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+        appendTo="body"
+        styleClass="w-full"
       />
     </div>
     <div class="flex flex-col gap-1">
@@ -71,6 +77,7 @@
         optionValue="value"
         [showClear]="true"
         placeholder="Todos"
+        appendTo="body"
         styleClass="w-full"
       />
     </div>

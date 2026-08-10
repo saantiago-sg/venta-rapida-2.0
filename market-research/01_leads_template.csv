@@ -1,0 +1,9 @@
+Nombre,Rubro,Ciudad/Provincia,Fuente,Telefono,Direccion,Problema detectado,Prioridad
+"EJEMPLO - completar manualmente en Google Maps","Kiosco","Rosario, Santa Fe","Buscar en Maps: 'kiosco Rosario centro', filtrar rating <= 3.5, leer ultimas 10-20 resenas","","","Buscar palabras clave: tardan / cola / sistema caido / factura","Alta"
+"EJEMPLO - completar manualmente en Google Maps","Almacen / autoservicio","Cordoba Capital, Cordoba","Centro de Almaceneros y Comerciantes Minoristas de Cordoba (contacto directo via Facebook)","","","Sin verificar - completar tras contacto","Media"
+"EJEMPLO - completar manualmente en Google Maps","Verduleria","San Miguel de Tucuman, Tucuman","Directorio de Empresas de Tucuman (PDF gob. provincial 2015, verificar vigencia antes de llamar)","","","Sin verificar - completar tras contacto","Media"
+"EJEMPLO - completar manualmente en Google Maps","Kiosco 24hs","Neuquen Capital, Neuquen","Padron de habilitaciones municipales 'Habilita Gratis' (solicitar acceso a la Municipalidad)","","","Sin verificar - completar tras contacto","Media"
+"EJEMPLO - completar manualmente en Google Maps","Dietetica","Godoy Cruz, Mendoza","Centro de Almaceneros Minoristas y Afines de Mendoza (tel. 261 425-6259)","","","Sin verificar - completar tras contacto","Baja"
+"EJEMPLO - completar manualmente en Google Maps","Ferreteria","La Plata, Buenos Aires","CAFARA (Camara Argentina de Ferreterias) + busqueda Maps 'ferreteria La Plata'","","","Sin verificar - completar tras contacto","Alta"
+"EJEMPLO - completar manualmente en Google Maps","Minimarket / autoservicio","CABA","Busqueda Maps 'autoservicio' + barrio, filtrar rating <= 3.5","","","Buscar palabras clave: precio mal cobrado / caja lenta","Alta"
+"EJEMPLO - completar manualmente en Google Maps","Kiosco","Salta Capital, Salta","Camara de Comercio e Industria de Salta (tel. +54 387 431-5358)","","","Sin verificar - completar tras contacto","Baja-Media"
