@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -30,6 +31,7 @@ function normalize(text: string): string {
     DecimalPipe,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     ButtonModule,
     DialogModule,
     InputNumberModule,

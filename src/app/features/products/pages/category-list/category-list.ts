@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
@@ -9,16 +10,30 @@ import { CategoriesStore } from '../../state/categories.store';
 
 @Component({
   selector: 'app-category-list',
-  imports: [FormsModule, ButtonModule, InputTextModule, TableModule, ToggleSwitchModule],
+  imports: [FormsModule, ButtonModule, DialogModule, InputTextModule, TableModule, ToggleSwitchModule],
   templateUrl: './category-list.html'
 })
 export class CategoryList {
   protected readonly store = inject(CategoriesStore);
+
+  protected readonly searchQuery = signal('');
+  protected readonly dialogVisible = signal(false);
   protected readonly newCategoryName = signal('');
   protected readonly saving = signal(false);
 
+  protected readonly filteredCategories = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.store.categories();
+    return this.store.categories().filter((c) => c.name.toLowerCase().includes(q));
+  });
+
   constructor() {
     this.store.load();
+  }
+
+  protected openCreate(): void {
+    this.newCategoryName.set('');
+    this.dialogVisible.set(true);
   }
 
   protected async onCreate(): Promise<void> {
@@ -28,7 +43,7 @@ export class CategoryList {
     this.saving.set(true);
     try {
       await this.store.create(name);
-      this.newCategoryName.set('');
+      this.dialogVisible.set(false);
     } finally {
       this.saving.set(false);
     }

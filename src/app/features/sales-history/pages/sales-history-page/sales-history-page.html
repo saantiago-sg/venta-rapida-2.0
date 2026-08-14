@@ -211,6 +211,8 @@
         <span class="tabular-nums">{{ sale.total | number: '1.2-2' }}</span>
       </div>
 
+      <p-button label="Imprimir comprobante" icon="pi pi-print" [outlined]="true" styleClass="w-full" (onClick)="onPrint()" />
+
       @if (sale.status === 'cancelled') {
         <p class="text-sm text-error">Cancelada{{ sale.cancelReason ? ': ' + sale.cancelReason : '' }}</p>
       } @else if (canCancelSales()) {
@@ -219,9 +221,13 @@
           @if (errorMessage()) {
             <p class="text-sm text-error">{{ errorMessage() }}</p>
           }
-          <p-button label="Cancelar venta" severity="danger" [loading]="cancelling()" (onClick)="onCancel()" />
+          <p-button label="Cancelar venta" severity="danger" [loading]="cancelling()" (onClick)="onCancelClick()" />
         </div>
       }
     </div>
   }
 </p-dialog>
+
+<p-confirmdialog />
+
+<app-ticket-print [data]="ticketData()" />

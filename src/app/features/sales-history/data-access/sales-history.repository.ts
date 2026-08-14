@@ -7,6 +7,8 @@ interface SaleRow {
   id: string;
   sale_number: number;
   status: SaleStatus;
+  subtotal: number;
+  discount_amount: number;
   total: number;
   created_at: string;
   cancel_reason: string | null;
@@ -38,6 +40,8 @@ function mapSale(row: SaleRow): SaleListItem {
     paymentMethodIsCash: first(row.payment_methods)?.is_cash ?? false,
     deliveryTypeName: first(row.delivery_types)?.name ?? '',
     status: row.status,
+    subtotal: row.subtotal,
+    discountAmount: row.discount_amount,
     total: row.total,
     createdAt: row.created_at,
     cancelReason: row.cancel_reason
@@ -52,7 +56,7 @@ export class SalesHistoryRepository {
     let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name)'
+        'id, sale_number, status, subtotal, discount_amount, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });

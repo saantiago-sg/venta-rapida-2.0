@@ -53,7 +53,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Administración',
     items: [
       { label: 'Clientes', path: '/clientes', icon: 'pi pi-users' },
-      { label: 'Reportes', path: '/reportes', icon: 'pi pi-chart-bar' },
+      { label: 'Rendimiento', path: '/reportes', icon: 'pi pi-chart-bar' },
       { label: 'Configuración', path: '/configuracion', icon: 'pi pi-cog' }
     ]
   }

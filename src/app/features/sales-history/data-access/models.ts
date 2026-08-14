@@ -9,6 +9,8 @@ export interface SaleListItem {
   paymentMethodIsCash: boolean;
   deliveryTypeName: string;
   status: SaleStatus;
+  subtotal: number;
+  discountAmount: number;
   total: number;
   createdAt: string;
   cancelReason: string | null;

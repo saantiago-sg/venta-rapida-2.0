@@ -120,6 +120,23 @@ body {
 .enter-fade-d2 { animation: enter-fade 0.5s ease-out both; animation-delay: 200ms; }
 .enter-fade-d3 { animation: enter-fade 0.5s ease-out both; animation-delay: 320ms; }
 
+/* window.print() imprime toda la pagina -- esto aisla el comprobante (app-ticket-print) como
+   lo unico visible al imprimir, sin importar donde este montado en el DOM. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ticket-print-root,
+  .ticket-print-root * {
+    visibility: visible;
+  }
+  .ticket-print-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+}
+
 /* Blobs decorativos flotando en el panel del login -- mesh gradient animado en vez de un
    degrade estatico. Movimiento lento y sutil a proposito, no debe competir con el formulario. */
 @keyframes blob-float-a {

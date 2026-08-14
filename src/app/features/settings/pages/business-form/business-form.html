@@ -62,7 +62,9 @@
       <label class="text-sm font-medium text-text">Descuento por pago en efectivo</label>
       <p class="text-xs text-text-secondary mt-0.5">Se aplica solo cuando el cliente paga con un medio marcado como efectivo.</p>
     </div>
-    <p-inputnumber formControlName="cashDiscountPercentage" suffix="%" [min]="0" [max]="100" styleClass="w-40" />
+    <div class="w-40 min-w-0">
+      <p-inputnumber formControlName="cashDiscountPercentage" locale="es-AR" suffix="%" [min]="0" [max]="100" styleClass="w-full" />
+    </div>
   </div>
 
   <div class="flex justify-end pt-6 mt-2 border-t border-border">

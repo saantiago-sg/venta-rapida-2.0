@@ -1,0 +1,65 @@
+@if (data(); as sale) {
+  <div class="ticket-print-root hidden print:block font-mono text-[11px] leading-snug text-black bg-white w-[80mm] p-2">
+    <div class="text-center font-bold text-sm">{{ sale.businessName }}</div>
+    @if (sale.businessAddress) {
+      <div class="text-center">{{ sale.businessAddress }}</div>
+    }
+    @if (sale.businessPhone) {
+      <div class="text-center">Tel: {{ sale.businessPhone }}</div>
+    }
+
+    <div class="border-t border-dashed border-black my-2"></div>
+
+    <div class="flex justify-between">
+      <span>Venta #{{ sale.saleNumber }}</span>
+      <span>{{ sale.date | date: 'dd/MM/yy HH:mm' }}</span>
+    </div>
+    @if (sale.customerName) {
+      <div>Cliente: {{ sale.customerName }}</div>
+    }
+
+    <div class="border-t border-dashed border-black my-2"></div>
+
+    @for (item of sale.items; track item.productName + $index) {
+      <div>{{ item.productName }}</div>
+      <div class="flex justify-between">
+        <span>{{ item.quantity }} x {{ item.unitPrice | number: '1.2-2' }}</span>
+        <span>{{ item.subtotal | number: '1.2-2' }}</span>
+      </div>
+    }
+
+    <div class="border-t border-dashed border-black my-2"></div>
+
+    <div class="flex justify-between">
+      <span>Subtotal</span>
+      <span>{{ sale.subtotal | number: '1.2-2' }}</span>
+    </div>
+    @if (sale.discountAmount > 0) {
+      <div class="flex justify-between">
+        <span>Descuento</span>
+        <span>-{{ sale.discountAmount | number: '1.2-2' }}</span>
+      </div>
+    }
+    <div class="flex justify-between font-bold text-sm mt-1">
+      <span>TOTAL</span>
+      <span>{{ sale.total | number: '1.2-2' }}</span>
+    </div>
+
+    <div class="border-t border-dashed border-black my-2"></div>
+
+    <div class="flex justify-between">
+      <span>Pago</span>
+      <span>{{ sale.paymentMethodName }}</span>
+    </div>
+    @if (sale.changeGiven !== null && sale.changeGiven > 0) {
+      <div class="flex justify-between">
+        <span>Vuelto</span>
+        <span>{{ sale.changeGiven | number: '1.2-2' }}</span>
+      </div>
+    }
+
+    <div class="border-t border-dashed border-black my-2"></div>
+
+    <div class="text-center">¡Gracias por su compra!</div>
+  </div>
+}

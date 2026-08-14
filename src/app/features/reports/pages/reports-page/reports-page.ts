@@ -1,6 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 
 import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
@@ -15,7 +17,7 @@ const PRESET_OPTIONS: { label: string; value: ReportRangePreset }[] = [
 
 @Component({
   selector: 'app-reports-page',
-  imports: [DecimalPipe, ButtonModule, TableModule, CountUpDirective],
+  imports: [DecimalPipe, FormsModule, ButtonModule, DatePickerModule, TableModule, CountUpDirective],
   templateUrl: './reports-page.html'
 })
 export class ReportsPage {
@@ -28,6 +30,14 @@ export class ReportsPage {
 
   protected onPresetChange(preset: ReportRangePreset): void {
     this.store.setPreset(preset);
+  }
+
+  protected onDateFromChange(date: Date | null): void {
+    this.store.setDateFrom(date);
+  }
+
+  protected onDateToChange(date: Date | null): void {
+    this.store.setDateTo(date);
   }
 
   protected onExportCsv(): void {

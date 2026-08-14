@@ -58,7 +58,12 @@ export const appConfig: ApplicationConfig = {
         upload: 'Subir',
         cancel: 'Cancelar',
         accept: 'Sí',
-        reject: 'No'
+        reject: 'No',
+        emptyMessage: 'No hay opciones',
+        emptyFilterMessage: 'No se encontraron resultados',
+        emptySearchMessage: 'No se encontraron resultados',
+        emptySelectionMessage: 'No hay elementos seleccionados',
+        noFilter: 'Sin filtro'
       }
     })
   ]

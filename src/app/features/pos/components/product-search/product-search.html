@@ -1,38 +1,108 @@
-<div class="flex flex-col gap-3 h-full">
-  <input
-    #searchInput
-    type="text"
-    pInputText
-    placeholder="Buscar por nombre o escanear código de barras..."
-    [ngModel]="query()"
-    (ngModelChange)="query.set($event); notFound.set(false)"
-    (keyup.enter)="onBarcodeEnter()"
-    class="w-full"
-    autofocus
-  />
+<div class="flex flex-col gap-4 h-full">
+  <span class="relative">
+    <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary text-sm pointer-events-none"></i>
+    <input
+      #searchInput
+      type="text"
+      pInputText
+      placeholder="Buscar por nombre o escanear código de barras..."
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event); notFound.set(false)"
+      (keyup.enter)="onBarcodeEnter()"
+      class="w-full pl-10 pr-4 py-2.5 bg-card-hover border-transparent rounded-xl transition-shadow focus:bg-card focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+      autofocus
+    />
+  </span>
 
   @if (notFound()) {
-    <p class="text-sm text-error">No se encontró ningún producto con ese código.</p>
+    <p class="text-sm text-error -mt-2">No se encontró ningún producto con ese código.</p>
   }
 
-  <div class="flex-1 overflow-auto grid grid-cols-2 sm:grid-cols-3 gap-2 content-start">
+  <div class="flex-1 overflow-auto grid grid-cols-2 sm:grid-cols-3 gap-2.5 content-start">
     @for (product of results(); track product.id) {
       <button
         animate.enter="enter-fade"
         type="button"
         (click)="onSelect(product.id)"
-        class="text-left bg-card border border-border rounded-lg p-3 hover:bg-card-hover hover:border-brand/40 transition-colors flex flex-col gap-1"
+        class="group text-left bg-card border border-border rounded-lg p-3 flex flex-col gap-2.5 transition-colors duration-150 hover:bg-brand/5 hover:border-brand/40 active:bg-brand/10"
       >
-        <span class="text-sm font-medium truncate">{{ product.name }}</span>
-        <span class="text-xs text-text-secondary tabular-nums">
-          {{ product.price | number: '1.2-2' }}{{ product.saleType === 'weight' ? ' / kg' : '' }}
+        <span
+          class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand/10 text-brand text-xs font-bold shrink-0 transition-colors group-hover:bg-brand group-hover:text-white"
+        >
+          {{ product.name.charAt(0) | uppercase }}
+        </span>
+        <span class="flex flex-col gap-0.5 min-w-0">
+          <span class="flex items-center gap-1.5 tabular-nums">
+            <span class="text-base font-bold text-text">{{ product.price | number: '1.2-2' }}</span>
+            <span class="text-[10px] font-semibold text-text-secondary bg-card-hover rounded px-1 py-0.5 leading-none">
+              / {{ product.saleType === 'weight' ? 'kg' : 'u' }}
+            </span>
+          </span>
+          <span class="text-sm font-medium text-text-secondary truncate">{{ product.name }}</span>
+          @if (product.barcode) {
+            <span class="text-[10px] font-mono text-text-secondary/60 truncate">{{ product.barcode }}</span>
+          }
         </span>
       </button>
     } @empty {
-      <div class="col-span-full flex flex-col items-center gap-2 py-10 text-center">
-        <i class="pi pi-search text-2xl text-text-secondary"></i>
+      <div class="col-span-full flex flex-col items-center gap-3 py-14 text-center">
+        <span class="flex items-center justify-center w-12 h-12 rounded-full bg-brand/10 text-brand">
+          <i class="pi pi-search text-lg"></i>
+        </span>
         <p class="text-sm text-text-secondary">No se encontraron productos.</p>
       </div>
     }
   </div>
 </div>
+
+<p-dialog
+  [visible]="weighingProduct() !== null"
+  (visibleChange)="onCancelWeight()"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '30rem', maxWidth: '92vw' }"
+  [contentStyle]="{ overflow: 'hidden' }"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand/10 text-brand shrink-0">
+        <i class="pi pi-box text-sm"></i>
+      </span>
+      <span class="font-semibold truncate">{{ weighingProduct()?.name }}</span>
+    </div>
+  </ng-template>
+
+  @if (weighingProduct(); as product) {
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-text-secondary">
+        Precio: <span class="font-semibold text-text">{{ product.price | number: '1.2-2' }}</span> / kg
+      </p>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-text-secondary">Peso (g)</label>
+        <p-inputnumber
+          [ngModel]="weightInput()"
+          (ngModelChange)="weightInput.set($event)"
+          (keyup.enter)="onConfirmWeight()"
+          locale="es-AR"
+          [min]="0"
+          [maxFractionDigits]="0"
+          suffix=" g"
+          styleClass="w-full"
+          inputStyleClass="text-center text-2xl font-semibold py-3"
+          autofocus
+        />
+        <p class="text-xs text-text-secondary text-center">Enter para confirmar · Esc para cancelar</p>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancelar" [outlined]="true" (onClick)="onCancelWeight()" />
+        <p-button
+          label="Agregar al pedido"
+          [disabled]="!weightInput() || weightInput()! <= 0"
+          (onClick)="onConfirmWeight()"
+        />
+      </div>
+    </div>
+  }
+</p-dialog>

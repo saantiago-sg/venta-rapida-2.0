@@ -1,7 +1,7 @@
 <div class="h-full flex flex-col">
-  <h1 class="text-xl font-semibold tracking-tight mb-4">Vender</h1>
+  <h1 class="text-xl font-semibold tracking-tight mb-5">Vender</h1>
 
-  <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_18rem] gap-4 min-h-0">
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_18rem] gap-5 min-h-0">
     <div class="surface-card bg-card border border-border rounded-xl p-5 min-h-0">
       <app-product-search />
     </div>
@@ -10,7 +10,7 @@
       <app-cart />
     </div>
 
-    <div class="surface-card bg-card border border-border rounded-xl p-5 overflow-auto">
+    <div class="surface-card bg-card border border-border rounded-xl p-6 overflow-auto">
       <app-payment-panel (saleConfirmed)="onSaleConfirmed($event)" />
     </div>
   </div>
@@ -30,7 +30,12 @@
           <span class="tabular-nums">{{ sale.changeGiven | number: '1.2-2' }}</span>
         </div>
       }
-      <p-button label="Cerrar" styleClass="w-full mt-2" (onClick)="confirmationVisible.set(false)" />
+      <div class="flex gap-2 mt-2">
+        <p-button label="Reimprimir" icon="pi pi-print" [outlined]="true" styleClass="flex-1" (onClick)="onPrint()" />
+        <p-button label="Cerrar" styleClass="flex-1" (onClick)="confirmationVisible.set(false)" />
+      </div>
     </div>
   }
 </p-dialog>
+
+<app-ticket-print [data]="lastSale()" />

@@ -1,7 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,6 +13,8 @@ import { TagModule } from 'primeng/tag';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
+import { TicketData, TicketPrint } from '../../../../shared/components/ticket-print/ticket-print';
+import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { PaymentMethodsStore } from '../../../settings/state/payment-methods.store';
 import { SaleListItem } from '../../data-access/models';
 import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/sales-history.store';
@@ -22,20 +26,25 @@ import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/
     DecimalPipe,
     FormsModule,
     ButtonModule,
+    ConfirmDialogModule,
     DatePickerModule,
     DialogModule,
     InputTextModule,
     SelectModule,
     TableModule,
     TagModule,
-    CountUpDirective
+    CountUpDirective,
+    TicketPrint
   ],
+  providers: [ConfirmationService],
   templateUrl: './sales-history-page.html'
 })
 export class SalesHistoryPage {
   protected readonly store = inject(SalesHistoryStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly paymentMethodsStore = inject(PaymentMethodsStore);
+  private readonly businessSettingsStore = inject(BusinessSettingsStore);
+  private readonly confirmationService = inject(ConfirmationService);
 
   // El datepicker de PrimeNG trabaja con Date, pero el store guarda 'yyyy-mm-dd' (mismo
   // formato que ya esperan load()/repository) -- se convierte acá en los dos sentidos.
@@ -69,9 +78,35 @@ export class SalesHistoryPage {
       .map((m) => ({ label: m.name, value: m.id }))
   );
 
+  protected readonly ticketData = computed<TicketData | null>(() => {
+    const sale = this.selectedSale();
+    if (!sale) return null;
+    const business = this.businessSettingsStore.business();
+    return {
+      businessName: business?.name ?? '',
+      businessAddress: business?.address ?? null,
+      businessPhone: business?.phone ?? null,
+      saleNumber: sale.saleNumber,
+      date: new Date(sale.createdAt),
+      customerName: sale.customerName,
+      paymentMethodName: sale.paymentMethodName,
+      items: this.store.selectedItems().map((item) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal
+      })),
+      subtotal: sale.subtotal,
+      discountAmount: sale.discountAmount,
+      total: sale.total,
+      changeGiven: null
+    };
+  });
+
   constructor() {
     this.store.load();
     this.paymentMethodsStore.load();
+    this.businessSettingsStore.load();
   }
 
   protected canCancelSales(): boolean {
@@ -86,7 +121,24 @@ export class SalesHistoryPage {
     this.store.loadItems(sale.id);
   }
 
-  protected async onCancel(): Promise<void> {
+  protected onPrint(): void {
+    window.print();
+  }
+
+  protected onCancelClick(): void {
+    this.confirmationService.confirm({
+      header: 'Cancelar venta',
+      message: '¿Seguro que querés cancelar esta venta? Esta acción no se puede deshacer.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cancelar',
+      rejectLabel: 'No',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => this.onCancel()
+    });
+  }
+
+  private async onCancel(): Promise<void> {
     const sale = this.selectedSale();
     if (!sale) return;
 

@@ -1,24 +1,56 @@
 <div class="flex items-center justify-between mb-6">
-  <h1 class="text-xl font-semibold tracking-tight">Reportes</h1>
+  <h1 class="text-xl font-semibold tracking-tight">Rendimiento</h1>
   <div class="flex gap-2">
     <p-button label="Exportar CSV" icon="pi pi-file" [outlined]="true" (onClick)="onExportCsv()" />
     <p-button label="Exportar PDF" icon="pi pi-print" [outlined]="true" (onClick)="onExportPdf()" />
   </div>
 </div>
 
-<div class="flex gap-2 mb-6">
-  @for (option of presetOptions; track option.value) {
-    <button
-      type="button"
-      (click)="onPresetChange(option.value)"
-      class="px-3 py-1.5 rounded-lg text-sm border border-border transition-colors hover:opacity-90"
-      [class.bg-brand]="store.preset() === option.value"
-      [class.text-white]="store.preset() === option.value"
-      [class.text-text-secondary]="store.preset() !== option.value"
-    >
-      {{ option.label }}
-    </button>
-  }
+<div class="flex flex-wrap items-end gap-4 mb-6">
+  <div class="flex gap-2">
+    @for (option of presetOptions; track option.value) {
+      <button
+        type="button"
+        (click)="onPresetChange(option.value)"
+        class="px-3 py-1.5 rounded-lg text-sm border border-border transition-colors hover:opacity-90"
+        [class.bg-brand]="store.preset() === option.value"
+        [class.text-white]="store.preset() === option.value"
+        [class.text-text-secondary]="store.preset() !== option.value"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+  <div class="flex items-end gap-3">
+    <div class="flex flex-col gap-1">
+      <label for="reportDateFrom" class="text-xs text-text-secondary">Desde</label>
+      <p-datepicker
+        inputId="reportDateFrom"
+        [ngModel]="store.dateFrom()"
+        (ngModelChange)="onDateFromChange($event)"
+        [maxDate]="store.dateTo()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        iconDisplay="input"
+        appendTo="body"
+        styleClass="w-40"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="reportDateTo" class="text-xs text-text-secondary">Hasta</label>
+      <p-datepicker
+        inputId="reportDateTo"
+        [ngModel]="store.dateTo()"
+        (ngModelChange)="onDateToChange($event)"
+        [minDate]="store.dateFrom()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        iconDisplay="input"
+        appendTo="body"
+        styleClass="w-40"
+      />
+    </div>
+  </div>
 </div>
 
 <div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

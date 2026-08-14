@@ -52,34 +52,47 @@ export class PosStore {
     return received - this.total();
   });
 
+  // Habilita el boton que abre el popup de pago -- todavia no hace falta un medio de pago
+  // elegido, eso se elige recien adentro del popup.
+  readonly canStartPayment = computed(
+    () => this._cart().some((item) => item.quantity > 0) && this._deliveryTypeId() !== null && !this._processing()
+  );
+
   readonly canConfirm = computed(
     () =>
-      this._cart().length > 0 &&
+      this._cart().some((item) => item.quantity > 0) &&
       this._paymentMethodId() !== null &&
       this._deliveryTypeId() !== null &&
       !this._processing()
   );
 
-  addToCart(product: Product): void {
+  addToCart(product: Product, quantity = 1): void {
     this._cart.update((items) => {
       const existing = items.find((i) => i.product.id === product.id);
       if (existing && product.saleType === 'unit') {
         return items.map((i) => (i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i));
       }
-      return [...items, { product, quantity: 1 }];
+      return [...items, { product, quantity }];
     });
   }
 
+  // No se saca el item del carrito solo por llegar a 0/vacio -- pasa todo el tiempo al
+  // borrar el campo para retipear un peso nuevo, y que el item "desaparezca" en el medio
+  // de esa edicion es confuso. Sacarlo del carrito queda reservado al boton de borrar
+  // explicito; los items en 0 simplemente no suman al total ni se mandan a confirmar.
   updateQuantity(productId: string, quantity: number): void {
-    if (quantity <= 0) {
-      this.removeFromCart(productId);
-      return;
-    }
-    this._cart.update((items) => items.map((i) => (i.product.id === productId ? { ...i, quantity } : i)));
+    const safeQuantity = Math.max(0, quantity || 0);
+    this._cart.update((items) =>
+      items.map((i) => (i.product.id === productId ? { ...i, quantity: safeQuantity } : i))
+    );
   }
 
   removeFromCart(productId: string): void {
     this._cart.update((items) => items.filter((i) => i.product.id !== productId));
+  }
+
+  clearCart(): void {
+    this._cart.set([]);
   }
 
   setPaymentMethod(id: string | null): void {
@@ -111,7 +124,9 @@ export class PosStore {
     try {
       const result = await this.saleRepository.processSale({
         businessId,
-        items: this._cart().map((item) => ({ product_id: item.product.id, quantity: item.quantity })),
+        items: this._cart()
+          .filter((item) => item.quantity > 0)
+          .map((item) => ({ product_id: item.product.id, quantity: item.quantity })),
         paymentMethodId,
         deliveryTypeId,
         customerId: this._customerId(),

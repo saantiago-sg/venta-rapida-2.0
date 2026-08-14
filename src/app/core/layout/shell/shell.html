@@ -16,8 +16,8 @@
             @for (item of section.items; track item.path) {
               <a
                 [routerLink]="item.path"
-                routerLinkActive="bg-sidebar-active text-sidebar-text before:h-5"
-                class="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-1 before:rounded-full before:bg-brand before:transition-all before:duration-300"
+                routerLinkActive="bg-sidebar-active/60 text-brand font-medium before:h-5"
+                class="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active/60 hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[3px] before:rounded-full before:bg-brand before:transition-all before:duration-300"
               >
                 <i [class]="item.icon"></i>
                 {{ item.label }}

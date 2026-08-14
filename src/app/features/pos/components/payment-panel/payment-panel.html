@@ -9,19 +9,7 @@
       optionValue="id"
       [showClear]="true"
       placeholder="Consumidor final"
-      styleClass="w-full"
-    />
-  </div>
-
-  <div class="flex flex-col gap-1">
-    <label class="text-xs text-text-secondary">Medio de pago</label>
-    <p-select
-      [ngModel]="store.paymentMethodId()"
-      (ngModelChange)="store.setPaymentMethod($event)"
-      [options]="activePaymentMethods()"
-      optionLabel="name"
-      optionValue="id"
-      placeholder="Elegir medio de pago"
+      appendTo="body"
       styleClass="w-full"
     />
   </div>
@@ -35,56 +23,123 @@
       optionLabel="name"
       optionValue="id"
       placeholder="Elegir tipo de entrega"
+      appendTo="body"
       styleClass="w-full"
     />
   </div>
 
-  @if (store.isCashPayment()) {
-    <div class="flex flex-col gap-1">
-      <label class="text-xs text-text-secondary">Recibido en efectivo</label>
-      <p-inputnumber
-        [ngModel]="store.cashReceived()"
-        (ngModelChange)="store.setCashReceived($event)"
-        mode="decimal"
-        [minFractionDigits]="2"
-        [min]="0"
-        styleClass="w-full"
-      />
-    </div>
-  }
-
-  <div class="border-t border-border pt-3 flex flex-col gap-1">
+  <div class="bg-card-hover rounded-xl border-t-2 border-dashed border-border p-3.5 flex flex-col gap-1.5">
     <div class="flex justify-between text-sm text-text-secondary">
       <span>Subtotal</span>
       <span class="tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</span>
     </div>
-    @if (store.discount() > 0) {
-      <div class="flex justify-between text-sm text-success">
-        <span>Descuento efectivo</span>
-        <span class="tabular-nums">-{{ store.discount() | number: '1.2-2' }}</span>
-      </div>
-    }
-    <div class="flex justify-between text-lg font-semibold tracking-tight">
-      <span>Total</span>
-      <span class="tabular-nums">{{ store.total() | number: '1.2-2' }}</span>
+    <div class="flex justify-between items-baseline text-2xl font-semibold tracking-tight pt-1">
+      <span class="text-sm font-medium text-text-secondary">Total</span>
+      <span class="tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</span>
     </div>
-    @if (store.changeDue(); as change) {
-      <div class="flex justify-between text-sm" [class.text-error]="change < 0">
-        <span>Vuelto</span>
-        <span class="tabular-nums">{{ change | number: '1.2-2' }}</span>
-      </div>
-    }
   </div>
 
-  @if (errorMessage()) {
+  @if (errorMessage() && !payDialogVisible()) {
     <p class="text-sm text-error">{{ errorMessage() }}</p>
   }
 
-  <p-button
-    label="Confirmar venta"
-    styleClass="w-full"
-    [loading]="store.processing()"
-    [disabled]="!store.canConfirm()"
-    (onClick)="onConfirm()"
-  />
+  <p-button label="Cobrar" icon="pi pi-wallet" styleClass="w-full" [disabled]="!store.canStartPayment()" (onClick)="openPayment()" />
 </div>
+
+<p-dialog
+  [(visible)]="payDialogVisible"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '26rem' }"
+  [header]="payStep() === 'method' ? 'Pagar' : 'Efectivo'"
+  (onHide)="closePayment()"
+>
+  @if (payStep() === 'method') {
+    <div class="flex flex-col gap-5">
+      <div class="text-center">
+        <p class="text-xs text-text-secondary mb-1">Total a cobrar</p>
+        <p class="text-4xl font-semibold tracking-tight tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        @for (method of activePaymentMethods(); track method.id) {
+          <button
+            type="button"
+            (click)="onSelectMethod(method.id)"
+            class="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-xl transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_8px_20px_-8px_rgba(36,30,24,0.15)]"
+          >
+            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-brand/10 text-brand">
+              <i class="pi text-lg" [class]="method.isCash ? 'pi-wallet' : 'pi-credit-card'"></i>
+            </span>
+            <span class="text-sm font-medium">{{ method.name }}</span>
+          </button>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="text-sm text-error text-center">{{ errorMessage() }}</p>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-col gap-5">
+      <button type="button" (click)="backToMethod()" class="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text transition-colors -mb-2 w-fit">
+        <i class="pi pi-arrow-left text-xs"></i>
+        Cambiar medio de pago
+      </button>
+
+      <div class="text-center">
+        <p class="text-xs text-text-secondary mb-1">Total a cobrar</p>
+        <p class="text-4xl font-semibold tracking-tight tabular-nums">{{ store.total() | number: '1.2-2' }}</p>
+        @if (store.discount() > 0) {
+          <p class="text-xs text-success mt-1">Incluye descuento por efectivo de {{ store.discount() | number: '1.2-2' }}</p>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-text-secondary">Recibido</label>
+        <p-inputnumber
+          [ngModel]="store.cashReceived()"
+          (ngModelChange)="store.setCashReceived($event)"
+          mode="decimal"
+          locale="es-AR"
+          [minFractionDigits]="2"
+          [min]="0"
+          styleClass="w-full"
+          inputStyleClass="text-lg font-semibold"
+          autofocus
+        />
+      </div>
+
+      <div class="flex gap-2">
+        @for (amount of quickAmounts(); track amount) {
+          <button
+            type="button"
+            (click)="onQuickAmount(amount)"
+            class="flex-1 py-2 rounded-lg text-sm font-medium border border-border bg-card-hover hover:bg-brand/10 hover:border-brand/40 hover:text-brand transition-colors tabular-nums"
+          >
+            {{ amount | number: '1.0-0' }}
+          </button>
+        }
+      </div>
+
+      @if (store.changeDue(); as change) {
+        <div class="flex justify-between items-baseline bg-card-hover rounded-xl p-3.5" [class.text-error]="change < 0">
+          <span class="text-sm font-medium" [class.text-text-secondary]="change >= 0">{{ change < 0 ? 'Falta' : 'Vuelto' }}</span>
+          <span class="text-xl font-semibold tabular-nums">{{ (change < 0 ? -change : change) | number: '1.2-2' }}</span>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <p class="text-sm text-error">{{ errorMessage() }}</p>
+      }
+
+      <p-button
+        label="Confirmar"
+        styleClass="w-full"
+        [loading]="store.processing()"
+        [disabled]="(store.changeDue() ?? -1) < 0"
+        (onClick)="onCashConfirm()"
+      />
+    </div>
+  }
+</p-dialog>

@@ -146,6 +146,14 @@
           placeholder="Sin impuesto"
           styleClass="w-full"
         />
+        @if (taxesStore.activeTaxes().length === 0) {
+          <span class="text-xs text-text-secondary">
+            No hay impuestos cargados ·
+            <a [routerLink]="['/configuracion']" [queryParams]="{ section: 'impuestos' }" class="text-brand hover:underline">
+              Configuralos
+            </a>
+          </span>
+        }
       </div>
     </div>
     <span class="text-xs text-text-secondary -mt-2">
@@ -174,18 +182,18 @@
     <div class="grid grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Precio</label>
-        <p-inputnumber formControlName="price" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
+        <p-inputnumber formControlName="price" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Costo</label>
-        <p-inputnumber formControlName="cost" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
+        <p-inputnumber formControlName="cost" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
       </div>
     </div>
 
     @if (!editingProduct() && form.controls.trackStock.value) {
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Stock inicial</label>
-        <p-inputnumber formControlName="initialStock" styleClass="w-full" />
+        <p-inputnumber formControlName="initialStock" locale="es-AR" styleClass="w-full" />
       </div>
     }
 
