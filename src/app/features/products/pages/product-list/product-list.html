@@ -35,6 +35,11 @@
               <i class="pi pi-box text-xs"></i>
             </span>
             {{ product.name }}
+            @if (product.isCombo) {
+              <span class="inline-flex items-center rounded-full bg-brand/10 text-brand px-2 py-0.5 text-[10px] font-medium">
+                Combo
+              </span>
+            }
           </div>
         </td>
         <td>
@@ -64,8 +69,12 @@
             <span class="tabular-nums">{{ product.price | number: '1.2-2' }}</span>
           </div>
         </td>
-        <td class="text-right tabular-nums" [class.text-error]="product.stock < 0">
-          {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
+        <td class="text-right tabular-nums" [class.text-error]="!product.isCombo && product.stock < 0">
+          @if (product.isCombo) {
+            <span class="text-text-secondary">—</span>
+          } @else {
+            {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
+          }
         </td>
         <td class="text-center">
           <p-toggleswitch [ngModel]="product.active" (ngModelChange)="onToggleActive(product.id, $event)" />
@@ -99,28 +108,30 @@
 <p-dialog
   [(visible)]="dialogVisible"
   [modal]="true"
-  [style]="{ width: '34rem', maxWidth: '95vw' }"
+  [style]="{ width: '720px' }"
+  [contentStyle]="{ 'overflow-x': 'hidden' }"
   [header]="editingProduct() ? 'Editar producto' : 'Nuevo producto'"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Nombre</label>
-      <input type="text" pInputText formControlName="name" class="w-full" />
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-3">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Nombre</label>
+        <input type="text" pInputText formControlName="name" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
+        <input
+          type="text"
+          pInputText
+          formControlName="barcode"
+          placeholder="Escaneá o escribí a mano"
+          class="w-full"
+        />
+      </div>
     </div>
-
-    <div class="flex flex-col gap-1">
-      <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
-      <input
-        type="text"
-        pInputText
-        formControlName="barcode"
-        placeholder="Escaneá el código acá o escribilo a mano"
-        class="w-full"
-      />
-      <span class="text-xs text-text-secondary">
-        Sin esto no vas a poder buscar el producto escaneándolo en Vender.
-      </span>
-    </div>
+    <span class="text-xs text-text-secondary -mt-1.5">
+      Sin código de barras no vas a poder buscar el producto escaneándolo en Vender.
+    </span>
 
     <div class="grid grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
@@ -156,30 +167,86 @@
         }
       </div>
     </div>
-    <span class="text-xs text-text-secondary -mt-2">
+    <span class="text-xs text-text-secondary -mt-1.5">
       El precio de abajo ya incluye el impuesto elegido — no se suma nada al cobrar.
     </span>
 
-    <div class="grid grid-cols-2 gap-3">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm text-text-secondary">Tipo de venta</label>
-        <p-select
-          formControlName="saleType"
-          [options]="saleTypeOptions"
-          optionLabel="label"
-          optionValue="value"
-          styleClass="w-full"
-        />
-      </div>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm text-text-secondary">Controla stock</label>
-        <div class="flex items-center h-10">
-          <p-toggleswitch formControlName="trackStock" />
-        </div>
-      </div>
+    <div class="flex items-center justify-between gap-3 bg-card-hover rounded-lg px-3.5 py-2.5">
+      <label class="text-sm text-text">
+        Es un combo
+        <span class="text-text-secondary font-normal">— agrupa productos y descuenta el stock de cada uno</span>
+      </label>
+      <p-toggleswitch formControlName="isCombo" />
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
+    @if (!form.controls.isCombo.value) {
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Tipo de venta</label>
+          <p-select
+            formControlName="saleType"
+            [options]="saleTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Controla stock</label>
+          <div class="flex items-center h-10">
+            <p-toggleswitch formControlName="trackStock" />
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-2">
+        <label class="text-sm text-text-secondary">Componentes</label>
+        <div class="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1 -mr-1">
+          @for (row of componentsArray.controls; track $index) {
+            <div class="flex items-center gap-2" [formGroup]="row">
+              <p-select
+                formControlName="componentProductId"
+                [options]="componentOptions()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Elegir producto"
+                appendTo="body"
+                styleClass="flex-1"
+              />
+              <p-inputnumber
+                formControlName="quantity"
+                locale="es-AR"
+                [min]="0.001"
+                [style]="{ width: '6rem' }"
+                inputStyleClass="w-full"
+                styleClass="shrink-0"
+              />
+              <button
+                type="button"
+                (click)="removeComponentRow($index)"
+                class="flex items-center justify-center w-8 h-8 rounded-lg text-text-secondary bg-card-hover hover:bg-error/10 hover:text-error transition-colors shrink-0"
+                aria-label="Quitar componente"
+              >
+                <i class="pi pi-times text-sm"></i>
+              </button>
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="addComponentRow()"
+          class="flex items-center gap-1.5 text-sm text-brand hover:underline w-fit"
+        >
+          <i class="pi pi-plus text-xs"></i>
+          Agregar componente
+        </button>
+        @if (componentsError()) {
+          <p class="text-xs text-error">{{ componentsError() }}</p>
+        }
+      </div>
+    }
+
+    <div class="grid gap-3" [class.grid-cols-3]="showInitialStock()" [class.grid-cols-2]="!showInitialStock()">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Precio</label>
         <p-inputnumber formControlName="price" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
@@ -188,13 +255,16 @@
         <label class="text-sm text-text-secondary">Costo</label>
         <p-inputnumber formControlName="cost" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
       </div>
+      @if (showInitialStock()) {
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Stock inicial</label>
+          <p-inputnumber formControlName="initialStock" locale="es-AR" styleClass="w-full" />
+        </div>
+      }
     </div>
 
-    @if (!editingProduct() && form.controls.trackStock.value) {
-      <div class="flex flex-col gap-1">
-        <label class="text-sm text-text-secondary">Stock inicial</label>
-        <p-inputnumber formControlName="initialStock" locale="es-AR" styleClass="w-full" />
-      </div>
+    @if (errorMessage()) {
+      <p class="text-sm text-error">{{ errorMessage() }}</p>
     }
 
     <p-button type="submit" label="Guardar" [loading]="saving()" styleClass="w-full" />

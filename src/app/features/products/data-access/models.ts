@@ -7,6 +7,16 @@ export interface Category {
 
 export type SaleType = 'unit' | 'weight';
 
+// Un combo (ej. "Promo Fernet con Coca") es un producto que se vende como una sola linea a
+// su propio precio, pero no tiene stock propio -- al venderse descuenta stock de sus
+// componentes reales. componentProductName es solo para mostrar en el picker/lista, no se
+// manda al guardar (ver ProductFormValue).
+export interface ProductComponent {
+  componentProductId: string;
+  componentProductName: string;
+  quantity: number;
+}
+
 export interface Product {
   id: string;
   businessId: string;
@@ -23,6 +33,10 @@ export interface Product {
   stock: number;
   trackStock: boolean;
   active: boolean;
+  isCombo: boolean;
+  // Solo se completa cuando se pide explicito (ver ProductRepository.getComponents) --
+  // list() no lo trae para no cargar el listado con datos que casi nunca hacen falta.
+  components: ProductComponent[];
 }
 
 export interface ProductFormValue {
@@ -35,4 +49,6 @@ export interface ProductFormValue {
   cost: number;
   trackStock: boolean;
   initialStock: number;
+  isCombo: boolean;
+  components: { componentProductId: string; quantity: number }[];
 }

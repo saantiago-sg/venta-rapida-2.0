@@ -46,14 +46,13 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-th-large' },
       { label: 'Vender', path: '/pos', icon: 'pi pi-shopping-cart' },
       { label: 'Productos', path: '/productos', icon: 'pi pi-tag' },
-      { label: 'Ventas', path: '/ventas', icon: 'pi pi-receipt' }
+      { label: 'Historial de ventas', path: '/ventas', icon: 'pi pi-receipt' }
     ]
   },
   {
     label: 'Administración',
     items: [
       { label: 'Clientes', path: '/clientes', icon: 'pi pi-users' },
-      { label: 'Rendimiento', path: '/reportes', icon: 'pi pi-chart-bar' },
       { label: 'Configuración', path: '/configuracion', icon: 'pi pi-cog' }
     ]
   }

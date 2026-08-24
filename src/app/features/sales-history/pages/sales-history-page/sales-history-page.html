@@ -1,4 +1,4 @@
-<h1 class="text-xl font-semibold tracking-tight mb-4">Ventas</h1>
+<h1 class="text-xl font-semibold tracking-tight mb-4">Historial de ventas</h1>
 
 <div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
@@ -118,6 +118,7 @@
       <th>Medio de pago</th>
       <th class="text-right">Total</th>
       <th class="w-32">Estado</th>
+      <th class="w-32">Factura</th>
     </tr>
   </ng-template>
   <ng-template pTemplate="body" let-sale>
@@ -140,11 +141,33 @@
           <p-tag severity="danger" value="Cancelada" />
         }
       </td>
+      <td>
+        @switch (sale.invoice?.status) {
+          @case ('issued') {
+            <p-tag severity="success" value="Emitida" />
+          }
+          @case ('queued') {
+            <p-tag severity="info" value="Facturando" />
+          }
+          @case ('error') {
+            <p-tag severity="danger" value="Error" />
+          }
+          @case ('credit_note_pending') {
+            <p-tag severity="warn" value="Falta NC" />
+          }
+          @case ('credit_note_issued') {
+            <p-tag severity="secondary" value="NC emitida" />
+          }
+          @default {
+            <span class="text-xs text-text-secondary">—</span>
+          }
+        }
+      </td>
     </tr>
   </ng-template>
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="6">
+      <td colspan="7">
         @if (store.hasActiveFilters()) {
           <div class="flex flex-col items-center gap-2 py-10 text-center">
             <i class="pi pi-calendar-times text-2xl text-text-secondary"></i>
@@ -212,6 +235,31 @@
       </div>
 
       <p-button label="Imprimir comprobante" icon="pi pi-print" [outlined]="true" styleClass="w-full" (onClick)="onPrint()" />
+
+      @if (sale.invoice; as invoice) {
+        @switch (invoice.status) {
+          @case ('issued') {
+            <p-button label="Ver factura AFIP" icon="pi pi-external-link" [outlined]="true" styleClass="w-full" (onClick)="onViewInvoice(sale)" />
+          }
+          @case ('credit_note_issued') {
+            <p-button label="Ver factura AFIP" icon="pi pi-external-link" [outlined]="true" styleClass="w-full" (onClick)="onViewInvoice(sale)" />
+          }
+          @case ('queued') {
+            <p class="text-xs text-text-secondary text-center">Facturando con AFIP…</p>
+          }
+          @case ('error') {
+            <div class="flex flex-col gap-2">
+              <p class="text-sm text-error">{{ invoice.errorMessage || 'No se pudo facturar esta venta.' }}</p>
+              <p-button label="Reintentar factura" icon="pi pi-refresh" [outlined]="true" [loading]="retryingInvoice()" styleClass="w-full" (onClick)="onRetryInvoice()" />
+            </div>
+          }
+          @case ('credit_note_pending') {
+            <p class="text-xs text-warning">
+              Esta venta ya fue facturada — hay que emitir una Nota de Crédito en TusFacturasAPP.
+            </p>
+          }
+        }
+      }
 
       @if (sale.status === 'cancelled') {
         <p class="text-sm text-error">Cancelada{{ sale.cancelReason ? ': ' + sale.cancelReason : '' }}</p>

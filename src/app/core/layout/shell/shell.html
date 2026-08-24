@@ -1,26 +1,43 @@
 <div class="flex h-screen bg-bg text-text">
   <aside
-    class="shrink-0 overflow-hidden transition-all duration-300"
-    [class]="sidebarOpen() ? 'w-60' : 'w-0'"
+    class="shrink-0 transition-all duration-300"
+    [class]="sidebarOpen() ? 'w-60' : 'w-16'"
   >
-    <div class="w-60 h-full bg-sidebar border-r border-sidebar-border flex flex-col">
-      <div class="h-16 flex items-center px-4">
-        <img src="images/logovr-transparent.png" alt="VentaRapida" class="h-10 w-auto" />
-      </div>
-      <nav class="flex-1 px-2 space-y-4 overflow-auto">
+    <div class="h-full bg-sidebar border-r border-sidebar-border flex flex-col">
+      <a
+        routerLink="/dashboard"
+        class="h-16 flex items-center"
+        [class]="sidebarOpen() ? 'px-4' : 'justify-center'"
+        aria-label="Ir al inicio"
+      >
+        @if (sidebarOpen()) {
+          <img src="images/logovr-transparent.png" alt="VentaRapida" class="h-10 w-auto" />
+        } @else {
+          <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-brand text-white font-bold text-sm">
+            V
+          </span>
+        }
+      </a>
+      <nav class="flex-1 px-2 space-y-4 overflow-auto overflow-x-hidden">
         @for (section of navSections; track section.label) {
           <div class="flex flex-col gap-1">
-            <span class="px-3 text-xs font-semibold text-sidebar-text-secondary/70 uppercase tracking-wide">
-              {{ section.label }}
-            </span>
+            @if (sidebarOpen()) {
+              <span class="px-3 text-xs font-semibold text-sidebar-text-secondary/70 uppercase tracking-wide">
+                {{ section.label }}
+              </span>
+            }
             @for (item of section.items; track item.path) {
               <a
                 [routerLink]="item.path"
+                [title]="sidebarOpen() ? '' : item.label"
                 routerLinkActive="bg-sidebar-active/60 text-brand font-medium before:h-5"
-                class="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active/60 hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[3px] before:rounded-full before:bg-brand before:transition-all before:duration-300"
+                class="relative flex items-center gap-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active/60 hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[3px] before:rounded-full before:bg-brand before:transition-all before:duration-300"
+                [class]="sidebarOpen() ? 'px-3' : 'justify-center px-0'"
               >
                 <i [class]="item.icon"></i>
-                {{ item.label }}
+                @if (sidebarOpen()) {
+                  {{ item.label }}
+                }
               </a>
             }
           </div>
@@ -28,16 +45,20 @@
       </nav>
 
       <div class="border-t border-sidebar-border p-3 flex flex-col gap-2">
-        @if (authStore.userEmail()) {
+        @if (sidebarOpen() && authStore.userEmail()) {
           <span class="px-1 text-xs text-sidebar-text-secondary truncate">{{ authStore.userEmail() }}</span>
         }
         <button
           type="button"
           (click)="onLogout()"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors"
+          [title]="sidebarOpen() ? '' : 'Cerrar sesión'"
+          class="flex items-center gap-2 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors"
+          [class]="sidebarOpen() ? 'px-3' : 'justify-center px-0'"
         >
           <i class="pi pi-sign-out"></i>
-          Cerrar sesión
+          @if (sidebarOpen()) {
+            Cerrar sesión
+          }
         </button>
       </div>
     </div>

@@ -38,3 +38,57 @@
     }
   </div>
 </div>
+
+<h2 class="text-sm font-medium text-text-secondary mt-8 mb-3">Usuarios</h2>
+<div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <p-table [value]="store.users()" [loading]="store.usersLoading()" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Negocio</th>
+        <th class="w-32">Alta</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>
+          <div class="flex items-center gap-2">
+            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-brand/10 text-brand shrink-0">
+              <i class="pi pi-user text-xs"></i>
+            </span>
+            {{ user.fullName || 'Sin nombre' }}
+            @if (user.isSuperAdmin) {
+              <p-tag severity="info" value="Super Admin" />
+            }
+          </div>
+        </td>
+        <td class="text-text-secondary">{{ user.email || '—' }}</td>
+        <td>
+          @if (user.businesses.length > 0) {
+            <div class="flex flex-wrap gap-1">
+              @for (business of user.businesses; track business.name) {
+                <span class="inline-flex items-center gap-1 rounded-full bg-brand/10 text-brand px-2 py-0.5 text-xs font-medium whitespace-nowrap">
+                  {{ business.name }} · {{ roleLabel(business.role) }}
+                </span>
+              }
+            </div>
+          } @else {
+            <span class="text-xs text-text-secondary">Sin negocio</span>
+          }
+        </td>
+        <td class="text-text-secondary text-sm">{{ user.createdAt | date: 'shortDate' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4">
+          <div class="flex flex-col items-center gap-2 py-10 text-center">
+            <i class="pi pi-users text-2xl text-text-secondary"></i>
+            <p class="text-sm text-text-secondary">Todavía no hay usuarios.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

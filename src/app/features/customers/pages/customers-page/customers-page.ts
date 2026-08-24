@@ -3,10 +3,11 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
-import { Customer } from '../../data-access/models';
+import { Customer, DOCUMENT_TYPE_OPTIONS, IVA_CONDITION_OPTIONS } from '../../data-access/models';
 import { CustomersStore } from '../../state/customers.store';
 
 @Component({
@@ -17,6 +18,7 @@ import { CustomersStore } from '../../state/customers.store';
     ButtonModule,
     DialogModule,
     InputTextModule,
+    SelectModule,
     TableModule,
     ToggleSwitchModule
   ],
@@ -25,6 +27,9 @@ import { CustomersStore } from '../../state/customers.store';
 export class CustomersPage {
   private readonly fb = inject(FormBuilder);
   protected readonly store = inject(CustomersStore);
+
+  protected readonly documentTypeOptions = DOCUMENT_TYPE_OPTIONS;
+  protected readonly ivaConditionOptions = IVA_CONDITION_OPTIONS;
 
   protected readonly dialogVisible = signal(false);
   protected readonly saving = signal(false);
@@ -36,7 +41,10 @@ export class CustomersPage {
     email: ['', Validators.email],
     document: [''],
     address: [''],
-    notes: ['']
+    notes: [''],
+    documentType: [null as string | null],
+    ivaCondition: [null as string | null],
+    province: ['']
   });
 
   constructor() {
@@ -45,7 +53,17 @@ export class CustomersPage {
 
   protected openCreate(): void {
     this.editingCustomer.set(null);
-    this.form.reset({ name: '', phone: '', email: '', document: '', address: '', notes: '' });
+    this.form.reset({
+      name: '',
+      phone: '',
+      email: '',
+      document: '',
+      address: '',
+      notes: '',
+      documentType: null,
+      ivaCondition: null,
+      province: ''
+    });
     this.dialogVisible.set(true);
   }
 
@@ -57,7 +75,10 @@ export class CustomersPage {
       email: customer.email ?? '',
       document: customer.document ?? '',
       address: customer.address ?? '',
-      notes: customer.notes ?? ''
+      notes: customer.notes ?? '',
+      documentType: customer.documentType,
+      ivaCondition: customer.ivaCondition,
+      province: customer.province ?? ''
     });
     this.dialogVisible.set(true);
   }
@@ -77,7 +98,10 @@ export class CustomersPage {
         email: raw.email || null,
         document: raw.document || null,
         address: raw.address || null,
-        notes: raw.notes || null
+        notes: raw.notes || null,
+        documentType: raw.documentType,
+        ivaCondition: raw.ivaCondition,
+        province: raw.province || null
       };
       const editing = this.editingCustomer();
       if (editing) {

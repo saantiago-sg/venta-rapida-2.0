@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
+    "facturajs": "npm:facturajs@0.4.3"
+  }
+}

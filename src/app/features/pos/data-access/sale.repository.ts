@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
-import { ProcessSaleInput, SaleResult } from './models';
+import { InvoiceSaleResult, ProcessSaleInput, SaleResult } from './models';
 
 interface SaleRow {
   id: string;
@@ -36,5 +36,13 @@ export class SaleRepository {
       total: row.total,
       changeGiven: row.change_given
     };
+  }
+
+  // Se llama despues de que process_sale ya guardo la venta -- un fallo aca nunca revierte ni
+  // bloquea la venta, solo se le avisa al cajero para que reintente desde Historial de ventas.
+  async invoiceSale(saleId: string): Promise<InvoiceSaleResult> {
+    const { data, error } = await this.supabase.functions.invoke('invoice-sale', { body: { saleId } });
+    if (error) throw error;
+    return (data ?? {}) as InvoiceSaleResult;
   }
 }

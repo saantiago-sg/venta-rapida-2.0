@@ -73,7 +73,7 @@
   </div>
 </div>
 
-<p-dialog [(visible)]="inviteDialogVisible" [modal]="true" [style]="{ width: '26rem' }" header="Invitar empleado">
+<p-dialog [(visible)]="inviteDialogVisible" [modal]="true" appendTo="body" [style]="{ width: '26rem' }" header="Invitar empleado">
   <form [formGroup]="inviteForm" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Email</label>
@@ -110,6 +110,7 @@
 <p-dialog
   [(visible)]="permissionsDialogVisible"
   [modal]="true"
+  appendTo="body"
   [style]="{ width: '22rem' }"
   [header]="'Permisos de ' + (editingEmployee()?.fullName || editingEmployee()?.email)"
 >

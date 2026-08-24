@@ -9,6 +9,7 @@ import { BusinessSettingsStore } from '../../../settings/state/business-settings
 import { Cart } from '../../components/cart/cart';
 import { PaymentPanel } from '../../components/payment-panel/payment-panel';
 import { ProductSearch } from '../../components/product-search/product-search';
+import { PosStore } from '../../state/pos.store';
 
 @Component({
   selector: 'app-pos-page',
@@ -18,6 +19,7 @@ import { ProductSearch } from '../../components/product-search/product-search';
 export class PosPage {
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
   private readonly productsStore = inject(ProductsStore);
+  protected readonly posStore = inject(PosStore);
 
   protected readonly lastSale = signal<TicketData | null>(null);
   protected readonly confirmationVisible = signal(false);

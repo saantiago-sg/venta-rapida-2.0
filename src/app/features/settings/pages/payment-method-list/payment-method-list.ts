@@ -40,4 +40,8 @@ export class PaymentMethodList {
   protected onToggleActive(id: string, active: boolean): void {
     this.store.setActive(id, active);
   }
+
+  protected onToggleInvoicing(id: string, invoicingEnabled: boolean): void {
+    this.store.setInvoicingEnabled(id, invoicingEnabled);
+  }
 }

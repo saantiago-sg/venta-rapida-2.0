@@ -1,0 +1,67 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
+  <div class="mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Facturación electrónica</h3>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Facturar automáticamente</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Emite un comprobante AFIP/ARCA vía TusFacturasAPP en cada venta. Podés excluir medios de
+        pago puntuales (ej. efectivo) desde Configuración &gt; Medios de pago.
+      </p>
+    </div>
+    <p-toggleswitch formControlName="electronicInvoicingEnabled" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Punto de venta AFIP</label>
+      <p class="text-xs text-text-secondary mt-0.5">El número que tenés habilitado en AFIP para facturar.</p>
+    </div>
+    <input type="text" pInputText formControlName="afipPuntoVenta" class="w-full max-w-md" />
+  </div>
+
+  <div class="mt-8 mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Credenciales de TusFacturasAPP</h3>
+    <p class="text-xs text-text-secondary mt-0.5">
+      Se obtienen en tu cuenta de TusFacturasAPP &gt; Mi Espacio de Trabajo &gt; Puntos de Venta.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">API Token</label>
+    </div>
+    <input type="text" pInputText formControlName="tusfacturasApitoken" class="w-full max-w-md" autocomplete="off" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">API Key</label>
+    </div>
+    <input type="text" pInputText formControlName="tusfacturasApikey" class="w-full max-w-md" autocomplete="off" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">User Token</label>
+    </div>
+    <input type="text" pInputText formControlName="tusfacturasUsertoken" class="w-full max-w-md" autocomplete="off" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
+    <div>
+      <label class="text-sm font-medium text-text">Token de webhook</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Elegí un token y cargalo también al configurar el webhook en TusFacturasAPP — así
+        confirmamos que los avisos de CAE emitido vienen de tu cuenta.
+      </p>
+    </div>
+    <input type="text" pInputText formControlName="tusfacturasWebhookToken" class="w-full max-w-md" autocomplete="off" />
+  </div>
+
+  <div class="flex justify-end pt-6 mt-2 border-t border-border">
+    <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+  </div>
+</form>

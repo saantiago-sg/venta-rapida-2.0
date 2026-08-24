@@ -33,6 +33,26 @@ export interface PaymentMethod {
   name: string;
   isCash: boolean;
   active: boolean;
+  invoicingEnabled: boolean;
+}
+
+export interface FiscalSettings {
+  businessId: string;
+  electronicInvoicingEnabled: boolean;
+  afipPuntoVenta: string | null;
+  tusfacturasApitoken: string | null;
+  tusfacturasApikey: string | null;
+  tusfacturasUsertoken: string | null;
+  tusfacturasWebhookToken: string | null;
+}
+
+export interface FiscalSettingsFormValue {
+  electronicInvoicingEnabled: boolean;
+  afipPuntoVenta: string | null;
+  tusfacturasApitoken: string | null;
+  tusfacturasApikey: string | null;
+  tusfacturasUsertoken: string | null;
+  tusfacturasWebhookToken: string | null;
 }
 
 export interface DeliveryType {
@@ -69,5 +89,6 @@ export const PERMISSION_CATALOG: { key: string; label: string }[] = [
   { key: 'can_manage_employees', label: 'Gestionar empleados' },
   { key: 'can_manage_settings', label: 'Gestionar configuración' },
   { key: 'can_cancel_sales', label: 'Cancelar ventas' },
-  { key: 'can_view_reports', label: 'Ver reportes' }
+  { key: 'can_view_reports', label: 'Ver reportes' },
+  { key: 'can_manage_invoicing', label: 'Gestionar facturación electrónica' }
 ];

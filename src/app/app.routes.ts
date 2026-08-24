@@ -39,10 +39,6 @@ export const routes: Routes = [
         loadChildren: () => import('./features/sales-history/sales-history.routes').then((m) => m.SALES_HISTORY_ROUTES)
       },
       {
-        path: 'reportes',
-        loadChildren: () => import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES)
-      },
-      {
         path: 'configuracion',
         loadChildren: () => import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES)
       }

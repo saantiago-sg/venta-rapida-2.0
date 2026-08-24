@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 
 import {
   AdminBusiness,
+  AdminUser,
   BusinessAdminRepository,
   CreateBusinessInput,
   PlatformMetrics,
@@ -16,11 +17,15 @@ export class SuperAdminStore {
   private readonly _loading = signal(false);
   private readonly _metrics = signal<PlatformMetrics | null>(null);
   private readonly _metricsLoading = signal(false);
+  private readonly _users = signal<AdminUser[]>([]);
+  private readonly _usersLoading = signal(false);
 
   readonly businesses = this._businesses.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly metrics = this._metrics.asReadonly();
   readonly metricsLoading = this._metricsLoading.asReadonly();
+  readonly users = this._users.asReadonly();
+  readonly usersLoading = this._usersLoading.asReadonly();
 
   async load(): Promise<void> {
     this._loading.set(true);
@@ -37,6 +42,15 @@ export class SuperAdminStore {
       this._metrics.set(await this.repository.getMetrics());
     } finally {
       this._metricsLoading.set(false);
+    }
+  }
+
+  async loadUsers(): Promise<void> {
+    this._usersLoading.set(true);
+    try {
+      this._users.set(await this.repository.getUsers());
+    } finally {
+      this._usersLoading.set(false);
     }
   }
 

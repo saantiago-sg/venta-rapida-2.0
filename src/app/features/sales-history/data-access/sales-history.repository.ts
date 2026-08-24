@@ -1,7 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
-import { SaleItem, SaleListItem, SaleStatus } from './models';
+import { InvoiceSaleResult } from '../../pos/data-access/models';
+import { InvoiceStatus, SaleItem, SaleListItem, SaleStatus } from './models';
+
+interface InvoiceRow {
+  status: InvoiceStatus;
+  pdf_url: string | null;
+  ticket_url: string | null;
+  error_message: string | null;
+}
 
 interface SaleRow {
   id: string;
@@ -16,6 +24,7 @@ interface SaleRow {
   customers: { name: string } | { name: string }[] | null;
   payment_methods: { name: string; is_cash: boolean } | { name: string; is_cash: boolean }[] | null;
   delivery_types: { name: string } | { name: string }[] | null;
+  invoices: InvoiceRow | InvoiceRow[] | null;
 }
 
 interface SaleItemRow {
@@ -31,6 +40,7 @@ function first<T>(value: T | T[] | null): T | null {
 }
 
 function mapSale(row: SaleRow): SaleListItem {
+  const invoice = first(row.invoices);
   return {
     id: row.id,
     saleNumber: row.sale_number,
@@ -44,7 +54,15 @@ function mapSale(row: SaleRow): SaleListItem {
     discountAmount: row.discount_amount,
     total: row.total,
     createdAt: row.created_at,
-    cancelReason: row.cancel_reason
+    cancelReason: row.cancel_reason,
+    invoice: invoice
+      ? {
+          status: invoice.status,
+          pdfUrl: invoice.pdf_url,
+          ticketUrl: invoice.ticket_url,
+          errorMessage: invoice.error_message
+        }
+      : null
   };
 }
 
@@ -56,7 +74,7 @@ export class SalesHistoryRepository {
     let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, subtotal, discount_amount, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name)'
+        'id, sale_number, status, subtotal, discount_amount, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name), invoices(status, pdf_url, ticket_url, error_message)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });
@@ -87,5 +105,13 @@ export class SalesHistoryRepository {
   async cancel(saleId: string, reason: string | null): Promise<void> {
     const { error } = await this.supabase.rpc('cancel_sale', { p_sale_id: saleId, p_reason: reason });
     if (error) throw error;
+  }
+
+  // Reintenta una factura en 'error' -- misma Edge Function que dispara la venta en el momento,
+  // invoice-sale es idempotente (actualiza la fila existente en vez de duplicarla).
+  async retryInvoice(saleId: string): Promise<InvoiceSaleResult> {
+    const { data, error } = await this.supabase.functions.invoke('invoice-sale', { body: { saleId } });
+    if (error) throw error;
+    return (data ?? {}) as InvoiceSaleResult;
   }
 }

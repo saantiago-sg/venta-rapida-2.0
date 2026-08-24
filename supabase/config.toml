@@ -445,3 +445,25 @@ entrypoint = "./functions/invite-employee/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/invite-employee/*.html" ]
+
+[functions.invoice-sale]
+enabled = true
+verify_jwt = false
+import_map = "./functions/invoice-sale/deno.json"
+entrypoint = "./functions/invoice-sale/index.ts"
+
+[functions.tusfacturas-webhook]
+enabled = true
+# Caller externo (TusFacturasAPP), no tiene JWT de Supabase -- se autentica con el header
+# TF-WebhookToken adentro de la funcion, ver index.ts.
+verify_jwt = false
+import_map = "./functions/tusfacturas-webhook/deno.json"
+entrypoint = "./functions/tusfacturas-webhook/index.ts"
+
+[functions.arca-direct-test]
+enabled = true
+# PRUEBA AISLADA (ver supabase/functions/arca-direct-test/README.md) -- a diferencia de las
+# demas, se deja verify_jwt en su default `true`: no tiene sentido exponer sin auth una funcion
+# que le pega en vivo al servidor de homologacion de ARCA.
+import_map = "./functions/arca-direct-test/deno.json"
+entrypoint = "./functions/arca-direct-test/index.ts"

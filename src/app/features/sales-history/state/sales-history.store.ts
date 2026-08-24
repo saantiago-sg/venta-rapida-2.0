@@ -45,8 +45,10 @@ export class SalesHistoryStore {
   private readonly _loading = signal(false);
   private readonly _selectedItems = signal<SaleItem[]>([]);
   private readonly _itemsLoading = signal(false);
-  private readonly _dateFrom = signal<string | null>(null);
-  private readonly _dateTo = signal<string | null>(null);
+  // Por defecto se abre mostrando el dia de hoy (no todo el historial) -- es lo que se
+  // quiere ver la mayoria de las veces al entrar a la pantalla.
+  private readonly _dateFrom = signal<string | null>(formatLocalDate(new Date()));
+  private readonly _dateTo = signal<string | null>(formatLocalDate(new Date()));
   private readonly _paymentMethodId = signal<string | null>(null);
   private readonly _orderNumberQuery = signal('');
   private readonly _summary = signal<SalesSummary | null>(null);
@@ -146,6 +148,11 @@ export class SalesHistoryStore {
 
   async cancel(saleId: string, reason: string | null): Promise<void> {
     await this.repository.cancel(saleId, reason);
+    await this.load();
+  }
+
+  async retryInvoice(saleId: string): Promise<void> {
+    await this.repository.retryInvoice(saleId);
     await this.load();
   }
 }

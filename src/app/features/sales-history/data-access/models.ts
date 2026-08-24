@@ -1,5 +1,14 @@
 export type SaleStatus = 'completed' | 'cancelled';
 
+export type InvoiceStatus = 'queued' | 'issued' | 'error' | 'credit_note_pending' | 'credit_note_issued';
+
+export interface SaleInvoice {
+  status: InvoiceStatus;
+  pdfUrl: string | null;
+  ticketUrl: string | null;
+  errorMessage: string | null;
+}
+
 export interface SaleListItem {
   id: string;
   saleNumber: number;
@@ -14,6 +23,7 @@ export interface SaleListItem {
   total: number;
   createdAt: string;
   cancelReason: string | null;
+  invoice: SaleInvoice | null;
 }
 
 export interface SaleItem {

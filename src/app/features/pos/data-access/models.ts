@@ -22,3 +22,9 @@ export interface SaleResult {
   total: number;
   changeGiven: number | null;
 }
+
+export interface InvoiceSaleResult {
+  invoiced?: boolean;
+  skipped?: boolean;
+  error?: string;
+}

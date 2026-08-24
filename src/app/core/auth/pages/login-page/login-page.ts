@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { AuthStore } from '../../auth.store';
 import { AuthService } from '../../auth.service';
 
 @Component({
@@ -12,6 +13,7 @@ import { AuthService } from '../../auth.service';
 export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
 
   protected readonly loading = signal(false);
@@ -34,7 +36,10 @@ export class LoginPage {
     try {
       const { email, password } = this.form.getRawValue();
       await this.authService.signIn(email, password);
-      await this.router.navigateByUrl('/dashboard');
+      // Un Super Admin cae directo en su panel -- no tiene por que tener ningun negocio
+      // propio, asi que /dashboard (que asume un negocio activo) no le sirve de entrada.
+      const destination = this.authStore.isSuperAdmin() ? '/super-admin' : '/dashboard';
+      await this.router.navigateByUrl(destination);
     } catch {
       this.errorMessage.set('Email o contraseña incorrectos.');
     } finally {

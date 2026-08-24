@@ -21,6 +21,7 @@
       <tr>
         <th>Nombre</th>
         <th class="w-32 text-center">Es efectivo</th>
+        <th class="w-32 text-center">Facturar</th>
         <th class="w-32 text-center">Activo</th>
       </tr>
     </ng-template>
@@ -45,13 +46,16 @@
           }
         </td>
         <td class="text-center">
+          <p-toggleswitch [ngModel]="method.invoicingEnabled" (ngModelChange)="onToggleInvoicing(method.id, $event)" />
+        </td>
+        <td class="text-center">
           <p-toggleswitch [ngModel]="method.active" (ngModelChange)="onToggleActive(method.id, $event)" />
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="3">
+        <td colspan="4">
           <div class="flex flex-col items-center gap-2 py-10 text-center">
             <i class="pi pi-wallet text-2xl text-text-secondary"></i>
             <p class="text-sm text-text-secondary">Todavía no hay medios de pago cargados.</p>

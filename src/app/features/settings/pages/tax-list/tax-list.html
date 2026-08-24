@@ -8,17 +8,17 @@
       (ngModelChange)="newName.set($event)"
       class="flex-1"
     />
-    <div class="w-28 min-w-0 shrink-0">
-      <p-inputnumber
-        [ngModel]="newRate()"
-        (ngModelChange)="newRate.set($event)"
-        locale="es-AR"
-        suffix="%"
-        [min]="0"
-        [max]="100"
-        styleClass="w-full"
-      />
-    </div>
+    <p-inputnumber
+      [ngModel]="newRate()"
+      (ngModelChange)="newRate.set($event)"
+      locale="es-AR"
+      suffix="%"
+      [min]="0"
+      [max]="100"
+      [style]="{ width: '7rem' }"
+      inputStyleClass="w-full"
+      styleClass="shrink-0"
+    />
     <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
   </div>
 

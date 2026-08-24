@@ -13,9 +13,13 @@ interface CustomerRow {
   address: string | null;
   notes: string | null;
   active: boolean;
+  document_type: string | null;
+  iva_condition: string | null;
+  province: string | null;
 }
 
-const SELECT_COLUMNS = 'id, business_id, name, phone, email, document, address, notes, active';
+const SELECT_COLUMNS =
+  'id, business_id, name, phone, email, document, address, notes, active, document_type, iva_condition, province';
 
 function mapRow(row: CustomerRow): Customer {
   return {
@@ -27,7 +31,24 @@ function mapRow(row: CustomerRow): Customer {
     document: row.document,
     address: row.address,
     notes: row.notes,
-    active: row.active
+    active: row.active,
+    documentType: row.document_type,
+    ivaCondition: row.iva_condition,
+    province: row.province
+  };
+}
+
+function toRow(input: CustomerFormValue): Record<string, unknown> {
+  return {
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    document: input.document,
+    address: input.address,
+    notes: input.notes,
+    document_type: input.documentType,
+    iva_condition: input.ivaCondition,
+    province: input.province
   };
 }
 
@@ -48,7 +69,7 @@ export class CustomerRepository {
   async create(businessId: string, input: CustomerFormValue): Promise<Customer> {
     const { data, error } = await this.supabase
       .from('customers')
-      .insert({ business_id: businessId, ...input })
+      .insert({ business_id: businessId, ...toRow(input) })
       .select(SELECT_COLUMNS)
       .single();
     if (error) throw error;
@@ -56,7 +77,7 @@ export class CustomerRepository {
   }
 
   async update(id: string, input: CustomerFormValue): Promise<void> {
-    const { error } = await this.supabase.from('customers').update(input).eq('id', id);
+    const { error } = await this.supabase.from('customers').update(toRow(input)).eq('id', id);
     if (error) throw error;
   }
 

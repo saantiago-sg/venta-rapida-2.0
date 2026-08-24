@@ -39,4 +39,11 @@ export class PaymentMethodsStore {
     await this.repository.setActive(id, active);
     this._paymentMethods.update((list) => list.map((m) => (m.id === id ? { ...m, active } : m)));
   }
+
+  async setInvoicingEnabled(id: string, invoicingEnabled: boolean): Promise<void> {
+    await this.repository.setInvoicingEnabled(id, invoicingEnabled);
+    this._paymentMethods.update((list) =>
+      list.map((m) => (m.id === id ? { ...m, invoicingEnabled } : m))
+    );
+  }
 }
