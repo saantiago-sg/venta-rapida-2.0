@@ -45,8 +45,30 @@
     <p class="relative text-white/60 text-xs">© 2026 VentaRapida — POS para comercios</p>
   </div>
 
-  <div class="flex items-center justify-center bg-[#F5F3EF] p-6 relative overflow-hidden">
-    <div class="absolute w-[26rem] h-[26rem] rounded-full bg-brand/10 blur-3xl" aria-hidden="true"></div>
+  <div
+    class="flex items-center justify-center p-6 relative overflow-hidden"
+    style="background-image: radial-gradient(rgba(249,115,22,0.06) 1px, transparent 1.5px), linear-gradient(to bottom right, #FDFBF8, #F5EEE4); background-size: 22px 22px, auto;"
+  >
+    <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-brand/10 blur-3xl blob-float-a" aria-hidden="true"></div>
+    <div class="absolute -bottom-24 -left-16 w-[26rem] h-[26rem] rounded-full bg-brand/10 blur-3xl blob-float-b" aria-hidden="true"></div>
+
+    <svg
+      class="absolute bottom-8 right-8 w-64 h-64 md:w-72 md:h-72 opacity-[0.14] pointer-events-none"
+      viewBox="0 0 200 200"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect x="30" y="70" width="90" height="65" rx="10" fill="#EA580C" />
+      <rect x="30" y="70" width="90" height="20" rx="10" fill="#F97316" />
+      <circle cx="52" cy="118" r="7" fill="#FDFBF8" />
+      <circle cx="98" cy="118" r="7" fill="#FDFBF8" />
+      <rect x="46" y="98" width="58" height="6" rx="3" fill="#FDFBF8" />
+      <path d="M120 85 L155 70 L165 130 L120 135 Z" fill="#F97316" />
+      <path d="M137 78 Q142 60 158 66" stroke="#EA580C" stroke-width="6" fill="none" stroke-linecap="round" />
+      <circle cx="150" cy="40" r="16" fill="#F97316" />
+      <circle cx="172" cy="58" r="10" fill="#EA580C" />
+      <circle cx="25" cy="45" r="9" fill="#EA580C" />
+    </svg>
 
     <form
       [formGroup]="form"
@@ -74,13 +96,24 @@
 
       <div class="flex flex-col gap-1">
         <label for="password" class="text-sm font-medium text-slate-700">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          autocomplete="current-password"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 transition-shadow focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
-        />
+        <div class="relative">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm text-slate-900 transition-shadow focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          />
+          <button
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+            tabindex="-1"
+          >
+            <i class="pi" [class.pi-eye]="!showPassword()" [class.pi-eye-slash]="showPassword()"></i>
+          </button>
+        </div>
       </div>
 
       @if (errorMessage()) {
@@ -98,7 +131,17 @@
         Entrar
       </button>
 
-      <p class="text-xs text-slate-500 text-center">¿No tenés cuenta? Contactá a tu administrador.</p>
+      <p class="text-xs text-slate-500 text-center">
+        ¿No tenés cuenta?
+        <a
+          href="https://wa.me/5492494365208"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-medium text-brand hover:underline"
+        >
+          Contactá a tu administrador.
+        </a>
+      </p>
     </form>
   </div>
 </div>

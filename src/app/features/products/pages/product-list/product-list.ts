@@ -118,7 +118,7 @@ export class ProductList {
   }
 
   protected showInitialStock(): boolean {
-    return !this.editingProduct() && !this.form.controls.isCombo.value && this.form.controls.trackStock.value;
+    return !this.form.controls.isCombo.value && this.form.controls.trackStock.value;
   }
 
   protected openCreate(): void {
@@ -154,7 +154,7 @@ export class ProductList {
       price: product.price,
       cost: product.cost,
       trackStock: product.trackStock,
-      initialStock: 0,
+      initialStock: product.stock,
       isCombo: product.isCombo
     });
     this.clearComponentsArray();

@@ -8,8 +8,18 @@
         placeholder="Buscar categoría..."
         [ngModel]="searchQuery()"
         (ngModelChange)="searchQuery.set($event)"
-        class="w-full pl-9"
+        class="w-full pl-9 pr-9"
       />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          (click)="searchQuery.set('')"
+          aria-label="Limpiar búsqueda"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+        >
+          <i class="pi pi-times text-sm"></i>
+        </button>
+      }
     </span>
     <p-button label="Nueva categoría" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>

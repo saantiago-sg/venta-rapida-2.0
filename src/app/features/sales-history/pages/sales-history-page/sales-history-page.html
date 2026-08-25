@@ -1,12 +1,12 @@
 <h1 class="text-xl font-semibold tracking-tight mb-4">Historial de ventas</h1>
 
-<div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
   <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-white/90">Vendido</span>
     @if (store.loading()) {
       <div class="h-9 w-28 rounded-md bg-white/20 animate-pulse"></div>
     } @else {
-      <span class="text-3xl font-semibold tabular-nums text-white" [appCountUp]="store.summary()?.totalSales ?? 0"></span>
+      <span class="text-3xl font-semibold tabular-nums text-white">$<span [appCountUp]="store.summary()?.totalSales ?? 0"></span></span>
     }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
@@ -14,7 +14,7 @@
     @if (store.loading()) {
       <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
     } @else {
-      <span class="text-3xl font-semibold tabular-nums text-success" [appCountUp]="store.summary()?.totalProfit ?? 0"></span>
+      <span class="text-3xl font-semibold tabular-nums text-success">$<span [appCountUp]="store.summary()?.totalProfit ?? 0"></span></span>
     }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
@@ -25,6 +25,14 @@
       <span class="text-3xl font-semibold tabular-nums">
         <span [appCountUp]="store.averageMargin()"></span>%
       </span>
+    }
+  </div>
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
+    <span class="text-sm text-text-secondary">Impuestos</span>
+    @if (store.loading()) {
+      <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
+    } @else {
+      <span class="text-3xl font-semibold tabular-nums" [appCountUp]="store.summary()?.totalTax ?? 0"></span>
     }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
@@ -92,8 +100,18 @@
           placeholder="Buscar..."
           [ngModel]="store.orderNumberQuery()"
           (ngModelChange)="store.setOrderNumberQuery($event)"
-          class="w-full pl-9"
+          class="w-full pl-9 pr-9"
         />
+        @if (store.orderNumberQuery()) {
+          <button
+            type="button"
+            (click)="store.setOrderNumberQuery('')"
+            aria-label="Limpiar búsqueda"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+          >
+            <i class="pi pi-times text-sm"></i>
+          </button>
+        }
       </span>
     </div>
   </div>

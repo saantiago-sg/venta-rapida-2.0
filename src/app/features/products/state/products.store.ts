@@ -45,7 +45,8 @@ export class ProductsStore {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
 
-    await this.repository.update(id, businessId, input);
+    const previousStock = this._products().find((p) => p.id === id)?.stock ?? 0;
+    await this.repository.update(id, businessId, input, previousStock);
     if (input.isCombo) {
       await this.load();
     } else {
@@ -61,6 +62,7 @@ export class ProductsStore {
                 saleType: input.saleType,
                 price: input.price,
                 cost: input.cost,
+                stock: input.trackStock ? input.initialStock : p.stock,
                 trackStock: input.trackStock,
                 isCombo: input.isCombo
               }

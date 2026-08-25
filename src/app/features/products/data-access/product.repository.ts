@@ -103,7 +103,7 @@ export class ProductRepository {
     return product;
   }
 
-  async update(id: string, businessId: string, input: ProductFormValue): Promise<void> {
+  async update(id: string, businessId: string, input: ProductFormValue, previousStock: number): Promise<void> {
     const { error } = await this.supabase
       .from('products')
       .update({
@@ -122,6 +122,11 @@ export class ProductRepository {
 
     if (input.isCombo) {
       await this.saveComponents(businessId, id, input.components);
+    } else if (input.trackStock) {
+      const delta = input.initialStock - previousStock;
+      if (delta !== 0) {
+        await this.adjustStock(businessId, id, delta, 'adjustment', 'Ajuste de stock');
+      }
     }
   }
 

@@ -8,8 +8,18 @@
         placeholder="Buscar por nombre o código de barras..."
         [ngModel]="searchQuery()"
         (ngModelChange)="searchQuery.set($event)"
-        class="w-full pl-9"
+        class="w-full pl-9 pr-9"
       />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          (click)="searchQuery.set('')"
+          aria-label="Limpiar búsqueda"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+        >
+          <i class="pi pi-times text-sm"></i>
+        </button>
+      }
     </span>
     <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="openCreate()" />
   </div>
@@ -69,8 +79,8 @@
             <span class="tabular-nums">{{ product.price | number: '1.2-2' }}</span>
           </div>
         </td>
-        <td class="text-right tabular-nums" [class.text-error]="!product.isCombo && product.stock < 0">
-          @if (product.isCombo) {
+        <td class="text-right tabular-nums" [class.text-error]="!product.isCombo && product.trackStock && product.stock < 0">
+          @if (product.isCombo || !product.trackStock) {
             <span class="text-text-secondary">—</span>
           } @else {
             {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
@@ -246,7 +256,7 @@
       </div>
     }
 
-    <div class="grid gap-3" [class.grid-cols-3]="showInitialStock()" [class.grid-cols-2]="!showInitialStock()">
+    <div class="grid grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Precio</label>
         <p-inputnumber formControlName="price" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
@@ -255,13 +265,21 @@
         <label class="text-sm text-text-secondary">Costo</label>
         <p-inputnumber formControlName="cost" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
       </div>
-      @if (showInitialStock()) {
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-text-secondary">Stock inicial</label>
-          <p-inputnumber formControlName="initialStock" locale="es-AR" styleClass="w-full" />
-        </div>
-      }
     </div>
+
+    @if (showInitialStock()) {
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">{{ editingProduct() ? 'Stock actual' : 'Stock inicial' }}</label>
+          <p-inputnumber
+            formControlName="initialStock"
+            locale="es-AR"
+            [suffix]="form.controls.saleType.value === 'weight' ? ' kg' : ' u.'"
+            styleClass="w-full"
+          />
+        </div>
+      </div>
+    }
 
     @if (errorMessage()) {
       <p class="text-sm text-error">{{ errorMessage() }}</p>

@@ -33,6 +33,19 @@ export class ProductSearch {
   protected readonly weighingProduct = signal<Product | null>(null);
   protected readonly weightInput = signal<number | null>(GRAMS_PER_KG);
 
+  // Traduccion en texto plano del peso a kg + g -- al cajero le cuesta menos leer "2 kg y
+  // 100 g" que calcular de cabeza cuanto son 2100 gramos.
+  protected readonly weightHint = computed(() => {
+    const grams = this.weightInput();
+    if (!grams || grams <= 0) return null;
+
+    const kg = Math.floor(grams / GRAMS_PER_KG);
+    const remainder = grams % GRAMS_PER_KG;
+    if (kg === 0) return `${remainder} g`;
+    if (remainder === 0) return `${kg} kg`;
+    return `${kg} kg y ${remainder} g`;
+  });
+
   protected readonly results = computed(() => {
     const q = this.query().trim().toLowerCase();
     const products = this.productsStore.products().filter((p) => p.active);
@@ -81,6 +94,13 @@ export class ProductSearch {
     }
     this.posStore.addToCart(match);
     this.refocus();
+  }
+
+  // Con el sufijo " g", PrimeNG bloquea el backspace cuando el cursor cae al final del
+  // texto (justo despues del sufijo) -- seleccionar todo al enfocar evita ese bloqueo:
+  // cualquier tecla (borrar o tipear) reemplaza el valor completo de una.
+  protected onWeightFocus(event: Event): void {
+    (event.target as HTMLInputElement).select();
   }
 
   protected onCancelWeight(): void {

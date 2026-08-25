@@ -9,9 +9,19 @@
       [ngModel]="query()"
       (ngModelChange)="query.set($event); notFound.set(false)"
       (keyup.enter)="onBarcodeEnter()"
-      class="w-full pl-10 pr-4 py-2.5 bg-card-hover border-transparent rounded-xl transition-shadow focus:bg-card focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+      class="w-full pl-10 pr-10 py-2.5 bg-card-hover border-transparent rounded-xl transition-shadow focus:bg-card focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
       autofocus
     />
+    @if (query()) {
+      <button
+        type="button"
+        (click)="query.set(''); notFound.set(false)"
+        aria-label="Limpiar búsqueda"
+        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+      >
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    }
   </span>
 
   @if (notFound()) {
@@ -84,6 +94,7 @@
           [ngModel]="weightInput()"
           (ngModelChange)="weightInput.set($event)"
           (keyup.enter)="onConfirmWeight()"
+          (onFocus)="onWeightFocus($event)"
           locale="es-AR"
           [min]="0"
           [maxFractionDigits]="0"
@@ -92,6 +103,9 @@
           inputStyleClass="text-center text-2xl font-semibold py-3"
           autofocus
         />
+        @if (weightHint(); as hint) {
+          <p class="text-sm font-semibold text-brand text-center">{{ hint }}</p>
+        }
         <p class="text-xs text-text-secondary text-center">Enter para confirmar · Esc para cancelar</p>
       </div>
 
