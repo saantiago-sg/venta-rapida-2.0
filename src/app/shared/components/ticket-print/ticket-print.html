@@ -11,7 +11,11 @@
     <div class="border-t border-dashed border-black my-2"></div>
 
     <div class="flex justify-between">
-      <span>Venta #{{ sale.saleNumber }}</span>
+      @if (sale.pending) {
+        <span>Venta pendiente de sincronizar</span>
+      } @else {
+        <span>Venta #{{ sale.saleNumber }}</span>
+      }
       <span>{{ sale.date | date: 'dd/MM/yy HH:mm' }}</span>
     </div>
     @if (sale.customerName) {

@@ -23,6 +23,9 @@ export class PosPage {
 
   protected readonly lastSale = signal<TicketData | null>(null);
   protected readonly confirmationVisible = signal(false);
+  // Pestañas Buscar/Pedido -- solo se ven debajo de lg (ver pos-page.html), en desktop el
+  // grid de 3 columnas de siempre ignora este signal.
+  protected readonly mobileTab = signal<'buscar' | 'pedido'>('buscar');
 
   constructor() {
     this.businessSettingsStore.load();
@@ -31,6 +34,7 @@ export class PosPage {
   protected onSaleConfirmed(ticket: TicketData): void {
     this.lastSale.set(ticket);
     this.confirmationVisible.set(true);
+    this.mobileTab.set('buscar');
     this.productsStore.load();
     // Se difiere un tick para que el <app-ticket-print> ya haya renderizado el ticket nuevo
     // en el DOM antes de que window.print() lo capture.

@@ -14,6 +14,7 @@ import { providePrimeNG } from 'primeng/config';
 
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
+import { SyncService } from './core/offline/sync.service';
 import { VentaRapidaPreset } from './core/theme/venta-rapida-preset';
 
 registerLocaleData(localeEsAr);
@@ -27,6 +28,10 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     // Restaura la sesion (si existe) antes de que el router evalue los guards de la ruta inicial.
     provideAppInitializer(() => inject(AuthService).restoreSession()),
+    // Instancia el sincronizador de ventas offline apenas arranca la app -- queda corriendo
+    // en segundo plano toda la sesion, sin depender de que el cajero este en la pantalla de
+    // Vender (ver SyncService).
+    provideAppInitializer(() => void inject(SyncService)),
     providePrimeNG({
       theme: {
         preset: VentaRapidaPreset,

@@ -23,7 +23,8 @@ export class SaleRepository {
       p_payment_method_id: input.paymentMethodId,
       p_delivery_type_id: input.deliveryTypeId,
       p_customer_id: input.customerId,
-      p_cash_received: input.cashReceived
+      p_cash_received: input.cashReceived,
+      p_client_reference: input.clientReference ?? null
     });
     if (error) throw error;
 

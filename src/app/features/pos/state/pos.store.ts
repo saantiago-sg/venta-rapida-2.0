@@ -1,11 +1,13 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { isNetworkError } from '../../../core/offline/network-error';
+import { OfflineQueueService } from '../../../core/offline/offline-queue.service';
 import { Product } from '../../products/data-access/models';
 import { BusinessSettingsStore } from '../../settings/state/business-settings.store';
 import { PaymentMethodsStore } from '../../settings/state/payment-methods.store';
 import { SaleRepository } from '../data-access/sale.repository';
-import { CartItem, SaleResult } from '../data-access/models';
+import { CartItem, ProcessSaleInput, SaleResult } from '../data-access/models';
 
 @Injectable({ providedIn: 'root' })
 export class PosStore {
@@ -13,6 +15,7 @@ export class PosStore {
   private readonly authStore = inject(AuthStore);
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
   private readonly paymentMethodsStore = inject(PaymentMethodsStore);
+  private readonly offlineQueue = inject(OfflineQueueService);
 
   private readonly _cart = signal<CartItem[]>([]);
   private readonly _paymentMethodId = signal<string | null>(null);
@@ -35,6 +38,18 @@ export class PosStore {
   readonly subtotal = computed(() =>
     this._cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   );
+
+  // Ganancia del pedido actual (precio - costo por linea) -- mismo criterio que se usa en
+  // Historial de ventas y en la tabla de Productos, para que el numero sea consistente en
+  // toda la app.
+  readonly profit = computed(() =>
+    this._cart().reduce((sum, item) => sum + (item.product.price - item.product.cost) * item.quantity, 0)
+  );
+
+  readonly marginPercent = computed(() => {
+    const subtotal = this.subtotal();
+    return subtotal > 0 ? (this.profit() / subtotal) * 100 : 0;
+  });
 
   readonly selectedPaymentMethod = computed(() =>
     this.paymentMethodsStore.paymentMethods().find((m) => m.id === this._paymentMethodId()) ?? null
@@ -124,27 +139,67 @@ export class PosStore {
       throw new Error('Faltan datos para confirmar la venta');
     }
 
+    // Se genera antes de intentar: si el pedido nunca vuelve (se corta la conexion justo
+    // despues de que el server ya guardo todo) sirve para no duplicar la venta al reintentar
+    // -- ver idempotencia en process_sale.
+    const clientReference = crypto.randomUUID();
+    const input: ProcessSaleInput = {
+      businessId,
+      items: this._cart()
+        .filter((item) => item.quantity > 0)
+        .map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          unit_cost: item.product.cost,
+          tax_rate: item.product.taxRate ?? 0
+        })),
+      paymentMethodId,
+      deliveryTypeId,
+      customerId: this._customerId(),
+      cashReceived: this._cashReceived(),
+      clientReference
+    };
+
     this._processing.set(true);
     try {
-      const result = await this.saleRepository.processSale({
-        businessId,
-        items: this._cart()
-          .filter((item) => item.quantity > 0)
-          .map((item) => ({ product_id: item.product.id, quantity: item.quantity })),
-        paymentMethodId,
-        deliveryTypeId,
-        customerId: this._customerId(),
-        cashReceived: this._cashReceived()
-      });
+      const result = await this.saleRepository.processSale(input);
 
       this._cart.set([]);
       this._cashReceived.set(null);
       this._customerId.set(null);
       this.triggerInvoicing(result.id);
       return result;
+    } catch (err) {
+      if (!isNetworkError(err)) throw err;
+      return this.confirmSaleOffline(input, clientReference);
     } finally {
       this._processing.set(false);
     }
+  }
+
+  // Sin conexion: la venta se da por confirmada del lado del cajero (el ticket se imprime
+  // igual, marcado como pendiente) y queda encolada para reintentar sola apenas vuelva la
+  // conexion -- nunca lo deja bloqueado en el mostrador esperando el wifi. El total ya sale
+  // calculado con el descuento por efectivo vigente porque se lee de los signals de este
+  // store antes de vaciar el carrito, no se recalcula de cero.
+  private async confirmSaleOffline(input: ProcessSaleInput, clientReference: string): Promise<SaleResult> {
+    const result: SaleResult = {
+      id: clientReference,
+      saleNumber: 0,
+      subtotal: this.subtotal(),
+      discountAmount: this.discount(),
+      total: this.total(),
+      changeGiven: this.changeDue(),
+      pending: true
+    };
+
+    await this.offlineQueue.enqueue({ clientReference, input, createdAt: new Date().toISOString() });
+
+    this._cart.set([]);
+    this._cashReceived.set(null);
+    this._customerId.set(null);
+    return result;
   }
 
   // Se dispara sin esperar (no bloquea el ticket/la confirmacion en pantalla) -- si falla o esta

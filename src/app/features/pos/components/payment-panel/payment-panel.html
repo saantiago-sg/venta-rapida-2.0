@@ -33,6 +33,14 @@
       <span>Subtotal</span>
       <span class="tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</span>
     </div>
+    <div
+      class="flex justify-between text-sm font-medium"
+      [class.text-success]="store.profit() > 0"
+      [class.text-error]="store.profit() < 0"
+    >
+      <span>Ganancia ({{ store.marginPercent() | number: '1.0-1' }}%)</span>
+      <span class="tabular-nums">{{ store.profit() | number: '1.2-2' }}</span>
+    </div>
     <div class="flex justify-between items-baseline text-2xl font-semibold tracking-tight pt-1">
       <span class="text-sm font-medium text-text-secondary">Total</span>
       <span class="tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</span>
@@ -50,7 +58,7 @@
   [(visible)]="payDialogVisible"
   [modal]="true"
   appendTo="body"
-  [style]="{ width: '26rem' }"
+  [style]="{ width: '26rem', maxWidth: '92vw' }"
   [header]="payStep() === 'method' ? 'Pagar' : 'Efectivo'"
   (onHide)="closePayment()"
 >
@@ -61,20 +69,32 @@
         <p class="text-4xl font-semibold tracking-tight tabular-nums">{{ store.subtotal() | number: '1.2-2' }}</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2.5">
-        @for (method of activePaymentMethods(); track method.id) {
-          <button
-            type="button"
-            (click)="onSelectMethod(method.id)"
-            class="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-xl transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_8px_20px_-8px_rgba(36,30,24,0.15)]"
-          >
-            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-brand/10 text-brand">
-              <i class="pi text-lg" [class]="method.isCash ? 'pi-wallet' : 'pi-credit-card'"></i>
-            </span>
-            <span class="text-sm font-medium">{{ method.name }}</span>
-          </button>
-        }
-      </div>
+      @if (activePaymentMethods().length > 0) {
+        <div class="grid grid-cols-2 gap-2.5">
+          @for (method of activePaymentMethods(); track method.id) {
+            <button
+              type="button"
+              (click)="onSelectMethod(method.id)"
+              class="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-xl transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_8px_20px_-8px_rgba(36,30,24,0.15)]"
+            >
+              <span class="flex items-center justify-center w-10 h-10 rounded-full bg-brand/10 text-brand">
+                <i class="pi text-lg" [class]="method.isCash ? 'pi-wallet' : 'pi-credit-card'"></i>
+              </span>
+              <span class="text-sm font-medium">{{ method.name }}</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col items-center gap-2 text-center py-2">
+          <i class="pi pi-wallet text-2xl text-text-secondary"></i>
+          <p class="text-sm text-text-secondary">
+            No hay medios de pago activos ·
+            <a [routerLink]="['/configuracion']" [queryParams]="{ section: 'medios-pago' }" class="text-brand hover:underline">
+              Configuralos
+            </a>
+          </p>
+        </div>
+      }
 
       @if (errorMessage()) {
         <p class="text-sm text-error text-center">{{ errorMessage() }}</p>

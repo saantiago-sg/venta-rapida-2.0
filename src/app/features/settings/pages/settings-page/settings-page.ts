@@ -7,9 +7,10 @@ import { DeliveryTypeList } from '../delivery-type-list/delivery-type-list';
 import { EmployeeList } from '../employee-list/employee-list';
 import { FiscalSettingsPage } from '../fiscal-settings/fiscal-settings';
 import { PaymentMethodList } from '../payment-method-list/payment-method-list';
+import { ScaleSettingsPage } from '../scale-settings/scale-settings';
 import { TaxList } from '../tax-list/tax-list';
 
-type SettingsSectionId = 'negocio' | 'impuestos' | 'medios-pago' | 'entrega' | 'empleados' | 'facturacion';
+type SettingsSectionId = 'negocio' | 'impuestos' | 'medios-pago' | 'entrega' | 'balanza' | 'empleados' | 'facturacion';
 
 interface SettingsSection {
   id: SettingsSectionId;
@@ -22,6 +23,7 @@ const SECTIONS: SettingsSection[] = [
   { id: 'impuestos', label: 'Impuestos', icon: 'pi pi-percentage' },
   { id: 'medios-pago', label: 'Medios de pago', icon: 'pi pi-wallet' },
   { id: 'entrega', label: 'Tipos de entrega', icon: 'pi pi-truck' },
+  { id: 'balanza', label: 'Balanza', icon: 'pi pi-barcode' },
   { id: 'empleados', label: 'Empleados', icon: 'pi pi-users' },
   { id: 'facturacion', label: 'Facturación', icon: 'pi pi-file-check' }
 ];
@@ -30,7 +32,7 @@ const SECTION_IDS = SECTIONS.map((s) => s.id);
 
 @Component({
   selector: 'app-settings-page',
-  imports: [BusinessForm, TaxList, PaymentMethodList, DeliveryTypeList, EmployeeList, FiscalSettingsPage],
+  imports: [BusinessForm, TaxList, PaymentMethodList, DeliveryTypeList, ScaleSettingsPage, EmployeeList, FiscalSettingsPage],
   templateUrl: './settings-page.html'
 })
 export class SettingsPage {

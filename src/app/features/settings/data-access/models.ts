@@ -7,6 +7,7 @@ export interface BusinessSettings {
   phone: string | null;
   address: string | null;
   cashDiscountPercentage: number;
+  weightedBarcode: WeightedBarcodeConfig;
 }
 
 export interface BusinessSettingsFormValue {
@@ -18,6 +19,24 @@ export interface BusinessSettingsFormValue {
   address: string | null;
   cashDiscountPercentage: number;
 }
+
+// Config por negocio para decodificar los codigos de barras que imprime una balanza (EAN-13
+// con el peso embebido) -- no todas las balanzas arman el numero igual, por eso es
+// configurable en vez de asumir un formato fijo. Ver [[parseWeightedBarcode]] (pos/data-access)
+// para como se usa al escanear.
+export interface WeightedBarcodeConfig {
+  enabled: boolean;
+  prefix: string;
+  productCodeDigits: number;
+  weightDigits: number;
+}
+
+export const DEFAULT_WEIGHTED_BARCODE_CONFIG: WeightedBarcodeConfig = {
+  enabled: false,
+  prefix: '20',
+  productCodeDigits: 5,
+  weightDigits: 5
+};
 
 export interface Tax {
   id: string;

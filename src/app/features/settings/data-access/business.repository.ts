@@ -1,7 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
-import { BusinessSettings, BusinessSettingsFormValue } from './models';
+import { BusinessSettings, BusinessSettingsFormValue, DEFAULT_WEIGHTED_BARCODE_CONFIG, WeightedBarcodeConfig } from './models';
+
+interface WeightedBarcodeConfigRow {
+  enabled: boolean;
+  prefix: string;
+  product_code_digits: number;
+  weight_digits: number;
+}
+
+interface BusinessSettingsJson {
+  weighted_barcode?: WeightedBarcodeConfigRow;
+  [key: string]: unknown;
+}
 
 interface BusinessRow {
   id: string;
@@ -12,9 +24,20 @@ interface BusinessRow {
   phone: string | null;
   address: string | null;
   cash_discount_percentage: number;
+  settings: BusinessSettingsJson | null;
 }
 
-const SELECT_COLUMNS = 'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage';
+const SELECT_COLUMNS = 'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage, settings';
+
+function mapWeightedBarcode(row: WeightedBarcodeConfigRow | undefined): WeightedBarcodeConfig {
+  if (!row) return DEFAULT_WEIGHTED_BARCODE_CONFIG;
+  return {
+    enabled: row.enabled,
+    prefix: row.prefix,
+    productCodeDigits: row.product_code_digits,
+    weightDigits: row.weight_digits
+  };
+}
 
 function mapRow(row: BusinessRow): BusinessSettings {
   return {
@@ -25,7 +48,8 @@ function mapRow(row: BusinessRow): BusinessSettings {
     email: row.email,
     phone: row.phone,
     address: row.address,
-    cashDiscountPercentage: row.cash_discount_percentage
+    cashDiscountPercentage: row.cash_discount_percentage,
+    weightedBarcode: mapWeightedBarcode(row.settings?.weighted_barcode)
   };
 }
 
@@ -56,6 +80,30 @@ export class BusinessRepository {
         cash_discount_percentage: input.cashDiscountPercentage
       })
       .eq('id', businessId);
+    if (error) throw error;
+  }
+
+  // Merge en vez de reemplazo directo: 'settings' es un jsonb generico que a futuro puede
+  // guardar otras claves ademas de weighted_barcode -- pisarlo entero borraria lo demas.
+  async updateWeightedBarcode(businessId: string, config: WeightedBarcodeConfig): Promise<void> {
+    const { data, error: fetchError } = await this.supabase
+      .from('businesses')
+      .select('settings')
+      .eq('id', businessId)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const settings: BusinessSettingsJson = {
+      ...((data as { settings: BusinessSettingsJson | null }).settings ?? {}),
+      weighted_barcode: {
+        enabled: config.enabled,
+        prefix: config.prefix,
+        product_code_digits: config.productCodeDigits,
+        weight_digits: config.weightDigits
+      }
+    };
+
+    const { error } = await this.supabase.from('businesses').update({ settings }).eq('id', businessId);
     if (error) throw error;
   }
 }

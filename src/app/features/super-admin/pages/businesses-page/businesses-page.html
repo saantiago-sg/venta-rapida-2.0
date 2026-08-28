@@ -6,6 +6,7 @@
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <div class="overflow-x-auto">
   <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -52,9 +53,10 @@
     </ng-template>
   </p-table>
   </div>
+  </div>
 </div>
 
-<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '28rem' }" header="Crear negocio nuevo">
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '28rem', maxWidth: '92vw' }" header="Crear negocio nuevo">
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Nombre del negocio</label>

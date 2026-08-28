@@ -1,8 +1,11 @@
 import { Injectable, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { readCache, writeCache } from '../../../core/offline/local-cache';
 import { DeliveryTypeRepository } from '../data-access/delivery-type.repository';
 import { DeliveryType } from '../data-access/models';
+
+const CACHE_KEY = (businessId: string) => `delivery_types_cache_${businessId}`;
 
 @Injectable({ providedIn: 'root' })
 export class DeliveryTypesStore {
@@ -21,7 +24,15 @@ export class DeliveryTypesStore {
 
     this._loading.set(true);
     try {
-      this._deliveryTypes.set(await this.repository.list(businessId));
+      const types = await this.repository.list(businessId);
+      this._deliveryTypes.set(types);
+      writeCache(CACHE_KEY(businessId), types);
+    } catch (err) {
+      // Sin conexion: se sigue con la ultima lista conocida en vez de dejar al cajero sin
+      // poder elegir tipo de entrega y trabado para cobrar (ver PosStore -- venta offline).
+      const cached = readCache<DeliveryType[]>(CACHE_KEY(businessId));
+      if (!cached) throw err;
+      this._deliveryTypes.set(cached);
     } finally {
       this._loading.set(false);
     }

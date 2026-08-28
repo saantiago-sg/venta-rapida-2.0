@@ -1,13 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { SplitButtonModule } from 'primeng/splitbutton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
@@ -17,6 +18,7 @@ import { TicketData, TicketPrint } from '../../../../shared/components/ticket-pr
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { PaymentMethodsStore } from '../../../settings/state/payment-methods.store';
 import { SaleListItem } from '../../data-access/models';
+import { exportSalesCsv, exportSalesExcel, exportSalesPdf } from '../../data-access/sales-export';
 import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/sales-history.store';
 
 @Component({
@@ -31,6 +33,7 @@ import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/
     DialogModule,
     InputTextModule,
     SelectModule,
+    SplitButtonModule,
     TableModule,
     TagModule,
     CountUpDirective,
@@ -72,6 +75,13 @@ export class SalesHistoryPage {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly retryingInvoice = signal(false);
 
+  protected readonly exporting = signal(false);
+  protected readonly exportOptions: MenuItem[] = [
+    { label: 'CSV', icon: 'pi pi-file', command: () => this.onExportCsv() },
+    { label: 'Excel', icon: 'pi pi-file-excel', command: () => this.onExportExcel() },
+    { label: 'PDF', icon: 'pi pi-file-pdf', command: () => this.onExportPdf() }
+  ];
+
   protected readonly paymentOptions = computed(() =>
     this.paymentMethodsStore
       .paymentMethods()
@@ -110,6 +120,11 @@ export class SalesHistoryPage {
     this.businessSettingsStore.load();
   }
 
+  protected marginPercent(sale: SaleListItem): number {
+    if (sale.total <= 0) return 0;
+    return (sale.profit / sale.total) * 100;
+  }
+
   protected canCancelSales(): boolean {
     return this.authStore.hasPermission('can_cancel_sales');
   }
@@ -122,7 +137,45 @@ export class SalesHistoryPage {
     this.store.loadItems(sale.id);
   }
 
+  protected onViewClick(sale: SaleListItem, event: Event): void {
+    event.stopPropagation();
+    this.openDetail(sale);
+  }
+
   protected onPrint(): void {
+    window.print();
+  }
+
+  // Los tres exports toman store.sales() tal cual esta filtrado en pantalla (fecha, medio de
+  // pago, N de pedido) -- lo que ve el usuario es lo que se exporta, sin excepciones.
+  protected onExportCsv(): void {
+    exportSalesCsv(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+  }
+
+  protected async onExportExcel(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      await exportSalesExcel(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
+  protected async onExportPdf(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      await exportSalesPdf(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
+  // Reimprimir directo desde la fila (sin abrir el detalle) -- por si el cliente vuelve mas
+  // tarde a pedir el comprobante de una venta ya cerrada.
+  protected async onPrintClick(sale: SaleListItem, event: Event): Promise<void> {
+    event.stopPropagation();
+    this.selectedSale.set(sale);
+    await this.store.loadItems(sale.id);
     window.print();
   }
 

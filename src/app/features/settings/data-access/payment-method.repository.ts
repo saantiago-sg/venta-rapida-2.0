@@ -54,6 +54,11 @@ export class PaymentMethodRepository {
     if (error) throw error;
   }
 
+  async delete(id: string): Promise<void> {
+    const { error } = await this.supabase.from('payment_methods').delete().eq('id', id);
+    if (error) throw error;
+  }
+
   async setInvoicingEnabled(id: string, invoicingEnabled: boolean): Promise<void> {
     const { error } = await this.supabase
       .from('payment_methods')

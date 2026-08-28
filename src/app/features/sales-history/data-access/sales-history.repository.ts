@@ -11,20 +11,29 @@ interface InvoiceRow {
   error_message: string | null;
 }
 
+interface SaleItemProfitRow {
+  quantity: number;
+  unit_price: number;
+  unit_cost: number;
+}
+
 interface SaleRow {
   id: string;
   sale_number: number;
   status: SaleStatus;
   subtotal: number;
   discount_amount: number;
+  tax_amount: number;
   total: number;
   created_at: string;
   cancel_reason: string | null;
   payment_method_id: string | null;
   customers: { name: string } | { name: string }[] | null;
+  employee: { email: string | null } | { email: string | null }[] | null;
   payment_methods: { name: string; is_cash: boolean } | { name: string; is_cash: boolean }[] | null;
   delivery_types: { name: string } | { name: string }[] | null;
   invoices: InvoiceRow | InvoiceRow[] | null;
+  sale_items: SaleItemProfitRow[] | null;
 }
 
 interface SaleItemRow {
@@ -32,11 +41,20 @@ interface SaleItemRow {
   product_name: string;
   quantity: number;
   unit_price: number;
+  tax_amount: number;
   subtotal: number;
 }
 
 function first<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+// Mismo criterio que get_sales_summary (RPC de reportes): ganancia = suma de
+// (precio - costo) * cantidad de cada linea, con precio/costo ya "congelados" al momento
+// de la venta (sale_items.unit_price/unit_cost son snapshots, no el precio actual).
+function itemsProfit(items: SaleItemProfitRow[] | null): number {
+  if (!items) return 0;
+  return items.reduce((sum, item) => sum + (item.unit_price - item.unit_cost) * item.quantity, 0);
 }
 
 function mapSale(row: SaleRow): SaleListItem {
@@ -45,6 +63,7 @@ function mapSale(row: SaleRow): SaleListItem {
     id: row.id,
     saleNumber: row.sale_number,
     customerName: first(row.customers)?.name ?? null,
+    employeeEmail: first(row.employee)?.email ?? null,
     paymentMethodId: row.payment_method_id,
     paymentMethodName: first(row.payment_methods)?.name ?? '',
     paymentMethodIsCash: first(row.payment_methods)?.is_cash ?? false,
@@ -52,7 +71,9 @@ function mapSale(row: SaleRow): SaleListItem {
     status: row.status,
     subtotal: row.subtotal,
     discountAmount: row.discount_amount,
+    taxAmount: row.tax_amount,
     total: row.total,
+    profit: itemsProfit(row.sale_items),
     createdAt: row.created_at,
     cancelReason: row.cancel_reason,
     invoice: invoice
@@ -74,7 +95,7 @@ export class SalesHistoryRepository {
     let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, subtotal, discount_amount, total, created_at, cancel_reason, payment_method_id, customers(name), payment_methods(name, is_cash), delivery_types(name), invoices(status, pdf_url, ticket_url, error_message)'
+        'id, sale_number, status, subtotal, discount_amount, tax_amount, total, created_at, cancel_reason, payment_method_id, customers(name), employee:profiles!sales_employee_id_fkey(email), payment_methods(name, is_cash), delivery_types(name), invoices(status, pdf_url, ticket_url, error_message), sale_items(quantity, unit_price, unit_cost)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });
@@ -90,7 +111,7 @@ export class SalesHistoryRepository {
   async getItems(saleId: string): Promise<SaleItem[]> {
     const { data, error } = await this.supabase
       .from('sale_items')
-      .select('id, product_name, quantity, unit_price, subtotal')
+      .select('id, product_name, quantity, unit_price, tax_amount, subtotal')
       .eq('sale_id', saleId);
     if (error) throw error;
     return (data as SaleItemRow[]).map((row) => ({
@@ -98,6 +119,7 @@ export class SalesHistoryRepository {
       productName: row.product_name,
       quantity: row.quantity,
       unitPrice: row.unit_price,
+      taxAmount: row.tax_amount,
       subtotal: row.subtotal
     }));
   }

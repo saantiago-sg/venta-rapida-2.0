@@ -21,6 +21,9 @@ export interface TicketData {
   discountAmount: number;
   total: number;
   changeGiven: number | null;
+  // true cuando se vendio sin conexion y todavia no tiene numero de venta real asignado
+  // (se asigna recien al sincronizar) -- ver OfflineQueueService/SyncService.
+  pending?: boolean;
 }
 
 // Se queda siempre montado (oculto en pantalla) y solo se hace visible via CSS de @media print

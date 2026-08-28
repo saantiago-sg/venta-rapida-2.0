@@ -25,13 +25,16 @@
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <div class="overflow-x-auto">
   <p-table [value]="filteredProducts()" [loading]="productsStore.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
         <th>Nombre</th>
         <th>Categoría</th>
         <th>Código de barras</th>
+        <th class="text-right">Costo</th>
         <th class="text-right">Precio</th>
+        <th class="text-right">Margen</th>
         <th class="text-right">Stock</th>
         <th class="w-24 text-center">Activo</th>
         <th class="w-16"></th>
@@ -69,6 +72,7 @@
             <span class="text-xs text-warning">Sin código</span>
           }
         </td>
+        <td class="text-right tabular-nums text-text-secondary">{{ product.cost | number: '1.2-2' }}</td>
         <td class="text-right">
           <div class="flex items-center justify-end gap-2">
             @if (product.taxName) {
@@ -78,6 +82,13 @@
             }
             <span class="tabular-nums">{{ product.price | number: '1.2-2' }}</span>
           </div>
+        </td>
+        <td class="text-right tabular-nums" [class.text-error]="marginPercent(product) < 0" [class.text-success]="marginPercent(product) > 0">
+          @if (product.price > 0) {
+            {{ marginPercent(product) | number: '1.0-1' }}%
+          } @else {
+            <span class="text-text-secondary">—</span>
+          }
         </td>
         <td class="text-right tabular-nums" [class.text-error]="!product.isCombo && product.trackStock && product.stock < 0">
           @if (product.isCombo || !product.trackStock) {
@@ -96,7 +107,7 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7">
+        <td colspan="9">
           @if (searchQuery().trim()) {
             <div class="flex flex-col items-center gap-2 py-10 text-center">
               <i class="pi pi-search text-2xl text-text-secondary"></i>
@@ -113,12 +124,13 @@
     </ng-template>
   </p-table>
   </div>
+  </div>
 </div>
 
 <p-dialog
   [(visible)]="dialogVisible"
   [modal]="true"
-  [style]="{ width: '720px' }"
+  [style]="{ width: '720px', maxWidth: '92vw' }"
   [contentStyle]="{ 'overflow-x': 'hidden' }"
   [header]="editingProduct() ? 'Editar producto' : 'Nuevo producto'"
 >

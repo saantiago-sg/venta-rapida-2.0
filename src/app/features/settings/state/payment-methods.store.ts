@@ -1,8 +1,11 @@
 import { Injectable, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { readCache, writeCache } from '../../../core/offline/local-cache';
 import { PaymentMethodRepository } from '../data-access/payment-method.repository';
 import { PaymentMethod } from '../data-access/models';
+
+const CACHE_KEY = (businessId: string) => `payment_methods_cache_${businessId}`;
 
 @Injectable({ providedIn: 'root' })
 export class PaymentMethodsStore {
@@ -21,7 +24,15 @@ export class PaymentMethodsStore {
 
     this._loading.set(true);
     try {
-      this._paymentMethods.set(await this.repository.list(businessId));
+      const methods = await this.repository.list(businessId);
+      this._paymentMethods.set(methods);
+      writeCache(CACHE_KEY(businessId), methods);
+    } catch (err) {
+      // Sin conexion: se sigue con la ultima lista conocida en vez de dejar el diálogo de
+      // cobro sin medios de pago para elegir (ver PosStore -- venta offline).
+      const cached = readCache<PaymentMethod[]>(CACHE_KEY(businessId));
+      if (!cached) throw err;
+      this._paymentMethods.set(cached);
     } finally {
       this._loading.set(false);
     }
@@ -38,6 +49,11 @@ export class PaymentMethodsStore {
   async setActive(id: string, active: boolean): Promise<void> {
     await this.repository.setActive(id, active);
     this._paymentMethods.update((list) => list.map((m) => (m.id === id ? { ...m, active } : m)));
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+    this._paymentMethods.update((list) => list.filter((m) => m.id !== id));
   }
 
   async setInvoicingEnabled(id: string, invoicingEnabled: boolean): Promise<void> {

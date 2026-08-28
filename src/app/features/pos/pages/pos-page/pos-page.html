@@ -1,22 +1,60 @@
 <div class="h-full flex flex-col">
   <h1 class="text-xl font-semibold tracking-tight mb-5">Vender</h1>
 
+  <div class="lg:hidden flex rounded-lg bg-card-hover p-1 mb-4 shrink-0">
+    <button
+      type="button"
+      (click)="mobileTab.set('buscar')"
+      class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+      [class]="mobileTab() === 'buscar' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+    >
+      Buscar
+    </button>
+    <button
+      type="button"
+      (click)="mobileTab.set('pedido')"
+      class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+      [class]="mobileTab() === 'pedido' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+    >
+      Pedido
+      @if (posStore.cart().length > 0) {
+        <span class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-semibold align-middle">
+          {{ posStore.cart().length }}
+        </span>
+      }
+    </button>
+  </div>
+
   <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_18rem] gap-5 min-h-0">
-    <div class="surface-card bg-card border border-border rounded-xl p-5 min-h-0">
+    <div
+      class="surface-card bg-card border border-border rounded-xl p-5 min-h-0 lg:block"
+      [class]="mobileTab() === 'pedido' ? 'hidden' : ''"
+    >
       <app-product-search />
     </div>
 
-    <div class="surface-card bg-card border border-border rounded-xl p-5 min-h-0">
+    <div
+      class="surface-card bg-card border border-border rounded-xl p-5 min-h-0 lg:block"
+      [class]="mobileTab() === 'buscar' ? 'hidden' : ''"
+    >
       <app-cart />
     </div>
 
-    <div class="surface-card bg-card border border-border rounded-xl p-6 overflow-auto">
+    <div
+      class="surface-card bg-card border border-border rounded-xl p-6 overflow-auto lg:block"
+      [class]="mobileTab() === 'buscar' ? 'hidden' : ''"
+    >
       <app-payment-panel (saleConfirmed)="onSaleConfirmed($event)" />
     </div>
   </div>
 </div>
 
-<p-dialog [(visible)]="confirmationVisible" [modal]="true" [style]="{ width: '24rem' }" header="Venta confirmada">
+<p-dialog
+  [(visible)]="confirmationVisible"
+  [modal]="true"
+  [style]="{ width: '24rem', maxWidth: '92vw' }"
+  header="Venta confirmada"
+>
   @if (lastSale(); as sale) {
     <div class="flex flex-col gap-2">
       <p class="text-2xl font-semibold tracking-tight text-brand">Venta #{{ sale.saleNumber }}</p>

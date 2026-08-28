@@ -117,6 +117,11 @@ export class ProductList {
     this.componentsArray.removeAt(index);
   }
 
+  protected marginPercent(product: Product): number {
+    if (product.price <= 0) return 0;
+    return ((product.price - product.cost) / product.price) * 100;
+  }
+
   protected showInitialStock(): boolean {
     return !this.form.controls.isCombo.value && this.form.controls.trackStock.value;
   }

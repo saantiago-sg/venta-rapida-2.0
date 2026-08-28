@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -43,7 +44,7 @@ function paymentMethodRank(name: string): number {
 
 @Component({
   selector: 'app-payment-panel',
-  imports: [DecimalPipe, FormsModule, ButtonModule, DialogModule, InputNumberModule, SelectModule],
+  imports: [DecimalPipe, FormsModule, RouterLink, ButtonModule, DialogModule, InputNumberModule, SelectModule],
   templateUrl: './payment-panel.html'
 })
 export class PaymentPanel {

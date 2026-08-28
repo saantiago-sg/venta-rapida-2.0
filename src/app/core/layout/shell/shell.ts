@@ -3,6 +3,8 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { AuthService } from '../../auth/auth.service';
 import { AuthStore, MembershipRole } from '../../auth/auth.store';
+import { ConnectivityService } from '../../offline/connectivity.service';
+import { OfflineQueueService } from '../../offline/offline-queue.service';
 
 const ROLE_LABELS: Record<MembershipRole, string> = {
   owner: 'Dueño',
@@ -17,10 +19,10 @@ interface SubscriptionBanner {
   message: string;
 }
 
-const BANNER_STYLES: Record<BannerSeverity, { wrap: string; icon: string; iconName: string }> = {
-  info: { wrap: 'bg-info/10 border-info/20', icon: 'bg-info/15 text-info', iconName: 'pi-info-circle' },
-  warn: { wrap: 'bg-warning/10 border-warning/20', icon: 'bg-warning/15 text-warning', iconName: 'pi-exclamation-triangle' },
-  error: { wrap: 'bg-error/10 border-error/20', icon: 'bg-error/15 text-error', iconName: 'pi-times-circle' }
+const BANNER_STYLES: Record<BannerSeverity, { wrap: string; textColor: string; iconName: string }> = {
+  info: { wrap: 'bg-info/10 border-info/20', textColor: 'text-info', iconName: 'pi-info-circle' },
+  warn: { wrap: 'bg-warning/10 border-warning/20', textColor: 'text-warning', iconName: 'pi-exclamation-triangle' },
+  error: { wrap: 'bg-error/10 border-error/20', textColor: 'text-error', iconName: 'pi-times-circle' }
 };
 
 function formatDate(isoDate: string): string {
@@ -58,6 +60,10 @@ const NAV_SECTIONS: NavSection[] = [
   }
 ];
 
+// Breakpoint 'lg' de Tailwind -- debajo de esto el sidebar pasa a superponerse (overlay) en
+// vez de empujar el contenido, ver shell.html.
+const DESKTOP_BREAKPOINT_PX = 1024;
+
 @Component({
   selector: 'app-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -65,8 +71,12 @@ const NAV_SECTIONS: NavSection[] = [
 })
 export class Shell {
   protected readonly authStore = inject(AuthStore);
+  protected readonly connectivity = inject(ConnectivityService);
+  protected readonly offlineQueue = inject(OfflineQueueService);
   protected readonly navSections = NAV_SECTIONS;
-  protected readonly sidebarOpen = signal(true);
+  // Arranca abierto en desktop (empuja contenido) y cerrado en mobile/tablet (evita que el
+  // overlay tape la pantalla apenas se entra a la app).
+  protected readonly sidebarOpen = signal(window.innerWidth >= DESKTOP_BREAKPOINT_PX);
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
@@ -87,12 +97,10 @@ export class Shell {
       case 'past_due':
         return {
           severity: 'warn',
-          message: until
-            ? `Tu suscripción venció el ${until}. Contactate con el administrador para renovarla.`
-            : 'Tu suscripción está vencida. Contactate con el administrador para renovarla.'
+          message: until ? `Tu suscripción venció el ${until}.` : 'Tu suscripción está vencida.'
         };
       case 'cancelled':
-        return { severity: 'error', message: 'Tu suscripción fue cancelada. Contactate con el administrador.' };
+        return { severity: 'error', message: 'Tu suscripción fue cancelada.' };
       default:
         return null;
     }
@@ -120,6 +128,12 @@ export class Shell {
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((open) => !open);
+  }
+
+  // En mobile el sidebar es un overlay -- si no se cierra solo al navegar, queda tapando la
+  // pantalla despues de entrar a una seccion.
+  protected onNavLinkClick(): void {
+    if (window.innerWidth < DESKTOP_BREAKPOINT_PX) this.sidebarOpen.set(false);
   }
 
   protected onBusinessChange(event: Event): void {

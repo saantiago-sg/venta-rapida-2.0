@@ -41,6 +41,7 @@
 
 <h2 class="text-sm font-medium text-text-secondary mt-8 mb-3">Usuarios</h2>
 <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <div class="overflow-x-auto">
   <p-table [value]="store.users()" [loading]="store.usersLoading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -91,4 +92,5 @@
       </tr>
     </ng-template>
   </p-table>
+  </div>
 </div>

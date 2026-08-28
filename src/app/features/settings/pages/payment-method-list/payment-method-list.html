@@ -15,14 +15,20 @@
     <p-button label="Agregar" [loading]="saving()" (onClick)="onCreate()" />
   </div>
 
+  @if (errorMessage()) {
+    <p class="text-sm text-error">{{ errorMessage() }}</p>
+  }
+
   <div class="border border-border rounded-lg overflow-hidden">
-  <p-table [value]="store.paymentMethods()" [loading]="store.loading()" dataKey="id">
+  <div class="overflow-x-auto">
+  <p-table [value]="store.paymentMethods()" [loading]="store.loading()" dataKey="id" [rowTrackBy]="trackById">
     <ng-template pTemplate="header">
       <tr>
         <th>Nombre</th>
         <th class="w-32 text-center">Es efectivo</th>
         <th class="w-32 text-center">Facturar</th>
         <th class="w-32 text-center">Activo</th>
+        <th class="w-16"></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-method>
@@ -51,11 +57,20 @@
         <td class="text-center">
           <p-toggleswitch [ngModel]="method.active" (ngModelChange)="onToggleActive(method.id, $event)" />
         </td>
+        <td class="text-center">
+          <button
+            type="button"
+            class="pi pi-trash cursor-pointer text-text-secondary hover:text-error"
+            [class.opacity-50]="deletingId() === method.id"
+            [disabled]="deletingId() === method.id"
+            (click)="onDeleteClick(method)"
+          ></button>
+        </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="4">
+        <td colspan="5">
           <div class="flex flex-col items-center gap-2 py-10 text-center">
             <i class="pi pi-wallet text-2xl text-text-secondary"></i>
             <p class="text-sm text-text-secondary">Todavía no hay medios de pago cargados.</p>
@@ -65,4 +80,7 @@
     </ng-template>
   </p-table>
   </div>
+  </div>
 </div>
+
+<p-confirmdialog />

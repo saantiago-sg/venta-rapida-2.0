@@ -1,0 +1,60 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
+  <div class="mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Balanza con impresión de peso</h3>
+    <p class="text-xs text-text-secondary mt-0.5">
+      Solo hace falta si tu balanza imprime una etiqueta con el peso codificado adentro del
+      código de barras (variable en cada pesada). Si pesás en el momento de vender, no necesitás
+      activar esto.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Activar</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Al escanear, primero se intenta decodificar el peso; si no matchea, se busca por código
+        exacto como siempre.
+      </p>
+    </div>
+    <p-toggleswitch formControlName="enabled" />
+  </div>
+
+  @if (form.controls.enabled.value) {
+    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+      <div>
+        <label class="text-sm font-medium text-text">Prefijo</label>
+        <p class="text-xs text-text-secondary mt-0.5">Dígitos fijos con los que arrancan todas las etiquetas de tu balanza.</p>
+      </div>
+      <input type="text" pInputText formControlName="prefix" class="w-full max-w-[10rem]" inputmode="numeric" />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+      <div>
+        <label class="text-sm font-medium text-text">Dígitos del código de producto</label>
+        <p class="text-xs text-text-secondary mt-0.5">
+          Cargá ese mismo código corto (sin el prefijo ni el peso) en el campo "Código de
+          barras" de cada producto pesable.
+        </p>
+      </div>
+      <p-inputnumber formControlName="productCodeDigits" [min]="1" [max]="10" styleClass="w-full max-w-[10rem]" />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+      <div>
+        <label class="text-sm font-medium text-text">Dígitos del peso (en gramos)</label>
+        <p class="text-xs text-text-secondary mt-0.5">Cuántos dígitos ocupa el peso en la etiqueta.</p>
+      </div>
+      <p-inputnumber formControlName="weightDigits" [min]="1" [max]="10" styleClass="w-full max-w-[10rem]" />
+    </div>
+
+    <div class="rounded-xl bg-card-hover p-4 text-sm flex flex-col gap-1">
+      <span class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Ejemplo con esta configuración</span>
+      <span class="font-mono tabular-nums">{{ exampleCode() }}</span>
+      <span class="text-text-secondary text-xs">Se interpretaría como {{ exampleWeightGrams() }} g del producto configurado con ese código.</span>
+    </div>
+  }
+
+  <div class="flex justify-end pt-6 mt-2 border-t border-border">
+    <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+  </div>
+</form>

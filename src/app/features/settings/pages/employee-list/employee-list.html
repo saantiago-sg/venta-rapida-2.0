@@ -4,6 +4,7 @@
   </div>
 
   <div class="border border-border rounded-lg overflow-hidden">
+  <div class="overflow-x-auto">
   <p-table [value]="store.employees()" [loading]="store.loading()" dataKey="membershipId">
     <ng-template pTemplate="header">
       <tr>
@@ -71,9 +72,10 @@
     </ng-template>
   </p-table>
   </div>
+  </div>
 </div>
 
-<p-dialog [(visible)]="inviteDialogVisible" [modal]="true" appendTo="body" [style]="{ width: '26rem' }" header="Invitar empleado">
+<p-dialog [(visible)]="inviteDialogVisible" [modal]="true" appendTo="body" [style]="{ width: '26rem', maxWidth: '92vw' }" header="Invitar empleado">
   <form [formGroup]="inviteForm" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Email</label>
@@ -111,7 +113,7 @@
   [(visible)]="permissionsDialogVisible"
   [modal]="true"
   appendTo="body"
-  [style]="{ width: '22rem' }"
+  [style]="{ width: '22rem', maxWidth: '92vw' }"
   [header]="'Permisos de ' + (editingEmployee()?.fullName || editingEmployee()?.email)"
 >
   <div class="flex flex-col gap-3">

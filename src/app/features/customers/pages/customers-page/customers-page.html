@@ -6,6 +6,7 @@
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <div class="overflow-x-auto">
   <p-table [value]="store.customers()" [loading]="store.loading()" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
@@ -52,13 +53,14 @@
     </ng-template>
   </p-table>
   </div>
+  </div>
 </div>
 
 <p-dialog
   [(visible)]="dialogVisible"
   [modal]="true"
   appendTo="body"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '28rem', maxWidth: '92vw' }"
   [header]="editingCustomer() ? 'Editar cliente' : 'Nuevo cliente'"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">

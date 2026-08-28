@@ -15,7 +15,7 @@
     @if (loading()) {
       <div class="h-9 w-28 rounded-md bg-white/20 animate-pulse"></div>
     } @else {
-      <span class="text-3xl font-semibold tabular-nums text-white" [appCountUp]="summary()?.totalSales ?? 0"></span>
+      <span class="text-3xl font-semibold tabular-nums text-white">$<span [appCountUp]="summary()?.totalSales ?? 0"></span></span>
     }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
@@ -23,7 +23,7 @@
     @if (loading()) {
       <div class="h-9 w-28 rounded-md bg-card-hover animate-pulse"></div>
     } @else {
-      <span class="text-3xl font-semibold tabular-nums text-success" [appCountUp]="summary()?.totalProfit ?? 0"></span>
+      <span class="text-3xl font-semibold tabular-nums text-success">$<span [appCountUp]="summary()?.totalProfit ?? 0"></span></span>
     }
   </div>
   <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col gap-1.5">
@@ -63,7 +63,7 @@
               <p class="text-sm font-medium truncate">{{ product.productName }}</p>
               <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
             </div>
-            <span class="text-sm font-medium tabular-nums text-success">{{ product.profit | number: '1.2-2' }}</span>
+            <span class="text-sm font-medium tabular-nums text-success">${{ product.profit | number: '1.2-2' }}</span>
           </div>
         } @empty {
           <div class="flex flex-col items-center gap-2 py-8 text-center">
@@ -89,7 +89,7 @@
               <p class="text-sm font-medium truncate">{{ product.productName }}</p>
               <p class="text-xs text-text-secondary">{{ product.quantitySold }} vendidos</p>
             </div>
-            <span class="text-sm font-medium tabular-nums text-error">{{ product.profit | number: '1.2-2' }}</span>
+            <span class="text-sm font-medium tabular-nums text-error">${{ product.profit | number: '1.2-2' }}</span>
           </div>
         } @empty {
           <div class="flex flex-col items-center gap-2 py-8 text-center">

@@ -8,7 +8,10 @@ import { InputTextModule } from 'primeng/inputtext';
 
 import { Product } from '../../../products/data-access/models';
 import { ProductsStore } from '../../../products/state/products.store';
+import { DEFAULT_WEIGHTED_BARCODE_CONFIG } from '../../../settings/data-access/models';
+import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { PosStore } from '../../state/pos.store';
+import { parseWeightedBarcode } from '../../data-access/weighted-barcode';
 
 const GRAMS_PER_KG = 1000;
 
@@ -20,6 +23,7 @@ const GRAMS_PER_KG = 1000;
 export class ProductSearch {
   protected readonly productsStore = inject(ProductsStore);
   protected readonly posStore = inject(PosStore);
+  private readonly businessSettingsStore = inject(BusinessSettingsStore);
 
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
@@ -57,6 +61,7 @@ export class ProductSearch {
 
   constructor() {
     this.productsStore.load();
+    this.businessSettingsStore.load();
   }
 
   protected onSelect(productId: string): void {
@@ -79,6 +84,26 @@ export class ProductSearch {
   protected onBarcodeEnter(): void {
     const q = this.query().trim();
     if (!q) return;
+
+    // Si la balanza imprime el peso codificado en el codigo (config por negocio), se prueba
+    // primero ese patron -- matchea, agrega directo con el peso ya pesado y listo, sin pasar
+    // por el popup manual. Si no matchea o no encuentra el producto, cae al lookup de siempre.
+    const weighted = parseWeightedBarcode(
+      q,
+      this.businessSettingsStore.business()?.weightedBarcode ?? DEFAULT_WEIGHTED_BARCODE_CONFIG
+    );
+    if (weighted) {
+      const product = this.productsStore
+        .products()
+        .find((p) => p.active && p.saleType === 'weight' && p.barcode === weighted.productBarcode);
+      if (product) {
+        this.query.set('');
+        this.notFound.set(false);
+        this.posStore.addToCart(product, weighted.weightGrams / GRAMS_PER_KG);
+        this.refocus();
+        return;
+      }
+    }
 
     const match = this.productsStore.products().find((p) => p.active && p.barcode === q);
     this.query.set('');

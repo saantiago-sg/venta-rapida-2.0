@@ -13,6 +13,7 @@ export interface SaleListItem {
   id: string;
   saleNumber: number;
   customerName: string | null;
+  employeeEmail: string | null;
   paymentMethodId: string | null;
   paymentMethodName: string;
   paymentMethodIsCash: boolean;
@@ -20,7 +21,9 @@ export interface SaleListItem {
   status: SaleStatus;
   subtotal: number;
   discountAmount: number;
+  taxAmount: number;
   total: number;
+  profit: number;
   createdAt: string;
   cancelReason: string | null;
   invoice: SaleInvoice | null;
@@ -31,5 +34,6 @@ export interface SaleItem {
   productName: string;
   quantity: number;
   unitPrice: number;
+  taxAmount: number;
   subtotal: number;
 }
