@@ -71,7 +71,7 @@
   [modal]="true"
   appendTo="body"
   [style]="{ width: '30rem', maxWidth: '92vw' }"
-  [contentStyle]="{ overflow: 'hidden' }"
+  [contentStyle]="{ overflow: 'hidden', padding: '1.25rem' }"
 >
   <ng-template pTemplate="header">
     <div class="flex items-center gap-2.5 min-w-0">
@@ -83,12 +83,12 @@
   </ng-template>
 
   @if (weighingProduct(); as product) {
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 min-w-0">
       <p class="text-sm text-text-secondary">
         Precio: <span class="font-semibold text-text">{{ product.price | number: '1.2-2' }}</span> / kg
       </p>
 
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 min-w-0">
         <label class="text-xs text-text-secondary">Peso (g)</label>
         <p-inputnumber
           [ngModel]="weightInput()"
@@ -100,7 +100,7 @@
           [maxFractionDigits]="0"
           suffix=" g"
           styleClass="w-full"
-          inputStyleClass="text-center text-2xl font-semibold py-3"
+          inputStyleClass="text-center text-2xl font-semibold py-3 w-full"
           autofocus
         />
         @if (weightHint(); as hint) {

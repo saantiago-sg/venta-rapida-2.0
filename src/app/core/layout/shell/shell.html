@@ -10,7 +10,6 @@
     <div class="h-full bg-sidebar border-r border-sidebar-border flex flex-col">
       <a
         routerLink="/dashboard"
-        (click)="onNavLinkClick()"
         class="h-16 flex items-center"
         [class]="sidebarOpen() ? 'px-4' : 'justify-center'"
         aria-label="Ir al inicio"
@@ -34,8 +33,9 @@
             @for (item of section.items; track item.path) {
               <a
                 [routerLink]="item.path"
-                (click)="onNavLinkClick()"
-                [title]="sidebarOpen() ? '' : item.label"
+                [pTooltip]="item.label"
+                tooltipPosition="right"
+                [tooltipDisabled]="sidebarOpen()"
                 routerLinkActive="bg-sidebar-active/60 text-brand font-medium before:h-5"
                 class="relative flex items-center gap-3 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active/60 hover:text-sidebar-text transition-colors before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[3px] before:rounded-full before:bg-brand before:transition-all before:duration-300"
                 [class]="sidebarOpen() ? 'px-3' : 'justify-center px-0'"
@@ -57,7 +57,9 @@
         <button
           type="button"
           (click)="onLogout()"
-          [title]="sidebarOpen() ? '' : 'Cerrar sesión'"
+          pTooltip="Cerrar sesión"
+          tooltipPosition="right"
+          [tooltipDisabled]="sidebarOpen()"
           class="flex items-center gap-2 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors"
           [class]="sidebarOpen() ? 'px-3' : 'justify-center px-0'"
         >

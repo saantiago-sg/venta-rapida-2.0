@@ -1,5 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TooltipModule } from 'primeng/tooltip';
+import { filter } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
 import { AuthStore, MembershipRole } from '../../auth/auth.store';
@@ -66,7 +68,7 @@ const DESKTOP_BREAKPOINT_PX = 1024;
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TooltipModule],
   templateUrl: './shell.html'
 })
 export class Shell {
@@ -80,6 +82,15 @@ export class Shell {
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+
+  constructor() {
+    // Cerrar el sidebar recien cuando la navegacion termina (no en el click del link) --
+    // atarlo al click competia con el propio manejador de RouterLink en el mismo elemento y
+    // en mobile a veces ganaba el cierre, comiendose la navegacion (primer tap "fallaba").
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      if (window.innerWidth < DESKTOP_BREAKPOINT_PX) this.sidebarOpen.set(false);
+    });
+  }
 
   // Aviso de suscripcion: lo carga/marca el Super Admin (manual, ver Fase 1), se muestra acá
   // porque el dueño del negocio necesita enterarse sin tener que ir a buscarlo.
@@ -128,12 +139,6 @@ export class Shell {
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((open) => !open);
-  }
-
-  // En mobile el sidebar es un overlay -- si no se cierra solo al navegar, queda tapando la
-  // pantalla despues de entrar a una seccion.
-  protected onNavLinkClick(): void {
-    if (window.innerWidth < DESKTOP_BREAKPOINT_PX) this.sidebarOpen.set(false);
   }
 
   protected onBusinessChange(event: Event): void {

@@ -94,7 +94,12 @@ export class ProductList {
     price: [0, [Validators.required, Validators.min(0)]],
     cost: [0, [Validators.min(0)]],
     trackStock: [false],
-    initialStock: [0, [Validators.min(0)]],
+    // Sin Validators.min(0): al editar, "Stock actual" puede venir en negativo si el producto
+    // se vendio de mas (la app permite vender a stock negativo, nunca lo bloquea -- ver
+    // product-list.html, la columna Stock marca esto en rojo pero no lo prohibe). Si esto
+    // fuera invalido, el formulario no dejaria guardar NINGUN cambio en ese producto hasta
+    // "corregir" el stock a mano.
+    initialStock: [0],
     isCombo: [false],
     components: this.fb.array<ComponentFormGroup>([])
   });

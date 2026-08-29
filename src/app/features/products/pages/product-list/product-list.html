@@ -135,7 +135,7 @@
   [header]="editingProduct() ? 'Editar producto' : 'Nuevo producto'"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-3">
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Nombre</label>
         <input type="text" pInputText formControlName="name" class="w-full" />
@@ -155,7 +155,7 @@
       Sin código de barras no vas a poder buscar el producto escaneándolo en Vender.
     </span>
 
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Categoría (opcional)</label>
         <p-select
@@ -202,7 +202,7 @@
     </div>
 
     @if (!form.controls.isCombo.value) {
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm text-text-secondary">Tipo de venta</label>
           <p-select
@@ -268,7 +268,7 @@
       </div>
     }
 
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Precio</label>
         <p-inputnumber formControlName="price" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
@@ -280,7 +280,7 @@
     </div>
 
     @if (showInitialStock()) {
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm text-text-secondary">{{ editingProduct() ? 'Stock actual' : 'Stock inicial' }}</label>
           <p-inputnumber
