@@ -17,7 +17,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TooltipModule } from 'primeng/tooltip';
 
+import { AuthStore } from '../../../../core/auth/auth.store';
 import { TaxesStore } from '../../../settings/state/taxes.store';
 import { Product } from '../../data-access/models';
 import { CategoriesStore } from '../../state/categories.store';
@@ -51,15 +53,24 @@ function normalize(text: string): string {
     InputTextModule,
     SelectModule,
     TableModule,
-    ToggleSwitchModule
+    ToggleSwitchModule,
+    TooltipModule
   ],
   templateUrl: './product-list.html'
 })
 export class ProductList {
   private readonly fb = inject(FormBuilder);
+  private readonly authStore = inject(AuthStore);
   protected readonly productsStore = inject(ProductsStore);
   protected readonly categoriesStore = inject(CategoriesStore);
   protected readonly taxesStore = inject(TaxesStore);
+
+  // Espeja la RLS de la tabla products/categories (categories_manage, products_manage),
+  // que exige can_manage_products -- si el boton no se deshabilita aca, el guardado igual
+  // falla del lado del servidor con un error crudo de Postgres.
+  protected canManageProducts(): boolean {
+    return this.authStore.hasPermission('can_manage_products');
+  }
 
   protected readonly saleTypeOptions = SALE_TYPE_OPTIONS;
   protected readonly dialogVisible = signal(false);

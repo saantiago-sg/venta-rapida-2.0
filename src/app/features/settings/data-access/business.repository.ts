@@ -25,9 +25,11 @@ interface BusinessRow {
   address: string | null;
   cash_discount_percentage: number;
   settings: BusinessSettingsJson | null;
+  onboarding_completed: boolean;
 }
 
-const SELECT_COLUMNS = 'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage, settings';
+const SELECT_COLUMNS =
+  'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage, settings, onboarding_completed';
 
 function mapWeightedBarcode(row: WeightedBarcodeConfigRow | undefined): WeightedBarcodeConfig {
   if (!row) return DEFAULT_WEIGHTED_BARCODE_CONFIG;
@@ -49,7 +51,8 @@ function mapRow(row: BusinessRow): BusinessSettings {
     phone: row.phone,
     address: row.address,
     cashDiscountPercentage: row.cash_discount_percentage,
-    weightedBarcode: mapWeightedBarcode(row.settings?.weighted_barcode)
+    weightedBarcode: mapWeightedBarcode(row.settings?.weighted_barcode),
+    onboardingCompleted: row.onboarding_completed
   };
 }
 
@@ -104,6 +107,14 @@ export class BusinessRepository {
     };
 
     const { error } = await this.supabase.from('businesses').update({ settings }).eq('id', businessId);
+    if (error) throw error;
+  }
+
+  async completeOnboarding(businessId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('businesses')
+      .update({ onboarding_completed: true })
+      .eq('id', businessId);
     if (error) throw error;
   }
 }

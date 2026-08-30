@@ -42,4 +42,12 @@ export class BusinessSettingsStore {
     await this.repository.updateWeightedBarcode(businessId, config);
     this._business.update((current) => (current ? { ...current, weightedBarcode: config } : current));
   }
+
+  async completeOnboarding(): Promise<void> {
+    const businessId = this.authStore.activeBusinessId();
+    if (!businessId) return;
+
+    await this.repository.completeOnboarding(businessId);
+    this._business.update((current) => (current ? { ...current, onboardingCompleted: true } : current));
+  }
 }

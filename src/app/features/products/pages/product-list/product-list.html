@@ -21,7 +21,15 @@
         </button>
       }
     </span>
-    <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="openCreate()" />
+    <p-button
+      label="Nuevo producto"
+      icon="pi pi-plus"
+      [disabled]="!canManageProducts()"
+      (onClick)="openCreate()"
+      pTooltip="No tenés permiso para gestionar productos"
+      tooltipPosition="bottom"
+      [tooltipDisabled]="canManageProducts()"
+    />
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
@@ -98,10 +106,26 @@
           }
         </td>
         <td class="text-center">
-          <p-toggleswitch [ngModel]="product.active" (ngModelChange)="onToggleActive(product.id, $event)" />
+          <p-toggleswitch
+            [ngModel]="product.active"
+            [disabled]="!canManageProducts()"
+            (ngModelChange)="onToggleActive(product.id, $event)"
+          />
         </td>
         <td>
-          <button type="button" class="pi pi-pencil cursor-pointer text-text-secondary hover:text-text" (click)="openEdit(product)"></button>
+          <button
+            type="button"
+            class="pi pi-pencil text-text-secondary"
+            [class.cursor-pointer]="canManageProducts()"
+            [class.hover:text-text]="canManageProducts()"
+            [class.opacity-40]="!canManageProducts()"
+            [class.cursor-not-allowed]="!canManageProducts()"
+            [disabled]="!canManageProducts()"
+            (click)="openEdit(product)"
+            pTooltip="No tenés permiso para gestionar productos"
+            tooltipPosition="left"
+            [tooltipDisabled]="canManageProducts()"
+          ></button>
         </td>
       </tr>
     </ng-template>

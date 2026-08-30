@@ -8,10 +8,10 @@ import { AuthStore, MembershipRole } from '../../auth/auth.store';
 import { ConnectivityService } from '../../offline/connectivity.service';
 import { OfflineQueueService } from '../../offline/offline-queue.service';
 
-const ROLE_LABELS: Record<MembershipRole, string> = {
-  owner: 'Dueño',
-  admin: 'Administrador',
-  cashier: 'Cajero'
+const ROLE_STYLES: Record<MembershipRole, { label: string; icon: string }> = {
+  owner: { label: 'Dueño', icon: 'pi-crown' },
+  admin: { label: 'Administrador', icon: 'pi-shield' },
+  cashier: { label: 'Cajero', icon: 'pi-wallet' }
 };
 
 type BannerSeverity = 'info' | 'warn' | 'error';
@@ -42,6 +42,13 @@ interface NavSection {
   label: string;
   items: NavItem[];
 }
+
+// Espeja los guards de ruta (dashboard.routes.ts, settings.routes.ts) -- si un item no esta
+// aca, cualquier empleado activo lo ve. Si esta, solo se ve con el permiso puntual.
+const NAV_ITEM_PERMISSIONS: Record<string, string> = {
+  '/dashboard': 'can_view_reports',
+  '/configuracion': 'can_manage_settings'
+};
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -75,7 +82,16 @@ export class Shell {
   protected readonly authStore = inject(AuthStore);
   protected readonly connectivity = inject(ConnectivityService);
   protected readonly offlineQueue = inject(OfflineQueueService);
-  protected readonly navSections = NAV_SECTIONS;
+
+  protected readonly navSections = computed<NavSection[]>(() =>
+    NAV_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        const permission = NAV_ITEM_PERMISSIONS[item.path];
+        return !permission || this.authStore.hasPermission(permission);
+      })
+    })).filter((section) => section.items.length > 0)
+  );
   // Arranca abierto en desktop (empuja contenido) y cerrado en mobile/tablet (evita que el
   // overlay tape la pantalla apenas se entra a la app).
   protected readonly sidebarOpen = signal(window.innerWidth >= DESKTOP_BREAKPOINT_PX);
@@ -133,8 +149,8 @@ export class Shell {
     this.bannerDismissed.set(true);
   }
 
-  protected roleLabel(role: MembershipRole): string {
-    return ROLE_LABELS[role];
+  protected roleStyle(role: MembershipRole) {
+    return ROLE_STYLES[role];
   }
 
   protected toggleSidebar(): void {

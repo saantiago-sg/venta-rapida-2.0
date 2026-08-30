@@ -8,6 +8,7 @@ export interface BusinessSettings {
   address: string | null;
   cashDiscountPercentage: number;
   weightedBarcode: WeightedBarcodeConfig;
+  onboardingCompleted: boolean;
 }
 
 export interface BusinessSettingsFormValue {
@@ -103,11 +104,19 @@ export interface InviteEmployeeInput {
 
 // Solo se listan permisos que hoy tienen un efecto real en la app (RLS o guard de ruta) --
 // mostrar un toggle que no hace nada seria enganoso para el dueno.
-export const PERMISSION_CATALOG: { key: string; label: string }[] = [
-  { key: 'can_manage_products', label: 'Gestionar productos' },
-  { key: 'can_manage_employees', label: 'Gestionar empleados' },
-  { key: 'can_manage_settings', label: 'Gestionar configuración' },
-  { key: 'can_cancel_sales', label: 'Cancelar ventas' },
-  { key: 'can_view_reports', label: 'Ver reportes' },
-  { key: 'can_manage_invoicing', label: 'Gestionar facturación electrónica' }
+export const PERMISSION_CATALOG: { key: string; label: string; description: string }[] = [
+  { key: 'can_manage_products', label: 'Gestionar productos', description: 'Crear y editar productos y categorías' },
+  { key: 'can_manage_employees', label: 'Gestionar empleados', description: 'Invitar empleados y cambiar sus roles/permisos' },
+  {
+    key: 'can_manage_settings',
+    label: 'Gestionar configuración',
+    description: 'Medios de pago, impuestos, tipos de entrega y datos del negocio'
+  },
+  { key: 'can_cancel_sales', label: 'Cancelar ventas', description: 'Anular una venta ya cargada' },
+  { key: 'can_view_reports', label: 'Ver reportes', description: 'Ver estadísticas y reportes del negocio' },
+  {
+    key: 'can_manage_invoicing',
+    label: 'Gestionar facturación electrónica',
+    description: 'Configurar la facturación electrónica (AFIP)'
+  }
 ];

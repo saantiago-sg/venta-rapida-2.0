@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { LoginPage } from './core/auth/pages/login-page/login-page';
 import { Shell } from './core/layout/shell/shell';
+import { onboardingGuard } from './features/onboarding/onboarding.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginPage },
@@ -15,10 +16,18 @@ export const routes: Routes = [
     loadChildren: () => import('./features/super-admin/super-admin.routes').then((m) => m.SUPER_ADMIN_ROUTES)
   },
 
+  // Wizard de bienvenida: fuera del Shell (a pantalla completa, sin nav) y sin onboardingGuard
+  // (que redirige justamente ACA) para no generar un loop de redirects.
+  {
+    path: 'bienvenida',
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/onboarding/onboarding.routes').then((m) => m.ONBOARDING_ROUTES)
+  },
+
   {
     path: '',
     component: Shell,
-    canActivate: [authGuard],
+    canActivate: [authGuard, onboardingGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

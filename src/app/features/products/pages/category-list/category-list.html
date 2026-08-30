@@ -21,7 +21,15 @@
         </button>
       }
     </span>
-    <p-button label="Nueva categoría" icon="pi pi-plus" (onClick)="openCreate()" />
+    <p-button
+      label="Nueva categoría"
+      icon="pi pi-plus"
+      [disabled]="!canManageProducts()"
+      (onClick)="openCreate()"
+      pTooltip="No tenés permiso para gestionar productos"
+      tooltipPosition="bottom"
+      [tooltipDisabled]="canManageProducts()"
+    />
   </div>
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
@@ -46,6 +54,7 @@
           <td class="text-center">
             <p-toggleswitch
               [ngModel]="category.active"
+              [disabled]="!canManageProducts()"
               (ngModelChange)="onToggleActive(category.id, $event)"
             />
           </td>

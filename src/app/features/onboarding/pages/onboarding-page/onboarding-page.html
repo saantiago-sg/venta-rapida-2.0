@@ -1,0 +1,169 @@
+<div
+  class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden"
+  style="background-image: radial-gradient(rgba(249,115,22,0.06) 1px, transparent 1.5px), linear-gradient(to bottom right, #FDFBF8, #F5EEE4); background-size: 22px 22px, auto;"
+>
+  <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-brand/10 blur-3xl blob-float-a" aria-hidden="true"></div>
+  <div class="absolute -bottom-24 -left-16 w-[26rem] h-[26rem] rounded-full bg-brand/10 blur-3xl blob-float-b" aria-hidden="true"></div>
+
+  <div class="relative w-full max-w-lg flex flex-col gap-5">
+    <div class="flex items-center gap-3 justify-center" animate.enter="enter-fade-d1">
+      <img src="images/logovrnav.png" alt="VentaRapida" class="h-9 w-9 rounded-xl shadow-lg" />
+      <span class="text-lg font-bold text-text tracking-tight">VentaRapida</span>
+    </div>
+
+    @if (step() < 4) {
+      <div class="flex items-center justify-center gap-2" animate.enter="enter-fade-d1">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <span
+            class="h-1.5 rounded-full transition-all"
+            [class]="n === step() ? 'w-8 bg-brand' : n < step() ? 'w-4 bg-brand/50' : 'w-4 bg-black/10'"
+          ></span>
+        }
+      </div>
+    }
+
+    <div
+      class="relative bg-white border border-black/5 rounded-2xl shadow-2xl shadow-brand/10 p-6 sm:p-8 flex flex-col gap-5"
+      animate.enter="enter-rise"
+      style="animation-delay: 120ms"
+    >
+      @switch (step()) {
+        @case (1) {
+          <div class="flex flex-col items-center text-center gap-3 py-4">
+            <span class="flex items-center justify-center w-16 h-16 rounded-full bg-brand/10 text-brand">
+              <i class="pi pi-sparkles text-2xl"></i>
+            </span>
+            <h1 class="text-xl font-bold text-slate-900">¡Hola, {{ businessName }}!</h1>
+            <p class="text-sm text-slate-500 max-w-sm">
+              Configuremos todo en unos minutos para que puedas empezar a vender.
+            </p>
+            <p-button label="Comenzar" icon="pi pi-arrow-right" iconPos="right" (onClick)="goTo(2)" styleClass="mt-2" />
+          </div>
+        }
+
+        @case (2) {
+          <div class="flex flex-col gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Cargá tus primeros productos</h2>
+              <p class="text-sm text-slate-500">Con nombre y precio alcanza para arrancar a vender.</p>
+            </div>
+
+            <form [formGroup]="productForm" (ngSubmit)="onAddProduct()" class="flex flex-col gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-slate-600">Nombre</label>
+                <input type="text" pInputText formControlName="name" placeholder="Ej. Pollo entero" class="w-full" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-sm text-slate-600">Precio</label>
+                  <p-inputnumber formControlName="price" mode="decimal" locale="es-AR" [minFractionDigits]="2" styleClass="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-sm text-slate-600">Se vende</label>
+                  <p-select
+                    formControlName="saleType"
+                    [options]="saleTypeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                  />
+                </div>
+              </div>
+
+              @if (errorMessage()) {
+                <p class="text-sm text-error">{{ errorMessage() }}</p>
+              }
+
+              <p-button
+                type="submit"
+                label="Agregar producto"
+                icon="pi pi-plus"
+                [loading]="saving()"
+                [outlined]="true"
+                styleClass="w-full"
+              />
+            </form>
+
+            @if (addedCount() > 0) {
+              <p class="text-sm text-success flex items-center gap-1.5">
+                <i class="pi pi-check-circle"></i>
+                {{ addedCount() }} producto{{ addedCount() === 1 ? '' : 's' }} cargado{{ addedCount() === 1 ? '' : 's' }}.
+              </p>
+            }
+
+            <p class="text-xs text-slate-400">
+              Podés cargar el resto más tarde, con más detalle (categoría, costo, stock), desde Productos.
+            </p>
+
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <button type="button" (click)="goTo(3)" class="text-sm text-slate-400 hover:text-slate-600">
+                Saltear por ahora
+              </button>
+              <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="goTo(3)" />
+            </div>
+          </div>
+        }
+
+        @case (3) {
+          <div class="flex flex-col gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Revisá tus medios de pago</h2>
+              <p class="text-sm text-slate-500">Ya te dejamos algunos cargados — confirmalos o desactivá los que no usás.</p>
+            </div>
+
+            <div class="flex flex-col gap-2 max-h-80 overflow-y-auto -mx-1 px-1">
+              @for (method of paymentMethodsStore.paymentMethods(); track method.id) {
+                <div class="flex items-center gap-3 border border-border rounded-lg px-3 py-2.5">
+                  <span
+                    class="flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+                    [class]="method.isCash ? 'bg-success/10 text-success' : 'bg-info/10 text-info'"
+                  >
+                    <i class="pi text-sm" [class.pi-wallet]="method.isCash" [class.pi-credit-card]="!method.isCash"></i>
+                  </span>
+                  <span class="text-sm text-slate-800 flex-1 min-w-0 truncate">{{ method.name }}</span>
+                  <p-toggleswitch
+                    [ngModel]="method.active"
+                    (ngModelChange)="onTogglePaymentMethod(method.id, $event)"
+                  />
+                </div>
+              } @empty {
+                <p class="text-sm text-slate-400 text-center py-4">Cargando medios de pago…</p>
+              }
+            </div>
+
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <button type="button" (click)="goTo(4)" class="text-sm text-slate-400 hover:text-slate-600">
+                Saltear por ahora
+              </button>
+              <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="goTo(4)" />
+            </div>
+          </div>
+        }
+
+        @case (4) {
+          <div class="flex flex-col items-center text-center gap-3 py-4">
+            <span class="flex items-center justify-center w-16 h-16 rounded-full bg-success/10 text-success">
+              <i class="pi pi-check text-2xl"></i>
+            </span>
+            <h1 class="text-xl font-bold text-slate-900">¡Todo listo!</h1>
+            <p class="text-sm text-slate-500 max-w-sm">
+              Ya podés empezar a vender. Lo que falte cargar lo podés completar cuando quieras desde el menú.
+            </p>
+            <p-button label="Ir a vender" icon="pi pi-shopping-cart" (onClick)="onFinish()" styleClass="mt-2" />
+          </div>
+        }
+      }
+    </div>
+
+    @if (step() < 4) {
+      <button
+        type="button"
+        (click)="onSkipAll()"
+        class="text-xs text-slate-400 hover:text-slate-600 text-center"
+      >
+        Saltear toda la configuración inicial
+      </button>
+    }
+  </div>
+</div>

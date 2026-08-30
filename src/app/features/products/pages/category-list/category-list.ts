@@ -5,16 +5,25 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TooltipModule } from 'primeng/tooltip';
 
+import { AuthStore } from '../../../../core/auth/auth.store';
 import { CategoriesStore } from '../../state/categories.store';
 
 @Component({
   selector: 'app-category-list',
-  imports: [FormsModule, ButtonModule, DialogModule, InputTextModule, TableModule, ToggleSwitchModule],
+  imports: [FormsModule, ButtonModule, DialogModule, InputTextModule, TableModule, ToggleSwitchModule, TooltipModule],
   templateUrl: './category-list.html'
 })
 export class CategoryList {
   protected readonly store = inject(CategoriesStore);
+  private readonly authStore = inject(AuthStore);
+
+  // Espeja la RLS de categories_manage (exige can_manage_products) -- sin esto el guardado
+  // igual falla del lado del servidor con un error crudo de Postgres.
+  protected canManageProducts(): boolean {
+    return this.authStore.hasPermission('can_manage_products');
+  }
 
   protected readonly searchQuery = signal('');
   protected readonly dialogVisible = signal(false);
