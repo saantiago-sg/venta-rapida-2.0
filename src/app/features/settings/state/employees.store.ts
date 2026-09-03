@@ -51,4 +51,11 @@ export class EmployeesStore {
     await this.repository.setActive(membershipId, active);
     this._employees.update((list) => list.map((e) => (e.membershipId === membershipId ? { ...e, active } : e)));
   }
+
+  async resetPassword(membershipId: string, password: string): Promise<void> {
+    const businessId = this.authStore.activeBusinessId();
+    if (!businessId) return;
+
+    await this.repository.resetPassword(businessId, membershipId, password);
+  }
 }

@@ -41,6 +41,27 @@ export class AuthService {
     this.authStore.clearSession();
   }
 
+  // Supabase no distingue "email no existe" de "se mando el link" en la respuesta -- no hay
+  // nada que revisar del error aca a proposito, ver ForgotPasswordPage (siempre muestra el
+  // mismo mensaje generico, para no filtrar por timing/resultado si un email esta registrado).
+  async requestPasswordReset(email: string): Promise<void> {
+    await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/nueva-contrasena`
+    });
+  }
+
+  // Se usa con la sesion de recuperacion que supabase-js arma solo al abrir el link del mail
+  // (detectSessionInUrl) -- ver ResetPasswordPage.
+  async updatePassword(password: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({ password });
+    if (error) throw error;
+  }
+
+  async hasActiveSession(): Promise<boolean> {
+    const { data } = await this.supabase.auth.getSession();
+    return !!data.session;
+  }
+
   private async loadSession(userId: string, userEmail: string | null): Promise<void> {
     const [membershipsResult, superAdminResult] = await Promise.all([
       this.supabase

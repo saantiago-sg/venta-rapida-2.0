@@ -8,6 +8,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 
 import { TicketData } from '../../../../shared/components/ticket-print/ticket-print';
+import { DEFAULT_TICKET_SETTINGS } from '../../../settings/data-access/models';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { CustomersStore } from '../../../customers/state/customers.store';
 import { DeliveryTypesStore } from '../../../settings/state/delivery-types.store';
@@ -137,6 +138,7 @@ export class PaymentPanel {
     const paymentMethodName = this.store.selectedPaymentMethod()?.name ?? '';
     const customerName = this.customersStore.customers().find((c) => c.id === this.store.customerId())?.name ?? null;
     const business = this.businessSettingsStore.business();
+    const ticketSettings = business?.ticketSettings ?? DEFAULT_TICKET_SETTINGS;
 
     try {
       const result = await this.store.confirmSale();
@@ -145,6 +147,9 @@ export class PaymentPanel {
         businessName: business?.name ?? '',
         businessAddress: business?.address ?? null,
         businessPhone: business?.phone ?? null,
+        headerText: ticketSettings.headerText,
+        footerText: ticketSettings.footerText,
+        paperWidthMm: ticketSettings.paperWidthMm,
         saleNumber: result.saleNumber,
         date: new Date(),
         customerName,
@@ -153,7 +158,10 @@ export class PaymentPanel {
         subtotal: result.subtotal,
         discountAmount: result.discountAmount,
         total: result.total,
-        changeGiven: result.changeGiven
+        changeGiven: result.changeGiven,
+        // La facturacion se dispara async despues de confirmar (ver PosStore.triggerInvoicing)
+        // -- nunca hay CAE disponible todavia en este momento, por eso siempre null aca.
+        invoice: null
       });
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo confirmar la venta.');

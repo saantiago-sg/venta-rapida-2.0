@@ -8,6 +8,7 @@ export interface BusinessSettings {
   address: string | null;
   cashDiscountPercentage: number;
   weightedBarcode: WeightedBarcodeConfig;
+  ticketSettings: TicketSettings;
   onboardingCompleted: boolean;
 }
 
@@ -37,6 +38,26 @@ export const DEFAULT_WEIGHTED_BARCODE_CONFIG: WeightedBarcodeConfig = {
   prefix: '20',
   productCodeDigits: 5,
   weightDigits: 5
+};
+
+export type TicketPaperWidthMm = 58 | 80;
+
+// Config opcional de impresion de ticket por negocio -- guardada bajo businesses.settings.ticket
+// (jsonb), mismo criterio que WeightedBarcodeConfig. autoPrintEnabled arranca en false para
+// negocios nuevos a proposito (ver migracion de backfill 20260901120000_ticket_settings_backfill
+// para los negocios que ya existian y dependian del auto-print incondicional de antes).
+export interface TicketSettings {
+  autoPrintEnabled: boolean;
+  paperWidthMm: TicketPaperWidthMm;
+  headerText: string | null;
+  footerText: string | null;
+}
+
+export const DEFAULT_TICKET_SETTINGS: TicketSettings = {
+  autoPrintEnabled: false,
+  paperWidthMm: 80,
+  headerText: null,
+  footerText: '¡Gracias por su compra!'
 };
 
 export interface Tax {

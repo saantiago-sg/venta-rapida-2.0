@@ -9,8 +9,17 @@ import { FiscalSettingsPage } from '../fiscal-settings/fiscal-settings';
 import { PaymentMethodList } from '../payment-method-list/payment-method-list';
 import { ScaleSettingsPage } from '../scale-settings/scale-settings';
 import { TaxList } from '../tax-list/tax-list';
+import { TicketSettingsPage } from '../ticket-settings/ticket-settings';
 
-type SettingsSectionId = 'negocio' | 'impuestos' | 'medios-pago' | 'entrega' | 'balanza' | 'empleados' | 'facturacion';
+type SettingsSectionId =
+  | 'negocio'
+  | 'impuestos'
+  | 'medios-pago'
+  | 'entrega'
+  | 'balanza'
+  | 'empleados'
+  | 'ticket'
+  | 'facturacion';
 
 interface SettingsSection {
   id: SettingsSectionId;
@@ -18,6 +27,8 @@ interface SettingsSection {
   icon: string;
 }
 
+// 'ticket' y 'facturacion' van juntas a proposito: son las dos configuraciones sobre el
+// comprobante que se le da al cliente (impreso / electronico).
 const SECTIONS: SettingsSection[] = [
   { id: 'negocio', label: 'Negocio', icon: 'pi pi-building' },
   { id: 'impuestos', label: 'Impuestos', icon: 'pi pi-percentage' },
@@ -25,6 +36,7 @@ const SECTIONS: SettingsSection[] = [
   { id: 'entrega', label: 'Tipos de entrega', icon: 'pi pi-truck' },
   { id: 'balanza', label: 'Balanza', icon: 'pi pi-barcode' },
   { id: 'empleados', label: 'Empleados', icon: 'pi pi-users' },
+  { id: 'ticket', label: 'Ticket', icon: 'pi pi-print' },
   { id: 'facturacion', label: 'Facturación', icon: 'pi pi-file-check' }
 ];
 
@@ -32,7 +44,16 @@ const SECTION_IDS = SECTIONS.map((s) => s.id);
 
 @Component({
   selector: 'app-settings-page',
-  imports: [BusinessForm, TaxList, PaymentMethodList, DeliveryTypeList, ScaleSettingsPage, EmployeeList, FiscalSettingsPage],
+  imports: [
+    BusinessForm,
+    TaxList,
+    PaymentMethodList,
+    DeliveryTypeList,
+    ScaleSettingsPage,
+    EmployeeList,
+    TicketSettingsPage,
+    FiscalSettingsPage
+  ],
   templateUrl: './settings-page.html'
 })
 export class SettingsPage {

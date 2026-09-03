@@ -49,13 +49,24 @@
         </td>
         <td>
           @if (employee.role !== 'owner') {
-            <button
-              type="button"
-              class="text-xs text-text-secondary hover:text-text underline cursor-pointer"
-              (click)="openPermissions(employee)"
-            >
-              Permisos
-            </button>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                class="text-xs text-text-secondary hover:text-text underline cursor-pointer"
+                (click)="openPermissions(employee)"
+              >
+                Permisos
+              </button>
+              @if (canManageEmployees()) {
+                <button
+                  type="button"
+                  class="text-xs text-text-secondary hover:text-text underline cursor-pointer"
+                  (click)="openResetPassword(employee)"
+                >
+                  Resetear contraseña
+                </button>
+              }
+            </div>
           }
         </td>
       </tr>
@@ -134,4 +145,36 @@
 
     <p-button label="Guardar" [loading]="saving()" styleClass="w-full mt-2" (onClick)="onSavePermissions()" />
   </div>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="resetPasswordDialogVisible"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '24rem', maxWidth: '92vw' }"
+  [header]="'Resetear contraseña de ' + (resettingEmployee()?.fullName || resettingEmployee()?.email)"
+>
+  <form [formGroup]="resetPasswordForm" (ngSubmit)="onResetPassword()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-text-secondary">Contraseña nueva</label>
+      <input type="text" pInputText formControlName="password" autocomplete="off" />
+      @if (resetPasswordForm.controls.password.touched && resetPasswordForm.controls.password.invalid) {
+        <span class="text-xs text-error">Mínimo 8 caracteres.</span>
+      } @else {
+        <span class="text-xs text-text-secondary">
+          Se aplica al instante. Comunicásela al empleado por fuera del sistema (no se envía ningún
+          email).
+        </span>
+      }
+    </div>
+
+    @if (resetSuccessMessage()) {
+      <p class="text-sm text-success">{{ resetSuccessMessage() }}</p>
+    }
+    @if (errorMessage()) {
+      <p class="text-sm text-error">{{ errorMessage() }}</p>
+    }
+
+    <p-button type="submit" label="Actualizar contraseña" [loading]="saving()" styleClass="w-full" />
+  </form>
 </p-dialog>

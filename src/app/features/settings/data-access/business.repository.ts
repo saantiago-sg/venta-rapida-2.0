@@ -1,7 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
-import { BusinessSettings, BusinessSettingsFormValue, DEFAULT_WEIGHTED_BARCODE_CONFIG, WeightedBarcodeConfig } from './models';
+import {
+  BusinessSettings,
+  BusinessSettingsFormValue,
+  DEFAULT_TICKET_SETTINGS,
+  DEFAULT_WEIGHTED_BARCODE_CONFIG,
+  TicketPaperWidthMm,
+  TicketSettings,
+  WeightedBarcodeConfig
+} from './models';
 
 interface WeightedBarcodeConfigRow {
   enabled: boolean;
@@ -10,8 +18,16 @@ interface WeightedBarcodeConfigRow {
   weight_digits: number;
 }
 
+interface TicketSettingsRow {
+  auto_print_enabled: boolean;
+  paper_width_mm: TicketPaperWidthMm;
+  header_text: string | null;
+  footer_text: string | null;
+}
+
 interface BusinessSettingsJson {
   weighted_barcode?: WeightedBarcodeConfigRow;
+  ticket?: TicketSettingsRow;
   [key: string]: unknown;
 }
 
@@ -41,6 +57,16 @@ function mapWeightedBarcode(row: WeightedBarcodeConfigRow | undefined): Weighted
   };
 }
 
+function mapTicketSettings(row: TicketSettingsRow | undefined): TicketSettings {
+  if (!row) return DEFAULT_TICKET_SETTINGS;
+  return {
+    autoPrintEnabled: row.auto_print_enabled,
+    paperWidthMm: row.paper_width_mm,
+    headerText: row.header_text,
+    footerText: row.footer_text
+  };
+}
+
 function mapRow(row: BusinessRow): BusinessSettings {
   return {
     id: row.id,
@@ -52,6 +78,7 @@ function mapRow(row: BusinessRow): BusinessSettings {
     address: row.address,
     cashDiscountPercentage: row.cash_discount_percentage,
     weightedBarcode: mapWeightedBarcode(row.settings?.weighted_barcode),
+    ticketSettings: mapTicketSettings(row.settings?.ticket),
     onboardingCompleted: row.onboarding_completed
   };
 }
@@ -103,6 +130,30 @@ export class BusinessRepository {
         prefix: config.prefix,
         product_code_digits: config.productCodeDigits,
         weight_digits: config.weightDigits
+      }
+    };
+
+    const { error } = await this.supabase.from('businesses').update({ settings }).eq('id', businessId);
+    if (error) throw error;
+  }
+
+  // Mismo criterio de merge que updateWeightedBarcode -- 'settings' es jsonb generico compartido
+  // por varias configs opcionales.
+  async updateTicketSettings(businessId: string, config: TicketSettings): Promise<void> {
+    const { data, error: fetchError } = await this.supabase
+      .from('businesses')
+      .select('settings')
+      .eq('id', businessId)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const settings: BusinessSettingsJson = {
+      ...((data as { settings: BusinessSettingsJson | null }).settings ?? {}),
+      ticket: {
+        auto_print_enabled: config.autoPrintEnabled,
+        paper_width_mm: config.paperWidthMm,
+        header_text: config.headerText,
+        footer_text: config.footerText
       }
     };
 

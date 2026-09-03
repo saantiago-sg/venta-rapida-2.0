@@ -7,6 +7,7 @@ import { AuthService } from '../../auth/auth.service';
 import { AuthStore, MembershipRole } from '../../auth/auth.store';
 import { ConnectivityService } from '../../offline/connectivity.service';
 import { OfflineQueueService } from '../../offline/offline-queue.service';
+import { SyncService } from '../../offline/sync.service';
 
 const ROLE_STYLES: Record<MembershipRole, { label: string; icon: string }> = {
   owner: { label: 'Dueño', icon: 'pi-crown' },
@@ -82,6 +83,7 @@ export class Shell {
   protected readonly authStore = inject(AuthStore);
   protected readonly connectivity = inject(ConnectivityService);
   protected readonly offlineQueue = inject(OfflineQueueService);
+  protected readonly syncService = inject(SyncService);
 
   protected readonly navSections = computed<NavSection[]>(() =>
     NAV_SECTIONS.map((section) => ({
@@ -147,6 +149,10 @@ export class Shell {
 
   protected dismissBanner(): void {
     this.bannerDismissed.set(true);
+  }
+
+  protected dismissSyncFailure(clientReference: string): void {
+    this.syncService.dismissFailure(clientReference);
   }
 
   protected roleStyle(role: MembershipRole) {

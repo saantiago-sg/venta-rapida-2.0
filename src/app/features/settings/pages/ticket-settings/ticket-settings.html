@@ -1,0 +1,67 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
+  <div class="mb-2">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Ticket</h3>
+    <p class="text-xs text-text-secondary mt-0.5">
+      Todo esto es opcional. Si tu negocio no tiene una impresora térmica conectada, podés dejar
+      todo como está: el POS funciona igual.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Impresión automática</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Imprime el ticket apenas se confirma cada venta. Esté activo o no, siempre podés imprimir
+        manualmente desde Vender o reimprimir desde Historial.
+      </p>
+    </div>
+    <p-toggleswitch formControlName="autoPrintEnabled" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Ancho de papel</label>
+      <p class="text-xs text-text-secondary mt-0.5">80mm es el más común en impresoras térmicas de mostrador.</p>
+    </div>
+    <div class="flex rounded-lg bg-card-hover p-1 w-fit">
+      <button
+        type="button"
+        (click)="setPaperWidth(80)"
+        class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+        [class]="form.controls.paperWidthMm.value === 80 ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+      >
+        80mm
+      </button>
+      <button
+        type="button"
+        (click)="setPaperWidth(58)"
+        class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+        [class]="form.controls.paperWidthMm.value === 58 ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+      >
+        58mm
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Encabezado</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Línea opcional arriba del nombre del negocio (slogan, mensaje corto). No lo reemplaza.
+      </p>
+    </div>
+    <input type="text" pInputText formControlName="headerText" class="w-full" placeholder="Opcional" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Pie</label>
+      <p class="text-xs text-text-secondary mt-0.5">Mensaje al final del ticket.</p>
+    </div>
+    <input type="text" pInputText formControlName="footerText" class="w-full" />
+  </div>
+
+  <div class="flex justify-end pt-6 mt-2 border-t border-border">
+    <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+  </div>
+</form>

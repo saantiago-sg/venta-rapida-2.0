@@ -36,9 +36,13 @@ export class PosPage {
     this.confirmationVisible.set(true);
     this.mobileTab.set('buscar');
     this.productsStore.load();
-    // Se difiere un tick para que el <app-ticket-print> ya haya renderizado el ticket nuevo
-    // en el DOM antes de que window.print() lo capture.
-    setTimeout(() => this.onPrint());
+    // Opt-in por negocio (Configuracion > Ticket, default apagado) -- el boton "Reimprimir"
+    // del dialogo de confirmacion sigue disponible siempre, este auto-print es solo un atajo.
+    if (this.businessSettingsStore.business()?.ticketSettings.autoPrintEnabled) {
+      // Se difiere un tick para que el <app-ticket-print> ya haya renderizado el ticket nuevo
+      // en el DOM antes de que window.print() lo capture.
+      setTimeout(() => this.onPrint());
+    }
   }
 
   protected onPrint(): void {

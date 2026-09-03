@@ -15,6 +15,7 @@ import { TagModule } from 'primeng/tag';
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
 import { TicketData, TicketPrint } from '../../../../shared/components/ticket-print/ticket-print';
+import { DEFAULT_TICKET_SETTINGS } from '../../../settings/data-access/models';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { PaymentMethodsStore } from '../../../settings/state/payment-methods.store';
 import { SaleListItem } from '../../data-access/models';
@@ -93,10 +94,14 @@ export class SalesHistoryPage {
     const sale = this.selectedSale();
     if (!sale) return null;
     const business = this.businessSettingsStore.business();
+    const ticketSettings = business?.ticketSettings ?? DEFAULT_TICKET_SETTINGS;
     return {
       businessName: business?.name ?? '',
       businessAddress: business?.address ?? null,
       businessPhone: business?.phone ?? null,
+      headerText: ticketSettings.headerText,
+      footerText: ticketSettings.footerText,
+      paperWidthMm: ticketSettings.paperWidthMm,
       saleNumber: sale.saleNumber,
       date: new Date(sale.createdAt),
       customerName: sale.customerName,
@@ -110,7 +115,11 @@ export class SalesHistoryPage {
       subtotal: sale.subtotal,
       discountAmount: sale.discountAmount,
       total: sale.total,
-      changeGiven: null
+      changeGiven: null,
+      // Solo se pasa cuando ya tiene CAE (factura emitida) -- ver TicketInvoiceInfo.
+      invoice: sale.invoice?.cae
+        ? { comprobanteNumber: sale.invoice.comprobanteNumber, cae: sale.invoice.cae }
+        : null
     };
   });
 

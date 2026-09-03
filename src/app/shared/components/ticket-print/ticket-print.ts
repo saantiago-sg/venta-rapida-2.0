@@ -8,10 +8,25 @@ export interface TicketLineItem {
   subtotal: number;
 }
 
+// Solo se arma cuando la factura ya tiene CAE (emitida) -- el llamador es responsable de no
+// poblar este campo mientras la factura este 'queued'/'error', para que el template nunca
+// tenga que decidir si mostrar un bloque de "factura pendiente" en un ticket ya impreso.
+export interface TicketInvoiceInfo {
+  comprobanteNumber: string | null;
+  cae: string;
+}
+
 export interface TicketData {
   businessName: string;
   businessAddress: string | null;
   businessPhone: string | null;
+  // Linea libre opcional arriba de los datos del negocio (slogan, mensaje corto) -- no
+  // reemplaza nombre/direccion/telefono, se suma antes.
+  headerText: string | null;
+  // Reemplaza el "Gracias por su compra" que antes estaba fijo en el template; el default
+  // ("Gracias por su compra") vive en TicketSettings, no aca, para tener una sola fuente.
+  footerText: string | null;
+  paperWidthMm: 58 | 80;
   saleNumber: number;
   date: Date;
   customerName: string | null;
@@ -21,6 +36,7 @@ export interface TicketData {
   discountAmount: number;
   total: number;
   changeGiven: number | null;
+  invoice: TicketInvoiceInfo | null;
   // true cuando se vendio sin conexion y todavia no tiene numero de venta real asignado
   // (se asigna recien al sincronizar) -- ver OfflineQueueService/SyncService.
   pending?: boolean;

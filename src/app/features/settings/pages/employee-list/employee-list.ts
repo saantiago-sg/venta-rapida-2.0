@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+import { AuthStore } from '../../../../core/auth/auth.store';
 import { Employee, PERMISSION_CATALOG } from '../../data-access/models';
 import { EmployeesStore } from '../../state/employees.store';
 
@@ -41,17 +42,29 @@ const ROLE_DEFAULT_PERMISSIONS: Record<'admin' | 'cashier', string[]> = {
 })
 export class EmployeeList {
   private readonly fb = inject(FormBuilder);
+  private readonly authStore = inject(AuthStore);
   protected readonly store = inject(EmployeesStore);
 
   protected readonly roleOptions = ROLE_OPTIONS;
   protected readonly permissionCatalog = PERMISSION_CATALOG;
 
+  // Gatea especificamente la accion de resetear contraseña -- independiente de que el resto
+  // de esta pantalla hoy no tenga esta misma verificacion por seccion.
+  protected readonly canManageEmployees = computed(() => this.authStore.hasPermission('can_manage_employees'));
+
   protected readonly inviteDialogVisible = signal(false);
   protected readonly permissionsDialogVisible = signal(false);
+  protected readonly resetPasswordDialogVisible = signal(false);
   protected readonly editingEmployee = signal<Employee | null>(null);
   protected readonly editingPermissions = signal<string[]>([]);
+  protected readonly resettingEmployee = signal<Employee | null>(null);
+  protected readonly resetSuccessMessage = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly resetPasswordForm = this.fb.nonNullable.group({
+    password: ['', [Validators.required, Validators.minLength(8)]]
+  });
 
   protected readonly inviteForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -128,6 +141,39 @@ export class EmployeeList {
     try {
       await this.store.updatePermissions(employee.membershipId, this.editingPermissions());
       this.permissionsDialogVisible.set(false);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  protected openResetPassword(employee: Employee): void {
+    this.resettingEmployee.set(employee);
+    this.resetPasswordForm.reset({ password: '' });
+    this.errorMessage.set(null);
+    this.resetSuccessMessage.set(null);
+    this.resetPasswordDialogVisible.set(true);
+  }
+
+  protected async onResetPassword(): Promise<void> {
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
+    }
+
+    const employee = this.resettingEmployee();
+    if (!employee) return;
+
+    this.saving.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      const { password } = this.resetPasswordForm.getRawValue();
+      await this.store.resetPassword(employee.membershipId, password);
+      this.resetSuccessMessage.set('Contraseña actualizada. Comunicásela al empleado por fuera del sistema.');
+      // Se deja un momento a la vista antes de cerrar solo, para que le de tiempo a leerlo.
+      setTimeout(() => this.resetPasswordDialogVisible.set(false), 1600);
+    } catch (err) {
+      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo resetear la contraseña.');
     } finally {
       this.saving.set(false);
     }

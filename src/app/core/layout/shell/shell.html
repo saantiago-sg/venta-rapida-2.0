@@ -185,6 +185,25 @@
       </div>
     }
 
+    @for (failure of syncService.failures(); track failure.clientReference) {
+      <div class="px-4 pt-3" animate.enter="enter-fade">
+        <div class="rounded-xl border px-3 py-2 flex items-center gap-2" [class]="bannerStyles('error').wrap">
+          <i class="pi text-sm shrink-0" [class]="[bannerStyles('error').iconName, bannerStyles('error').textColor]"></i>
+          <p class="text-xs text-text flex-1 min-w-0">
+            No se pudo sincronizar una venta pendiente: {{ failure.message }}
+          </p>
+          <button
+            type="button"
+            (click)="dismissSyncFailure(failure.clientReference)"
+            class="text-text-secondary hover:text-text transition-colors p-1 -m-1 shrink-0"
+            aria-label="Cerrar aviso"
+          >
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    }
+
     <main class="flex-1 overflow-auto p-6">
       <router-outlet />
     </main>

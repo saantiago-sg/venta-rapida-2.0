@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { BusinessRepository } from '../data-access/business.repository';
-import { BusinessSettings, BusinessSettingsFormValue, WeightedBarcodeConfig } from '../data-access/models';
+import { BusinessSettings, BusinessSettingsFormValue, TicketSettings, WeightedBarcodeConfig } from '../data-access/models';
 
 @Injectable({ providedIn: 'root' })
 export class BusinessSettingsStore {
@@ -41,6 +41,14 @@ export class BusinessSettingsStore {
 
     await this.repository.updateWeightedBarcode(businessId, config);
     this._business.update((current) => (current ? { ...current, weightedBarcode: config } : current));
+  }
+
+  async updateTicketSettings(config: TicketSettings): Promise<void> {
+    const businessId = this.authStore.activeBusinessId();
+    if (!businessId) return;
+
+    await this.repository.updateTicketSettings(businessId, config);
+    this._business.update((current) => (current ? { ...current, ticketSettings: config } : current));
   }
 
   async completeOnboarding(): Promise<void> {

@@ -72,4 +72,12 @@ export class EmployeeRepository {
     const { error } = await this.supabase.from('memberships').update({ active }).eq('id', membershipId);
     if (error) throw error;
   }
+
+  async resetPassword(businessId: string, membershipId: string, password: string): Promise<void> {
+    const { data, error } = await this.supabase.functions.invoke('reset-employee-password', {
+      body: { businessId, membershipId, password }
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  }
 }

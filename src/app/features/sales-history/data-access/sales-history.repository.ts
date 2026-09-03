@@ -6,6 +6,8 @@ import { InvoiceStatus, SaleItem, SaleListItem, SaleStatus } from './models';
 
 interface InvoiceRow {
   status: InvoiceStatus;
+  comprobante_number: string | null;
+  cae: string | null;
   pdf_url: string | null;
   ticket_url: string | null;
   error_message: string | null;
@@ -79,6 +81,8 @@ function mapSale(row: SaleRow): SaleListItem {
     invoice: invoice
       ? {
           status: invoice.status,
+          comprobanteNumber: invoice.comprobante_number,
+          cae: invoice.cae,
           pdfUrl: invoice.pdf_url,
           ticketUrl: invoice.ticket_url,
           errorMessage: invoice.error_message
@@ -95,7 +99,7 @@ export class SalesHistoryRepository {
     let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, subtotal, discount_amount, tax_amount, total, created_at, cancel_reason, payment_method_id, customers(name), employee:profiles!sales_employee_id_fkey(email), payment_methods(name, is_cash), delivery_types(name), invoices(status, pdf_url, ticket_url, error_message), sale_items(quantity, unit_price, unit_cost)'
+        'id, sale_number, status, subtotal, discount_amount, tax_amount, total, created_at, cancel_reason, payment_method_id, customers(name), employee:profiles!sales_employee_id_fkey(email), payment_methods(name, is_cash), delivery_types(name), invoices(status, comprobante_number, cae, pdf_url, ticket_url, error_message), sale_items(quantity, unit_price, unit_cost)'
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });

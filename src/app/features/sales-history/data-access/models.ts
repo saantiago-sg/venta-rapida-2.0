@@ -4,6 +4,8 @@ export type InvoiceStatus = 'queued' | 'issued' | 'error' | 'credit_note_pending
 
 export interface SaleInvoice {
   status: InvoiceStatus;
+  comprobanteNumber: string | null;
+  cae: string | null;
   pdfUrl: string | null;
   ticketUrl: string | null;
   errorMessage: string | null;
