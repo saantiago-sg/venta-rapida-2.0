@@ -2,7 +2,7 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
   <nav class="surface-card bg-card border border-border rounded-xl p-2 flex lg:flex-col gap-1 overflow-x-auto">
-    @for (section of sections(); track section.id) {
+    @for (section of sections; track section.id) {
       <button
         type="button"
         (click)="activeSection.set(section.id)"
@@ -41,9 +41,6 @@
       }
       @case ('ticket') {
         <app-ticket-settings animate.enter="enter-fade" />
-      }
-      @case ('facturacion') {
-        <app-fiscal-settings animate.enter="enter-fade" />
       }
     }
   </div>

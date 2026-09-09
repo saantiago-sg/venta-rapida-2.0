@@ -26,7 +26,6 @@
       <tr>
         <th>Nombre</th>
         <th class="w-32 text-center">Es efectivo</th>
-        <th class="w-32 text-center">Facturar</th>
         <th class="w-32 text-center">Activo</th>
         <th class="w-16"></th>
       </tr>
@@ -50,9 +49,6 @@
           } @else {
             <p-tag value="No" severity="secondary" />
           }
-        </td>
-        <td class="text-center">
-          <p-toggleswitch [ngModel]="method.invoicingEnabled" (ngModelChange)="onToggleInvoicing(method.id, $event)" />
         </td>
         <td class="text-center">
           <p-toggleswitch [ngModel]="method.active" (ngModelChange)="onToggleActive(method.id, $event)" />

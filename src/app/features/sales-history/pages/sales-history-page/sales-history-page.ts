@@ -74,7 +74,6 @@ export class SalesHistoryPage {
   protected readonly cancelReason = signal('');
   protected readonly cancelling = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly retryingInvoice = signal(false);
 
   protected readonly exporting = signal(false);
   protected readonly exportOptions: MenuItem[] = [
@@ -115,11 +114,7 @@ export class SalesHistoryPage {
       subtotal: sale.subtotal,
       discountAmount: sale.discountAmount,
       total: sale.total,
-      changeGiven: null,
-      // Solo se pasa cuando ya tiene CAE (factura emitida) -- ver TicketInvoiceInfo.
-      invoice: sale.invoice?.cae
-        ? { comprobanteNumber: sale.invoice.comprobanteNumber, cae: sale.invoice.cae }
-        : null
+      changeGiven: null
     };
   });
 
@@ -215,24 +210,5 @@ export class SalesHistoryPage {
     } finally {
       this.cancelling.set(false);
     }
-  }
-
-  protected async onRetryInvoice(): Promise<void> {
-    const sale = this.selectedSale();
-    if (!sale) return;
-
-    this.retryingInvoice.set(true);
-    try {
-      await this.store.retryInvoice(sale.id);
-      const refreshed = this.store.sales().find((s) => s.id === sale.id);
-      if (refreshed) this.selectedSale.set(refreshed);
-    } finally {
-      this.retryingInvoice.set(false);
-    }
-  }
-
-  protected onViewInvoice(sale: SaleListItem): void {
-    const url = sale.invoice?.pdfUrl ?? sale.invoice?.ticketUrl;
-    if (url) window.open(url, '_blank', 'noopener');
   }
 }

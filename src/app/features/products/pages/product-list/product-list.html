@@ -21,16 +21,30 @@
         </button>
       }
     </span>
-    <p-button
-      label="Nuevo producto"
-      icon="pi pi-plus"
-      [disabled]="!canManageProducts()"
-      (onClick)="openCreate()"
-      pTooltip="No tenés permiso para gestionar productos"
-      tooltipPosition="bottom"
-      [tooltipDisabled]="canManageProducts()"
-    />
+    <div class="flex gap-2 shrink-0">
+      <p-button
+        label="Importar"
+        icon="pi pi-upload"
+        [outlined]="true"
+        [disabled]="!canManageProducts()"
+        (onClick)="importDialogVisible.set(true)"
+        pTooltip="No tenés permiso para gestionar productos"
+        tooltipPosition="bottom"
+        [tooltipDisabled]="canManageProducts()"
+      />
+      <p-button
+        label="Nuevo producto"
+        icon="pi pi-plus"
+        [disabled]="!canManageProducts()"
+        (onClick)="openCreate()"
+        pTooltip="No tenés permiso para gestionar productos"
+        tooltipPosition="bottom"
+        [tooltipDisabled]="canManageProducts()"
+      />
+    </div>
   </div>
+
+  <app-product-import-dialog [visible]="importDialogVisible()" (visibleChange)="importDialogVisible.set($event)" />
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
   <div class="overflow-x-auto">

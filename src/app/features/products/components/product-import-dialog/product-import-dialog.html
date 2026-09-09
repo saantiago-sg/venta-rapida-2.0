@@ -1,0 +1,135 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  header="Importar productos"
+  (onHide)="onHide()"
+>
+  @switch (step()) {
+    @case ('upload') {
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-text-secondary">
+          Subí un archivo Excel (.xlsx) con tus productos. Si tenés dudas del formato, descargá
+          la plantilla primero.
+        </p>
+
+        <p-button
+          label="Descargar plantilla"
+          icon="pi pi-download"
+          [outlined]="true"
+          styleClass="w-fit"
+          (onClick)="onDownloadTemplate()"
+        />
+
+        <div class="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center gap-2 text-center">
+          <i class="pi pi-file-excel text-2xl text-text-secondary"></i>
+          <label class="text-sm text-brand font-medium cursor-pointer hover:underline">
+            Elegir archivo
+            <input type="file" accept=".xlsx" class="hidden" [disabled]="parsing()" (change)="onFileSelected($event)" />
+          </label>
+          @if (parsing()) {
+            <p class="text-xs text-text-secondary">Leyendo archivo…</p>
+          }
+        </div>
+
+        @if (parseErrorMessage()) {
+          <p class="text-sm text-error">{{ parseErrorMessage() }}</p>
+        }
+      </div>
+    }
+
+    @case ('preview') {
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2.5 py-1 rounded-full bg-success/10 text-success font-medium">{{ createCount() }} para crear</span>
+          <span class="px-2.5 py-1 rounded-full bg-info/10 text-info font-medium">{{ updateCount() }} para actualizar</span>
+          @if (errorCount() > 0) {
+            <span class="px-2.5 py-1 rounded-full bg-error/10 text-error font-medium">{{ errorCount() }} con error</span>
+          }
+        </div>
+
+        <div class="max-h-96 overflow-y-auto border border-border rounded-lg">
+          <p-table [value]="previewRows()" dataKey="rowNumber">
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="w-14">Fila</th>
+                <th>Nombre</th>
+                <th class="text-right">Precio</th>
+                <th class="w-28">Acción</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
+                <td class="tabular-nums">{{ row.rowNumber }}</td>
+                <td>
+                  {{ row.name || '—' }}
+                  @if (row.categoryIsNew) {
+                    <span class="text-xs text-text-secondary">(categoría nueva: {{ row.categoryName }})</span>
+                  }
+                  @if (row.errors.length > 0) {
+                    <p class="text-xs text-error">{{ row.errors.join(' · ') }}</p>
+                  }
+                </td>
+                <td class="text-right tabular-nums">${{ row.price | number: '1.2-2' }}</td>
+                <td>
+                  @switch (row.action) {
+                    @case ('create') {
+                      <span class="text-xs font-medium text-success">Crear</span>
+                    }
+                    @case ('update') {
+                      <span class="text-xs font-medium text-info">Actualizar</span>
+                    }
+                    @case ('error') {
+                      <span class="text-xs font-medium text-error">Error</span>
+                    }
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        @if (committing()) {
+          <p-progressbar [value]="(commitProgress() / validRowCount()) * 100" [showValue]="false" />
+          <p class="text-xs text-text-secondary text-center">Procesando {{ commitProgress() }} de {{ validRowCount() }}…</p>
+        }
+
+        <div class="flex gap-2 justify-end pt-2 border-t border-border">
+          <p-button label="Volver" [outlined]="true" [disabled]="committing()" (onClick)="onBackToUpload()" />
+          <p-button
+            label="Confirmar importación"
+            [loading]="committing()"
+            [disabled]="validRowCount() === 0"
+            (onClick)="onConfirmImport()"
+          />
+        </div>
+      </div>
+    }
+
+    @case ('result') {
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col items-center gap-2 text-center py-2">
+          <i class="pi pi-check-circle text-3xl text-success"></i>
+          <p class="text-sm text-text">
+            {{ createdCount() }} producto(s) creado(s), {{ updatedCount() }} actualizado(s)
+            @if (failedResults().length > 0) {
+              , {{ failedResults().length }} con error
+            }
+          </p>
+        </div>
+
+        @if (failedResults().length > 0) {
+          <div class="max-h-48 overflow-y-auto border border-border rounded-lg p-3 flex flex-col gap-1.5">
+            @for (result of failedResults(); track result.rowNumber) {
+              <p class="text-xs text-error">Fila {{ result.rowNumber }} ({{ result.name }}): {{ result.errorMessage }}</p>
+            }
+          </div>
+        }
+
+        <p-button label="Listo" styleClass="w-full" (onClick)="onFinish()" />
+      </div>
+    }
+  }
+</p-dialog>

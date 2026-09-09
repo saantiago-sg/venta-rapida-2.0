@@ -40,12 +40,13 @@ interface BusinessRow {
   phone: string | null;
   address: string | null;
   cash_discount_percentage: number;
+  cash_register_enabled: boolean;
   settings: BusinessSettingsJson | null;
   onboarding_completed: boolean;
 }
 
 const SELECT_COLUMNS =
-  'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage, settings, onboarding_completed';
+  'id, name, legal_name, tax_id, email, phone, address, cash_discount_percentage, cash_register_enabled, settings, onboarding_completed';
 
 function mapWeightedBarcode(row: WeightedBarcodeConfigRow | undefined): WeightedBarcodeConfig {
   if (!row) return DEFAULT_WEIGHTED_BARCODE_CONFIG;
@@ -77,6 +78,7 @@ function mapRow(row: BusinessRow): BusinessSettings {
     phone: row.phone,
     address: row.address,
     cashDiscountPercentage: row.cash_discount_percentage,
+    cashRegisterEnabled: row.cash_register_enabled,
     weightedBarcode: mapWeightedBarcode(row.settings?.weighted_barcode),
     ticketSettings: mapTicketSettings(row.settings?.ticket),
     onboardingCompleted: row.onboarding_completed
@@ -107,7 +109,8 @@ export class BusinessRepository {
         email: input.email,
         phone: input.phone,
         address: input.address,
-        cash_discount_percentage: input.cashDiscountPercentage
+        cash_discount_percentage: input.cashDiscountPercentage,
+        cash_register_enabled: input.cashRegisterEnabled
       })
       .eq('id', businessId);
     if (error) throw error;

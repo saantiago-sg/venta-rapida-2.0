@@ -3,12 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { BusinessSettingsStore } from '../../state/business-settings.store';
 
 @Component({
   selector: 'app-business-form',
-  imports: [ReactiveFormsModule, ButtonModule, InputNumberModule, InputTextModule],
+  imports: [ReactiveFormsModule, ButtonModule, InputNumberModule, InputTextModule, ToggleSwitchModule],
   templateUrl: './business-form.html'
 })
 export class BusinessForm {
@@ -24,7 +25,8 @@ export class BusinessForm {
     email: ['', Validators.email],
     phone: [''],
     address: [''],
-    cashDiscountPercentage: [0, [Validators.min(0), Validators.max(100)]]
+    cashDiscountPercentage: [0, [Validators.min(0), Validators.max(100)]],
+    cashRegisterEnabled: [true]
   });
 
   constructor() {
@@ -40,7 +42,8 @@ export class BusinessForm {
           email: business.email ?? '',
           phone: business.phone ?? '',
           address: business.address ?? '',
-          cashDiscountPercentage: business.cashDiscountPercentage
+          cashDiscountPercentage: business.cashDiscountPercentage,
+          cashRegisterEnabled: business.cashRegisterEnabled
         });
       }
     });
@@ -62,7 +65,8 @@ export class BusinessForm {
         email: raw.email || null,
         phone: raw.phone || null,
         address: raw.address || null,
-        cashDiscountPercentage: raw.cashDiscountPercentage
+        cashDiscountPercentage: raw.cashDiscountPercentage,
+        cashRegisterEnabled: raw.cashRegisterEnabled
       });
     } finally {
       this.saving.set(false);

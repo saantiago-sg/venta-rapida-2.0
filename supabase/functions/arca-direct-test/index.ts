@@ -1,24 +1,28 @@
 // PRUEBA AISLADA -- valida si se puede hablar con WSAA/WSFEv1 de ARCA (ex AFIP) directo desde
-// Deno, sin ningun proveedor intermediario (nada de TusFacturasAPP). No toca ninguna tabla ni
-// codigo de facturacion existente (invoice-sale, tusfacturas-webhook, business_fiscal_settings)
-// -- es una funcion nueva y descartable solo para decidir si vale la pena migrar a esto.
-// Ver README.md en este directorio para el detalle completo de cada paso.
+// Deno, sin ningun proveedor intermediario. No toca ninguna tabla ni codigo de facturacion real
+// (invoice-sale, business_fiscal_settings) -- es la prueba descartable que se uso para validar
+// el flujo antes de migrar invoice-sale a ARCA directo (reemplazando TusFacturasAPP). Ver
+// README.md en este directorio para el detalle completo de cada paso de esa investigacion.
 //
-// Estado actual: login WSAA y FEDummy ya confirmados de punta a punta contra homologacion (ver
-// README.md, "Resultado final"). Este archivo ahora prueba FECAESolicitar (emitir un comprobante
-// de prueba) para validar el shape del payload real antes de tocar invoice-sale.
+// Los dos monkey-patches (NTP, cache de tokens) ahora viven en ../_shared/arca-patches.ts,
+// compartidos con invoice-sale -- ver ese archivo para el detalle de cada uno. Esta funcion usa
+// un identificador de cache fijo ("arca-direct-test", no un business_id real) en el mismo bucket
+// que usa invoice-sale en produccion (arca-wsaa-tokens) -- el bucket viejo exclusivo de esta
+// prueba (arca-direct-test-cache) quedo sin uso, se puede borrar cuando se limpie esta funcion.
 //
 // A proposito NO se desactiva verify_jwt (queda en el default `true` de Supabase, ver
 // config.toml) -- esta funcion le pega en vivo al servidor de homologacion de ARCA, no tiene
 // sentido dejarla abierta a cualquiera.
 
 import "@supabase/functions-js/edge-runtime.d.ts";
-import { AfipServices, AfipSoap } from "facturajs";
+import { createClient } from "@supabase/supabase-js";
+import { AfipServices } from "facturajs";
+import { applyArcaTimePatch, applyArcaTokenCachePatch } from "../_shared/arca-patches.ts";
 
-// PARCHE DELIBERADO -- ver README.md, seccion "Parche: reemplazo de la sincronizacion NTP", para
-// el detalle completo de por que existe y como se decidio (no toca ningun archivo de facturajs,
-// se pierde solo si una version futura del paquete renombra AfipSoap.getNetworkHour).
-(AfipSoap as unknown as { getNetworkHour: () => Promise<Date> }).getNetworkHour = () => Promise.resolve(new Date());
+const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+applyArcaTimePatch();
+applyArcaTokenCachePatch(supabaseAdmin, "arca-direct-test");
 
 // CUIT del certificado de prueba (extraido del propio cert.pem, subject serialNumber). No es un
 // secret -- viaja igual en cada request SOAP como parte del Auth.
@@ -27,6 +31,14 @@ const CUIT = 20421955965;
 // Factura B: lo mas probable para un CUIT que factura a Consumidor Final. Si AFIP lo rechaza por
 // no corresponder a la condicion fiscal de este CUIT, el error mismo es el dato que se busca acá.
 const CBTE_TIPO_FACTURA_B = 6;
+
+// Punto de venta 00002, confirmado por captura de pantalla en el Sistema Registral de AFIP como
+// "Factura Electronica - Monotributo - Web Services" -- correctamente configurado. Se usa
+// directo (no se depende de que FEParamGetPtosVenta lo liste, ver mas abajo) porque ese metodo
+// sigue devolviendo "Sin Resultados" incluso con la config ya confirmada: es un problema conocido
+// de que homologacion no siempre refleja los puntos de venta reales de Sistema Registral, no un
+// problema de configuracion de la cuenta.
+const PTO_VTA_FALLBACK = 2;
 
 function todayYYYYMMDD(): string {
   const now = new Date();
@@ -65,7 +77,9 @@ Deno.serve(async () => {
 
   const afip = new AfipServices({
     homo: true,
-    cacheTokensPath: "/tmp/arca-direct-test-tokens.json",
+    // Ignorado en la practica -- el PARCHE 2 de arriba reemplaza por completo el mecanismo de
+    // cache de facturajs por Storage. Sigue siendo obligatorio para el tipado de IConfigService.
+    cacheTokensPath: "unused-see-parche-2",
     tokensExpireInHours: 12,
     certContents: cert,
     privateKeyContents: privateKey
@@ -78,30 +92,29 @@ Deno.serve(async () => {
 
   try {
     // 1. Que puntos de venta estan habilitados para facturacion electronica en homologacion --
-    // no se asume ninguno, se consulta.
-    const ptosVentaResult = (await afip.execRemote("wsfev1", "FEParamGetPtosVenta", {
-      Auth: { Cuit: CUIT },
-      params: {}
-    })) as { ResultGet?: { PtoVenta?: PtoVenta | PtoVenta[] } };
-    steps.FEParamGetPtosVenta = ptosVentaResult;
+    // informativo solamente: si devuelve datos, se usa el primero habilitado; si falla o viene
+    // vacio (ver PTO_VTA_FALLBACK mas arriba), se sigue igual con el punto de venta confirmado
+    // por fuera (captura de AFIP), en vez de bloquear la prueba por esto.
+    let ptoVta = PTO_VTA_FALLBACK;
+    try {
+      const ptosVentaResult = (await afip.execRemote("wsfev1", "FEParamGetPtosVenta", {
+        Auth: { Cuit: CUIT },
+        params: {}
+      })) as { ResultGet?: { PtoVenta?: PtoVenta | PtoVenta[] } };
+      steps.FEParamGetPtosVenta = ptosVentaResult;
 
-    const puntosVenta = toArray(ptosVentaResult.ResultGet?.PtoVenta);
-    const elegido = puntosVenta.find((p) => p.Bloqueado === "N") ?? puntosVenta[0];
-
-    if (!elegido?.Nro) {
-      return Response.json(
-        {
-          ok: false,
-          step: "FEParamGetPtosVenta",
-          error: "No hay ningun punto de venta habilitado para wsfe en este CUIT.",
-          steps
-        },
-        { status: 200 }
-      );
+      const puntosVenta = toArray(ptosVentaResult.ResultGet?.PtoVenta);
+      const elegido = puntosVenta.find((p) => p.Bloqueado === "N") ?? puntosVenta[0];
+      if (elegido?.Nro) {
+        ptoVta = elegido.Nro;
+        steps.ptoVtaElegido = elegido;
+      } else {
+        steps.ptoVtaElegido = `fallback ${PTO_VTA_FALLBACK} (FEParamGetPtosVenta vino vacio)`;
+      }
+    } catch (ptosVentaErr) {
+      steps.FEParamGetPtosVentaError = ptosVentaErr instanceof Error ? ptosVentaErr.message : String(ptosVentaErr);
+      steps.ptoVtaElegido = `fallback ${PTO_VTA_FALLBACK} (FEParamGetPtosVenta fallo)`;
     }
-
-    const ptoVta = elegido.Nro;
-    steps.ptoVtaElegido = elegido;
 
     // 2. Ultimo numero autorizado para ese punto de venta + tipo de comprobante, para saber
     // desde donde continuar (AFIP exige numeracion correlativa sin saltos).

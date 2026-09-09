@@ -55,11 +55,4 @@ export class PaymentMethodsStore {
     await this.repository.delete(id);
     this._paymentMethods.update((list) => list.filter((m) => m.id !== id));
   }
-
-  async setInvoicingEnabled(id: string, invoicingEnabled: boolean): Promise<void> {
-    await this.repository.setInvoicingEnabled(id, invoicingEnabled);
-    this._paymentMethods.update((list) =>
-      list.map((m) => (m.id === id ? { ...m, invoicingEnabled } : m))
-    );
-  }
 }

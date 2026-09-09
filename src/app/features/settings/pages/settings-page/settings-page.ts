@@ -1,11 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { AuthStore } from '../../../../core/auth/auth.store';
 import { BusinessForm } from '../business-form/business-form';
 import { DeliveryTypeList } from '../delivery-type-list/delivery-type-list';
 import { EmployeeList } from '../employee-list/employee-list';
-import { FiscalSettingsPage } from '../fiscal-settings/fiscal-settings';
 import { PaymentMethodList } from '../payment-method-list/payment-method-list';
 import { ScaleSettingsPage } from '../scale-settings/scale-settings';
 import { TaxList } from '../tax-list/tax-list';
@@ -18,8 +16,7 @@ type SettingsSectionId =
   | 'entrega'
   | 'balanza'
   | 'empleados'
-  | 'ticket'
-  | 'facturacion';
+  | 'ticket';
 
 interface SettingsSection {
   id: SettingsSectionId;
@@ -27,8 +24,9 @@ interface SettingsSection {
   icon: string;
 }
 
-// 'ticket' y 'facturacion' van juntas a proposito: son las dos configuraciones sobre el
-// comprobante que se le da al cliente (impreso / electronico).
+// La seccion 'facturacion' (FiscalSettingsPage) esta deshabilitada a proposito -- no se lanza
+// en la primera version. El feature sigue completo por debajo, solo desconectado de esta lista;
+// reactivar es agregar de vuelta la entrada y el import de FiscalSettingsPage.
 const SECTIONS: SettingsSection[] = [
   { id: 'negocio', label: 'Negocio', icon: 'pi pi-building' },
   { id: 'impuestos', label: 'Impuestos', icon: 'pi pi-percentage' },
@@ -36,8 +34,7 @@ const SECTIONS: SettingsSection[] = [
   { id: 'entrega', label: 'Tipos de entrega', icon: 'pi pi-truck' },
   { id: 'balanza', label: 'Balanza', icon: 'pi pi-barcode' },
   { id: 'empleados', label: 'Empleados', icon: 'pi pi-users' },
-  { id: 'ticket', label: 'Ticket', icon: 'pi pi-print' },
-  { id: 'facturacion', label: 'Facturación', icon: 'pi pi-file-check' }
+  { id: 'ticket', label: 'Ticket', icon: 'pi pi-print' }
 ];
 
 const SECTION_IDS = SECTIONS.map((s) => s.id);
@@ -51,20 +48,14 @@ const SECTION_IDS = SECTIONS.map((s) => s.id);
     DeliveryTypeList,
     ScaleSettingsPage,
     EmployeeList,
-    TicketSettingsPage,
-    FiscalSettingsPage
+    TicketSettingsPage
   ],
   templateUrl: './settings-page.html'
 })
 export class SettingsPage {
   private readonly route = inject(ActivatedRoute);
-  private readonly authStore = inject(AuthStore);
 
-  // Facturación electrónica maneja credenciales sensibles -- solo se muestra a quien tenga el
-  // permiso 'can_manage_invoicing' (el dueño lo tiene siempre, un admin solo si se le otorga).
-  protected readonly sections = computed(() =>
-    SECTIONS.filter((s) => s.id !== 'facturacion' || this.authStore.hasPermission('can_manage_invoicing'))
-  );
+  protected readonly sections = SECTIONS;
 
   // Permite llegar directo a una seccion (ej. desde el aviso de "no hay impuestos cargados"
   // en el formulario de producto) via /configuracion?section=impuestos.

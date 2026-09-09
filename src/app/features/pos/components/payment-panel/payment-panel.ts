@@ -6,8 +6,10 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { TicketData } from '../../../../shared/components/ticket-print/ticket-print';
+import { CashSessionStore } from '../../../cash-register/state/cash-session.store';
 import { DEFAULT_TICKET_SETTINGS } from '../../../settings/data-access/models';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { CustomersStore } from '../../../customers/state/customers.store';
@@ -45,7 +47,7 @@ function paymentMethodRank(name: string): number {
 
 @Component({
   selector: 'app-payment-panel',
-  imports: [DecimalPipe, FormsModule, RouterLink, ButtonModule, DialogModule, InputNumberModule, SelectModule],
+  imports: [DecimalPipe, FormsModule, RouterLink, ButtonModule, DialogModule, InputNumberModule, SelectModule, TooltipModule],
   templateUrl: './payment-panel.html'
 })
 export class PaymentPanel {
@@ -53,6 +55,7 @@ export class PaymentPanel {
   protected readonly paymentMethodsStore = inject(PaymentMethodsStore);
   protected readonly deliveryTypesStore = inject(DeliveryTypesStore);
   protected readonly customersStore = inject(CustomersStore);
+  protected readonly cashSessionStore = inject(CashSessionStore);
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
 
   protected readonly errorMessage = signal<string | null>(null);
@@ -72,12 +75,24 @@ export class PaymentPanel {
     this.deliveryTypesStore.deliveryTypes().filter((d) => d.active)
   );
 
+  // La caja es opcional por negocio (Configuracion > Negocio) -- si esta desactivada, el
+  // efectivo se cobra siempre, sin importar si hay turno abierto (mismo criterio que
+  // process_sale del lado del server).
+  protected readonly cashPaymentBlocked = computed(
+    () => this.businessSettingsStore.business()?.cashRegisterEnabled !== false && !this.cashSessionStore.hasOpenSession()
+  );
+
   protected readonly quickAmounts = computed(() => quickCashAmounts(this.store.total()));
 
   constructor() {
     this.paymentMethodsStore.load();
     this.deliveryTypesStore.load();
     this.customersStore.load();
+    // Para deshabilitar "Efectivo" en el popup de pago si no hay turno abierto -- ver
+    // .html. La caja NUNCA bloquea otros medios de pago, esto es solo UX proactiva: el
+    // bloqueo real esta en process_sale (server-side), esto evita el viaje redondo con
+    // error crudo cuando ya se armo todo el carrito.
+    this.cashSessionStore.loadCurrent();
 
     // El cajero no elige tipo de entrega en la mayoria de las ventas (retiro en el mostrador
     // es el caso comun) -- se precarga solo para que nunca sea un paso obligatorio a pensar,
@@ -158,10 +173,7 @@ export class PaymentPanel {
         subtotal: result.subtotal,
         discountAmount: result.discountAmount,
         total: result.total,
-        changeGiven: result.changeGiven,
-        // La facturacion se dispara async despues de confirmar (ver PosStore.triggerInvoicing)
-        // -- nunca hay CAE disponible todavia en este momento, por eso siempre null aca.
-        invoice: null
+        changeGiven: result.changeGiven
       });
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo confirmar la venta.');

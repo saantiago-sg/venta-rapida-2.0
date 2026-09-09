@@ -19,9 +19,12 @@ const ROLE_OPTIONS = [
 ];
 
 // Preset de permisos al invitar segun el rol elegido (Fase 4 del diseño).
+// can_manage_cash_movements es la unica excepcion habilitada por default para cajero: abrir/
+// cerrar caja es una tarea operativa diaria (como vender), no una accion sensible como cancelar
+// ventas -- el resto del catalogo sigue apagado por default y se habilita permiso a permiso.
 const ROLE_DEFAULT_PERMISSIONS: Record<'admin' | 'cashier', string[]> = {
   admin: PERMISSION_CATALOG.map((p) => p.key),
-  cashier: []
+  cashier: ['can_manage_cash_movements']
 };
 
 @Component({

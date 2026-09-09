@@ -42,6 +42,13 @@ export const routes: Routes = [
       },
       { path: 'pos', loadChildren: () => import('./features/pos/pos.routes').then((m) => m.POS_ROUTES) },
       {
+        path: 'caja',
+        loadChildren: () => import('./features/cash-register/cash-register.routes').then((m) => m.CASH_REGISTER_ROUTES)
+      },
+      // 'facturar' (facturador standalone) esta deshabilitado a proposito -- no se lanza en la
+      // primera version. El feature sigue completo (invoicer.routes.ts, Edge Functions, tablas)
+      // solo desconectado de la navegacion; reactivar es agregar de vuelta este child route.
+      {
         path: 'productos',
         loadChildren: () => import('./features/products/products.routes').then((m) => m.PRODUCTS_ROUTES)
       },

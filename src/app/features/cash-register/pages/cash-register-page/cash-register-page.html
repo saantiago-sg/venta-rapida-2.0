@@ -1,0 +1,191 @@
+<h1 class="text-xl font-semibold tracking-tight mb-6">Caja</h1>
+
+@if (businessSettingsStore.business()?.cashRegisterEnabled === false) {
+  <div class="surface-card bg-card border border-border rounded-xl p-6 flex flex-col items-center gap-2 text-center">
+    <i class="pi pi-wallet text-2xl text-text-secondary"></i>
+    <p class="text-sm text-text-secondary">
+      El cierre de caja está desactivado para este negocio.
+      <a [routerLink]="['/configuracion']" class="text-brand hover:underline">Activalo en Configuración</a>
+      si querés volver a usarlo.
+    </p>
+  </div>
+} @else {
+
+<div class="surface-card bg-card border border-border rounded-xl p-6 mb-6">
+  @if (store.currentSession(); as session) {
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-success"></span>
+          <p class="text-sm font-medium text-text">Turno abierto</p>
+        </div>
+        <p class="text-xs text-text-secondary mt-1">
+          Desde las {{ session.openedAt | date: 'HH:mm' }} · Monto inicial
+          ${{ session.openingAmount | number: '1.2-2' }}
+        </p>
+      </div>
+      <p-button label="Cerrar caja" icon="pi pi-lock" severity="secondary" [outlined]="true" (onClick)="onCloseClick()" />
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3 max-w-xs">
+      <div>
+        <p class="text-sm font-medium text-text">Caja cerrada</p>
+        <p class="text-xs text-text-secondary mt-1">Ingresá el efectivo con el que arrancás el turno.</p>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-text-secondary">Monto inicial</label>
+        <p-inputnumber
+          [ngModel]="openingAmount()"
+          (ngModelChange)="openingAmount.set($event)"
+          mode="decimal"
+          locale="es-AR"
+          prefix="$"
+          [minFractionDigits]="2"
+          [min]="0"
+          styleClass="w-full"
+        />
+      </div>
+      @if (openErrorMessage()) {
+        <p class="text-sm text-error">{{ openErrorMessage() }}</p>
+      }
+      <p-button
+        label="Abrir caja"
+        icon="pi pi-lock-open"
+        [loading]="opening()"
+        [disabled]="openingAmount() === null || openingAmount()! < 0"
+        (onClick)="onOpen()"
+      />
+    </div>
+  }
+</div>
+
+<div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
+  <h2 class="text-sm font-semibold px-5 pt-5 pb-1">Historial de turnos</h2>
+  <div class="overflow-x-auto">
+    <p-table [value]="store.sessions()" [loading]="store.loadingHistory()" dataKey="id">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Apertura</th>
+          <th>Abrió</th>
+          <th>Cerró</th>
+          <th class="text-right">Inicial</th>
+          <th class="text-right">Esperado</th>
+          <th class="text-right">Contado</th>
+          <th class="text-right">Diferencia</th>
+          <th class="w-32">Estado</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-session>
+        <tr>
+          <td>{{ session.openedAt | date: 'dd/MM/yy HH:mm' }}</td>
+          <td>{{ session.openedByName }}</td>
+          <td>{{ session.closedByName || '—' }}</td>
+          <td class="text-right tabular-nums">${{ session.openingAmount | number: '1.2-2' }}</td>
+          <td class="text-right tabular-nums">
+            {{ session.expectedAmount !== null ? ('$' + (session.expectedAmount | number: '1.2-2')) : '—' }}
+          </td>
+          <td class="text-right tabular-nums">
+            {{ session.closingAmount !== null ? ('$' + (session.closingAmount | number: '1.2-2')) : '—' }}
+          </td>
+          <td
+            class="text-right tabular-nums"
+            [class.text-success]="session.difference === 0"
+            [class.text-error]="session.difference !== null && session.difference !== 0"
+          >
+            {{ session.difference !== null ? ('$' + (session.difference | number: '1.2-2')) : '—' }}
+          </td>
+          <td>
+            <div class="flex flex-col items-start gap-1">
+              @if (session.status === 'open') {
+                <p-tag severity="info" value="Abierto" />
+              } @else {
+                <p-tag severity="secondary" value="Cerrado" />
+              }
+              @if (session.hasLateCancellation) {
+                <p-tag severity="warn" value="Cancelación posterior al cierre, revisar" />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="flex flex-col items-center gap-2 py-10 text-center">
+              <i class="pi pi-wallet text-2xl text-text-secondary"></i>
+              <p class="text-sm text-text-secondary">Todavía no hay turnos registrados.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog
+  [(visible)]="closeDialogVisible"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '24rem', maxWidth: '92vw' }"
+  header="Cerrar caja"
+  (onHide)="onCloseDialogHide()"
+>
+  @if (closeResult(); as result) {
+    <div class="flex flex-col gap-3">
+      <div class="flex justify-between text-sm">
+        <span class="text-text-secondary">Esperado</span>
+        <span class="tabular-nums font-medium">${{ result.expectedAmount | number: '1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-text-secondary">Contado</span>
+        <span class="tabular-nums font-medium">${{ result.closingAmount | number: '1.2-2' }}</span>
+      </div>
+      <div
+        class="flex justify-between items-center rounded-xl px-3.5 py-2.5 mt-1"
+        [class]="result.difference === 0 ? 'bg-success/10' : 'bg-error/10'"
+      >
+        <span class="text-sm font-medium" [class.text-success]="result.difference === 0" [class.text-error]="result.difference !== 0">
+          Diferencia
+        </span>
+        <span
+          class="text-xl font-semibold tabular-nums"
+          [class.text-success]="result.difference === 0"
+          [class.text-error]="result.difference !== 0"
+        >
+          ${{ result.difference | number: '1.2-2' }}
+        </span>
+      </div>
+      <p-button label="Listo" styleClass="w-full mt-2" (onClick)="onCloseDialogHide()" />
+    </div>
+  } @else {
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-text-secondary">Monto contado</label>
+        <p-inputnumber
+          [ngModel]="closingAmount()"
+          (ngModelChange)="closingAmount.set($event)"
+          mode="decimal"
+          locale="es-AR"
+          prefix="$"
+          [minFractionDigits]="2"
+          [min]="0"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          autofocus
+        />
+      </div>
+      @if (closeErrorMessage()) {
+        <p class="text-sm text-error">{{ closeErrorMessage() }}</p>
+      }
+      <p-button
+        label="Confirmar cierre"
+        styleClass="w-full"
+        [loading]="closing()"
+        [disabled]="closingAmount() === null || closingAmount()! < 0"
+        (onClick)="onConfirmClose()"
+      />
+    </div>
+  }
+</p-dialog>
+
+}

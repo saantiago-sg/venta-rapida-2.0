@@ -57,7 +57,7 @@
     <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Ventas</h3>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
     <div>
       <label class="text-sm font-medium text-text">Descuento por pago en efectivo</label>
       <p class="text-xs text-text-secondary mt-0.5">Se aplica solo cuando el cliente paga con un medio marcado como efectivo.</p>
@@ -65,6 +65,18 @@
     <div class="w-40 min-w-0">
       <p-inputnumber formControlName="cashDiscountPercentage" locale="es-AR" suffix="%" [min]="0" [max]="100" styleClass="w-full" />
     </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
+    <div>
+      <label class="text-sm font-medium text-text">Usar cierre de caja</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Con esto activado, cobrar en efectivo requiere un turno de caja abierto (pantalla
+        "Caja"). Desactivalo si no querés llevar ese control — el efectivo se cobra siempre,
+        sin turnos.
+      </p>
+    </div>
+    <p-toggleswitch formControlName="cashRegisterEnabled" />
   </div>
 
   <div class="flex justify-end pt-6 mt-2 border-t border-border">

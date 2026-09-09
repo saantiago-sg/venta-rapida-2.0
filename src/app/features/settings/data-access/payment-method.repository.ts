@@ -9,10 +9,9 @@ interface PaymentMethodRow {
   name: string;
   is_cash: boolean;
   active: boolean;
-  invoicing_enabled: boolean;
 }
 
-const SELECT_COLUMNS = 'id, business_id, name, is_cash, active, invoicing_enabled';
+const SELECT_COLUMNS = 'id, business_id, name, is_cash, active';
 
 function mapRow(row: PaymentMethodRow): PaymentMethod {
   return {
@@ -20,8 +19,7 @@ function mapRow(row: PaymentMethodRow): PaymentMethod {
     businessId: row.business_id,
     name: row.name,
     isCash: row.is_cash,
-    active: row.active,
-    invoicingEnabled: row.invoicing_enabled
+    active: row.active
   };
 }
 
@@ -56,14 +54,6 @@ export class PaymentMethodRepository {
 
   async delete(id: string): Promise<void> {
     const { error } = await this.supabase.from('payment_methods').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  async setInvoicingEnabled(id: string, invoicingEnabled: boolean): Promise<void> {
-    const { error } = await this.supabase
-      .from('payment_methods')
-      .update({ invoicing_enabled: invoicingEnabled })
-      .eq('id', id);
     if (error) throw error;
   }
 }

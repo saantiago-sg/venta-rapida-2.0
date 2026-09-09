@@ -7,6 +7,7 @@ export interface BusinessSettings {
   phone: string | null;
   address: string | null;
   cashDiscountPercentage: number;
+  cashRegisterEnabled: boolean;
   weightedBarcode: WeightedBarcodeConfig;
   ticketSettings: TicketSettings;
   onboardingCompleted: boolean;
@@ -20,6 +21,7 @@ export interface BusinessSettingsFormValue {
   phone: string | null;
   address: string | null;
   cashDiscountPercentage: number;
+  cashRegisterEnabled: boolean;
 }
 
 // Config por negocio para decodificar los codigos de barras que imprime una balanza (EAN-13
@@ -74,27 +76,38 @@ export interface PaymentMethod {
   name: string;
   isCash: boolean;
   active: boolean;
-  invoicingEnabled: boolean;
 }
+
+export type ArcaEnvironment = 'homologacion' | 'produccion';
+export type EmisorCondicionIva = 'RI' | 'M' | 'E';
 
 export interface FiscalSettings {
   businessId: string;
   electronicInvoicingEnabled: boolean;
+  arcaEnvironment: ArcaEnvironment;
   afipPuntoVenta: string | null;
-  tusfacturasApitoken: string | null;
-  tusfacturasApikey: string | null;
-  tusfacturasUsertoken: string | null;
-  tusfacturasWebhookToken: string | null;
+  emisorCondicionIva: EmisorCondicionIva | null;
+  // El certificado/clave nunca vuelven al cliente (viven cifrados en Supabase Vault) -- esto
+  // solo indica si ya hay uno cargado, para mostrar "cargar" vs "reemplazar" en el form.
+  hasCertificate: boolean;
 }
 
 export interface FiscalSettingsFormValue {
   electronicInvoicingEnabled: boolean;
+  arcaEnvironment: ArcaEnvironment;
   afipPuntoVenta: string | null;
-  tusfacturasApitoken: string | null;
-  tusfacturasApikey: string | null;
-  tusfacturasUsertoken: string | null;
-  tusfacturasWebhookToken: string | null;
+  emisorCondicionIva: EmisorCondicionIva | null;
+  // Solo se mandan cuando el dueño elige un archivo nuevo -- si quedan undefined, el certificado
+  // ya guardado no se toca.
+  cert?: string;
+  privateKey?: string;
 }
+
+export const EMISOR_CONDICION_IVA_OPTIONS: { label: string; value: EmisorCondicionIva }[] = [
+  { label: 'Responsable Inscripto', value: 'RI' },
+  { label: 'Monotributo', value: 'M' },
+  { label: 'Exento', value: 'E' }
+];
 
 export interface DeliveryType {
   id: string;
@@ -135,9 +148,9 @@ export const PERMISSION_CATALOG: { key: string; label: string; description: stri
   },
   { key: 'can_cancel_sales', label: 'Cancelar ventas', description: 'Anular una venta ya cargada' },
   { key: 'can_view_reports', label: 'Ver reportes', description: 'Ver estadísticas y reportes del negocio' },
-  {
-    key: 'can_manage_invoicing',
-    label: 'Gestionar facturación electrónica',
-    description: 'Configurar la facturación electrónica (AFIP)'
-  }
+  { key: 'can_manage_cash_movements', label: 'Abrir y cerrar caja', description: 'Abrir turno, cerrar turno y ver el historial de cierres' }
+  // 'can_manage_invoicing' deshabilitado a proposito -- gatea Configuracion > Facturacion, hoy
+  // oculta (ver app.routes.ts). El permiso sigue existiendo en la base (RLS de
+  // business_fiscal_settings), solo se saco del catalogo para no mostrar un toggle sin
+  // ningun efecto visible.
 ];

@@ -94,26 +94,12 @@
       <input type="text" pInputText formControlName="notes" />
     </div>
 
-    <div class="pt-2 border-t border-border">
-      <p class="text-xs text-text-secondary mb-3">
-        Datos fiscales (opcionales) — solo hacen falta si querés facturarle a este cliente en vez
-        de "Consumidor Final".
-      </p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-text-secondary">Tipo de documento</label>
-          <p-select formControlName="documentType" [options]="documentTypeOptions" optionLabel="label" optionValue="value" [showClear]="true" appendTo="body" styleClass="w-full" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-text-secondary">Condición IVA</label>
-          <p-select formControlName="ivaCondition" [options]="ivaConditionOptions" optionLabel="label" optionValue="value" [showClear]="true" appendTo="body" styleClass="w-full" />
-        </div>
-      </div>
-      <div class="flex flex-col gap-1 mt-3">
-        <label class="text-sm text-text-secondary">Provincia</label>
-        <input type="text" pInputText formControlName="province" />
-      </div>
-    </div>
+    <!--
+      Datos fiscales (documentType/ivaCondition/province) deshabilitados a proposito -- eran
+      para el viejo flujo de facturacion automatica por cliente, hoy desconectado (ver
+      Configuracion). El facturador standalone tampoco los usa. Los controles siguen en el
+      FormGroup (ver customers-page.ts), solo se saco el bloque visible.
+    -->
 
     <p-button type="submit" label="Guardar" [loading]="saving()" styleClass="w-full" />
   </form>

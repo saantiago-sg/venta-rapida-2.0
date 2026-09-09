@@ -150,9 +150,4 @@ export class SalesHistoryStore {
     await this.repository.cancel(saleId, reason);
     await this.load();
   }
-
-  async retryInvoice(saleId: string): Promise<void> {
-    await this.repository.retryInvoice(saleId);
-    await this.load();
-  }
 }

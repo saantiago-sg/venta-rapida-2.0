@@ -69,10 +69,6 @@ export class PaymentMethodList {
     this.store.setActive(id, active);
   }
 
-  protected onToggleInvoicing(id: string, invoicingEnabled: boolean): void {
-    this.store.setInvoicingEnabled(id, invoicingEnabled);
-  }
-
   protected onDeleteClick(method: PaymentMethod): void {
     this.confirmationService.confirm({
       header: 'Eliminar medio de pago',

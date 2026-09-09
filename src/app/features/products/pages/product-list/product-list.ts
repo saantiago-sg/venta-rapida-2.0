@@ -21,6 +21,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { TaxesStore } from '../../../settings/state/taxes.store';
+import { ProductImportDialog } from '../../components/product-import-dialog/product-import-dialog';
 import { Product } from '../../data-access/models';
 import { CategoriesStore } from '../../state/categories.store';
 import { ProductsStore } from '../../state/products.store';
@@ -54,11 +55,13 @@ function normalize(text: string): string {
     SelectModule,
     TableModule,
     ToggleSwitchModule,
-    TooltipModule
+    TooltipModule,
+    ProductImportDialog
   ],
   templateUrl: './product-list.html'
 })
 export class ProductList {
+  protected readonly importDialogVisible = signal(false);
   private readonly fb = inject(FormBuilder);
   private readonly authStore = inject(AuthStore);
   protected readonly productsStore = inject(ProductsStore);

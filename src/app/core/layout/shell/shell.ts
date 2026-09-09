@@ -8,6 +8,7 @@ import { AuthStore, MembershipRole } from '../../auth/auth.store';
 import { ConnectivityService } from '../../offline/connectivity.service';
 import { OfflineQueueService } from '../../offline/offline-queue.service';
 import { SyncService } from '../../offline/sync.service';
+import { BusinessSettingsStore } from '../../../features/settings/state/business-settings.store';
 
 const ROLE_STYLES: Record<MembershipRole, { label: string; icon: string }> = {
   owner: { label: 'Dueño', icon: 'pi-crown' },
@@ -48,7 +49,8 @@ interface NavSection {
 // aca, cualquier empleado activo lo ve. Si esta, solo se ve con el permiso puntual.
 const NAV_ITEM_PERMISSIONS: Record<string, string> = {
   '/dashboard': 'can_view_reports',
-  '/configuracion': 'can_manage_settings'
+  '/configuracion': 'can_manage_settings',
+  '/caja': 'can_manage_cash_movements'
 };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -58,7 +60,8 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-th-large' },
       { label: 'Vender', path: '/pos', icon: 'pi pi-shopping-cart' },
       { label: 'Productos', path: '/productos', icon: 'pi pi-tag' },
-      { label: 'Historial de ventas', path: '/ventas', icon: 'pi pi-receipt' }
+      { label: 'Historial de ventas', path: '/ventas', icon: 'pi pi-receipt' },
+      { label: 'Caja', path: '/caja', icon: 'pi pi-wallet' }
     ]
   },
   {
@@ -84,13 +87,19 @@ export class Shell {
   protected readonly connectivity = inject(ConnectivityService);
   protected readonly offlineQueue = inject(OfflineQueueService);
   protected readonly syncService = inject(SyncService);
+  private readonly businessSettingsStore = inject(BusinessSettingsStore);
 
   protected readonly navSections = computed<NavSection[]>(() =>
     NAV_SECTIONS.map((section) => ({
       ...section,
       items: section.items.filter((item) => {
         const permission = NAV_ITEM_PERMISSIONS[item.path];
-        return !permission || this.authStore.hasPermission(permission);
+        if (permission && !this.authStore.hasPermission(permission)) return false;
+        // Caja es opcional por negocio (Configuracion > Negocio) -- se oculta ademas del
+        // permiso si el dueno la desactivo. Default visible mientras business() todavia no
+        // cargo, para no hacerla parpadear al entrar.
+        if (item.path === '/caja') return this.businessSettingsStore.business()?.cashRegisterEnabled !== false;
+        return true;
       })
     })).filter((section) => section.items.length > 0)
   );
@@ -102,6 +111,8 @@ export class Shell {
   private readonly router = inject(Router);
 
   constructor() {
+    this.businessSettingsStore.load();
+
     // Cerrar el sidebar recien cuando la navegacion termina (no en el click del link) --
     // atarlo al click competia con el propio manejador de RouterLink en el mismo elemento y
     // en mobile a veces ganaba el cierre, comiendose la navegacion (primer tap "fallaba").

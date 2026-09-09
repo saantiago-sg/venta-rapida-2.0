@@ -8,14 +8,6 @@ export interface TicketLineItem {
   subtotal: number;
 }
 
-// Solo se arma cuando la factura ya tiene CAE (emitida) -- el llamador es responsable de no
-// poblar este campo mientras la factura este 'queued'/'error', para que el template nunca
-// tenga que decidir si mostrar un bloque de "factura pendiente" en un ticket ya impreso.
-export interface TicketInvoiceInfo {
-  comprobanteNumber: string | null;
-  cae: string;
-}
-
 export interface TicketData {
   businessName: string;
   businessAddress: string | null;
@@ -36,7 +28,6 @@ export interface TicketData {
   discountAmount: number;
   total: number;
   changeGiven: number | null;
-  invoice: TicketInvoiceInfo | null;
   // true cuando se vendio sin conexion y todavia no tiene numero de venta real asignado
   // (se asigna recien al sincronizar) -- ver OfflineQueueService/SyncService.
   pending?: boolean;

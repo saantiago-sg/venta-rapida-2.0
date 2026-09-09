@@ -1,44 +1,40 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
-import { FiscalSettings, FiscalSettingsFormValue } from './models';
+import { ArcaEnvironment, EmisorCondicionIva, FiscalSettings, FiscalSettingsFormValue } from './models';
 
 interface FiscalSettingsRow {
   business_id: string;
   electronic_invoicing_enabled: boolean;
+  arca_environment: ArcaEnvironment;
   afip_punto_venta: string | null;
-  tusfacturas_apitoken: string | null;
-  tusfacturas_apikey: string | null;
-  tusfacturas_usertoken: string | null;
-  tusfacturas_webhook_token: string | null;
+  emisor_condicion_iva: EmisorCondicionIva | null;
+  arca_cert_secret_id: string | null;
 }
 
 const SELECT_COLUMNS =
-  'business_id, electronic_invoicing_enabled, afip_punto_venta, tusfacturas_apitoken, tusfacturas_apikey, tusfacturas_usertoken, tusfacturas_webhook_token';
+  'business_id, electronic_invoicing_enabled, arca_environment, afip_punto_venta, emisor_condicion_iva, arca_cert_secret_id';
 
 function mapRow(row: FiscalSettingsRow): FiscalSettings {
   return {
     businessId: row.business_id,
     electronicInvoicingEnabled: row.electronic_invoicing_enabled,
+    arcaEnvironment: row.arca_environment,
     afipPuntoVenta: row.afip_punto_venta,
-    tusfacturasApitoken: row.tusfacturas_apitoken,
-    tusfacturasApikey: row.tusfacturas_apikey,
-    tusfacturasUsertoken: row.tusfacturas_usertoken,
-    tusfacturasWebhookToken: row.tusfacturas_webhook_token
+    emisorCondicionIva: row.emisor_condicion_iva,
+    hasCertificate: row.arca_cert_secret_id !== null
   };
 }
 
-// No hay fila hasta que el dueño guarda la config por primera vez -- valores por defecto en
-// blanco, mismo criterio que "no hay negocio" en otros repos de este feature.
+// No hay fila hasta que el dueño guarda la config por primera vez.
 function emptySettings(businessId: string): FiscalSettings {
   return {
     businessId,
     electronicInvoicingEnabled: false,
+    arcaEnvironment: 'homologacion',
     afipPuntoVenta: null,
-    tusfacturasApitoken: null,
-    tusfacturasApikey: null,
-    tusfacturasUsertoken: null,
-    tusfacturasWebhookToken: null
+    emisorCondicionIva: null,
+    hasCertificate: false
   };
 }
 
@@ -47,6 +43,9 @@ export class FiscalSettingsRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
   async get(businessId: string): Promise<FiscalSettings> {
+    // Select directo: el certificado/clave en si nunca estan en esta tabla (viven en Vault,
+    // referenciados solo por id) asi que no hace falta pasar por una Edge Function para leer
+    // esto -- RLS (can_manage_invoicing) ya alcanza.
     const { data, error } = await this.supabase
       .from('business_fiscal_settings')
       .select(SELECT_COLUMNS)
@@ -56,21 +55,30 @@ export class FiscalSettingsRepository {
     return data ? mapRow(data as FiscalSettingsRow) : emptySettings(businessId);
   }
 
+  // Guardar SI pasa por una Edge Function: escribir el certificado nuevo (cuando viene) implica
+  // llamar a Supabase Vault, que solo puede tocar la funcion security definer
+  // save_fiscal_credentials -- no accesible por un upsert normal ni con can_manage_invoicing.
   async save(businessId: string, input: FiscalSettingsFormValue): Promise<FiscalSettings> {
-    const { data, error } = await this.supabase
-      .from('business_fiscal_settings')
-      .upsert({
-        business_id: businessId,
-        electronic_invoicing_enabled: input.electronicInvoicingEnabled,
-        afip_punto_venta: input.afipPuntoVenta,
-        tusfacturas_apitoken: input.tusfacturasApitoken,
-        tusfacturas_apikey: input.tusfacturasApikey,
-        tusfacturas_usertoken: input.tusfacturasUsertoken,
-        tusfacturas_webhook_token: input.tusfacturasWebhookToken
-      })
-      .select(SELECT_COLUMNS)
-      .single();
+    const { data, error } = await this.supabase.functions.invoke('save-fiscal-settings', {
+      body: {
+        businessId,
+        electronicInvoicingEnabled: input.electronicInvoicingEnabled,
+        arcaEnvironment: input.arcaEnvironment,
+        afipPuntoVenta: input.afipPuntoVenta,
+        emisorCondicionIva: input.emisorCondicionIva,
+        cert: input.cert,
+        privateKey: input.privateKey
+      }
+    });
     if (error) throw error;
-    return mapRow(data as FiscalSettingsRow);
+    if (data?.error) throw new Error(data.error);
+    const settings = data.settings as {
+      electronicInvoicingEnabled: boolean;
+      arcaEnvironment: ArcaEnvironment;
+      afipPuntoVenta: string | null;
+      emisorCondicionIva: EmisorCondicionIva | null;
+      hasCertificate: boolean;
+    };
+    return { businessId, ...settings };
   }
 }

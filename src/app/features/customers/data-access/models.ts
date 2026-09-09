@@ -25,8 +25,9 @@ export interface CustomerFormValue {
   province: string | null;
 }
 
-// Códigos que espera TusFacturasAPP para facturar a nombre de un cliente en vez de "Consumidor
-// Final sin datos" -- solo hace falta completarlos si se quiere facturar a esa persona/empresa.
+// Códigos que espera ARCA (invoice-sale) para facturar a nombre de un cliente en vez de
+// "Consumidor Final sin datos" -- solo hace falta completarlos si se quiere facturar a esa
+// persona/empresa.
 export const DOCUMENT_TYPE_OPTIONS = [
   { label: 'DNI', value: 'DNI' },
   { label: 'CUIT', value: 'CUIT' },

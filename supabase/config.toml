@@ -452,13 +452,17 @@ verify_jwt = false
 import_map = "./functions/invoice-sale/deno.json"
 entrypoint = "./functions/invoice-sale/index.ts"
 
-[functions.tusfacturas-webhook]
+[functions.save-fiscal-settings]
 enabled = true
-# Caller externo (TusFacturasAPP), no tiene JWT de Supabase -- se autentica con el header
-# TF-WebhookToken adentro de la funcion, ver index.ts.
 verify_jwt = false
-import_map = "./functions/tusfacturas-webhook/deno.json"
-entrypoint = "./functions/tusfacturas-webhook/index.ts"
+import_map = "./functions/save-fiscal-settings/deno.json"
+entrypoint = "./functions/save-fiscal-settings/index.ts"
+
+[functions.issue-standalone-invoice]
+enabled = true
+verify_jwt = false
+import_map = "./functions/issue-standalone-invoice/deno.json"
+entrypoint = "./functions/issue-standalone-invoice/index.ts"
 
 [functions.arca-direct-test]
 enabled = true

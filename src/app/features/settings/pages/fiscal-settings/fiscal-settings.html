@@ -1,14 +1,18 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
   <div class="mb-2">
-    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Facturación electrónica</h3>
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Facturación electrónica (ARCA)</h3>
+    <p class="text-xs text-text-secondary mt-0.5">
+      Se factura directo contra ARCA (ex AFIP), sin intermediarios — necesitás tu propio
+      certificado digital, ver la guía más abajo.
+    </p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
     <div>
-      <label class="text-sm font-medium text-text">Facturar automáticamente</label>
+      <label class="text-sm font-medium text-text">Facturación electrónica habilitada</label>
       <p class="text-xs text-text-secondary mt-0.5">
-        Emite un comprobante AFIP/ARCA vía TusFacturasAPP en cada venta. Podés excluir medios de
-        pago puntuales (ej. efectivo) desde Configuración &gt; Medios de pago.
+        Requisito para poder emitir comprobantes ARCA desde la pantalla "Facturar". Las ventas
+        del POS nunca se facturan solas: la factura siempre se carga a mano ahí.
       </p>
     </div>
     <p-toggleswitch formControlName="electronicInvoicingEnabled" />
@@ -16,52 +20,103 @@
 
   <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
     <div>
-      <label class="text-sm font-medium text-text">Punto de venta AFIP</label>
-      <p class="text-xs text-text-secondary mt-0.5">El número que tenés habilitado en AFIP para facturar.</p>
+      <label class="text-sm font-medium text-text">Ambiente</label>
+      <p class="text-xs text-text-secondary mt-0.5">
+        Homologación es el ambiente de pruebas de ARCA — los comprobantes que emite no son
+        válidos legalmente. Cambiá a Producción recién cuando hayas validado todo.
+      </p>
+    </div>
+    <p-select formControlName="arcaEnvironment" [options]="environmentOptions" optionLabel="label" optionValue="value" appendTo="body" styleClass="w-full max-w-md" />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
+    <div>
+      <label class="text-sm font-medium text-text">Punto de venta ARCA</label>
+      <p class="text-xs text-text-secondary mt-0.5">El número que diste de alta en ARCA como Web Service (ver guía).</p>
     </div>
     <input type="text" pInputText formControlName="afipPuntoVenta" class="w-full max-w-md" />
   </div>
 
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
+    <div>
+      <label class="text-sm font-medium text-text">Condición frente al IVA</label>
+      <p class="text-xs text-text-secondary mt-0.5">La tuya, como emisor — determina si facturás A, B o C.</p>
+    </div>
+    <p-select formControlName="emisorCondicionIva" [options]="condicionIvaOptions" optionLabel="label" optionValue="value" [showClear]="true" appendTo="body" styleClass="w-full max-w-md" />
+  </div>
+
   <div class="mt-8 mb-2">
-    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Credenciales de TusFacturasAPP</h3>
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Certificado digital</h3>
     <p class="text-xs text-text-secondary mt-0.5">
-      Se obtienen en tu cuenta de TusFacturasAPP &gt; Mi Espacio de Trabajo &gt; Puntos de Venta.
+      Se guarda cifrado — nadie (ni nosotros) puede volver a leerlo una vez cargado, solo
+      reemplazarlo por uno nuevo.
     </p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
     <div>
-      <label class="text-sm font-medium text-text">API Token</label>
+      <label class="text-sm font-medium text-text">Certificado (.crt / .pem)</label>
     </div>
-    <input type="text" pInputText formControlName="tusfacturasApitoken" class="w-full max-w-md" autocomplete="off" />
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
-    <div>
-      <label class="text-sm font-medium text-text">API Key</label>
+    <div class="flex flex-col gap-1 max-w-md">
+      <input type="file" accept=".crt,.pem" (change)="onCertFileChange($event)" class="text-sm" />
+      @if (pendingCertName()) {
+        <span class="text-xs text-success">Nuevo archivo listo para guardar: {{ pendingCertName() }}</span>
+      } @else if (store.settings()?.hasCertificate) {
+        <span class="text-xs text-text-secondary">Ya hay un certificado cargado. Elegí un archivo para reemplazarlo.</span>
+      }
     </div>
-    <input type="text" pInputText formControlName="tusfacturasApikey" class="w-full max-w-md" autocomplete="off" />
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5 border-b border-border">
-    <div>
-      <label class="text-sm font-medium text-text">User Token</label>
-    </div>
-    <input type="text" pInputText formControlName="tusfacturasUsertoken" class="w-full max-w-md" autocomplete="off" />
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-2 md:gap-6 py-5">
     <div>
-      <label class="text-sm font-medium text-text">Token de webhook</label>
-      <p class="text-xs text-text-secondary mt-0.5">
-        Elegí un token y cargalo también al configurar el webhook en TusFacturasAPP — así
-        confirmamos que los avisos de CAE emitido vienen de tu cuenta.
-      </p>
+      <label class="text-sm font-medium text-text">Clave privada (.key)</label>
     </div>
-    <input type="text" pInputText formControlName="tusfacturasWebhookToken" class="w-full max-w-md" autocomplete="off" />
+    <div class="flex flex-col gap-1 max-w-md">
+      <input type="file" accept=".key" (change)="onKeyFileChange($event)" class="text-sm" />
+      @if (pendingKeyName()) {
+        <span class="text-xs text-success">Nuevo archivo listo para guardar: {{ pendingKeyName() }}</span>
+      } @else if (store.settings()?.hasCertificate) {
+        <span class="text-xs text-text-secondary">Ya hay una clave cargada. Elegí un archivo para reemplazarla.</span>
+      }
+    </div>
   </div>
+
+  @if (errorMessage()) {
+    <p class="text-sm text-error mt-4">{{ errorMessage() }}</p>
+  }
 
   <div class="flex justify-end pt-6 mt-2 border-t border-border">
     <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
   </div>
 </form>
+
+<div class="mt-10 pt-6 border-t border-border flex flex-col gap-3">
+  <h3 class="text-xs font-semibold uppercase tracking-wide text-text-secondary">Cómo conseguir el certificado</h3>
+  <ol class="list-decimal list-inside text-sm text-text-secondary flex flex-col gap-2">
+    <li>
+      Generá la clave privada y el CSR (necesitás
+      <code class="text-xs bg-card-hover px-1 py-0.5 rounded">openssl</code> instalado):
+      <pre class="bg-card-hover rounded-lg p-2.5 mt-1 text-xs overflow-x-auto">openssl genrsa -out private_key.key 2048
+openssl req -new -key private_key.key \
+  -subj "/C=AR/O=TU_EMPRESA/CN=TU_SISTEMA/serialNumber=CUIT TU_CUIT_SIN_GUIONES" \
+  -out afip.csr</pre>
+    </li>
+    <li>
+      Con tu Clave Fiscal, entrá a <strong>WSASS - Autogestión Certificados Homologación</strong>
+      (o el servicio equivalente de producción), cargá el <code class="text-xs bg-card-hover px-1 py-0.5 rounded">afip.csr</code>
+      y descargá el certificado que te devuelve ARCA — guardalo como <code class="text-xs bg-card-hover px-1 py-0.5 rounded">cert.crt</code>.
+    </li>
+    <li>
+      En esa misma gestión, <strong>autorizá el certificado al servicio "wsfe"</strong> — es un
+      paso aparte de generarlo, sin esto ARCA rechaza el login.
+    </li>
+    <li>
+      Dado de alta un <strong>punto de venta</strong>: entrá a ARCA con tu Clave Fiscal →
+      <strong>Registro Único Tributario</strong> → sección "Puntos de venta" → dar de alta uno
+      nuevo con sistema tipo <strong>"Web Services"</strong> (no "Factura en Línea" ni "Remito
+      Electrónico" — son modos distintos, cada uno con sus propios puntos de venta). Anotá el
+      número que te asigna, es el que va en "Punto de venta ARCA" arriba.
+    </li>
+    <li>Subí los dos archivos (<code class="text-xs bg-card-hover px-1 py-0.5 rounded">cert.crt</code> y <code class="text-xs bg-card-hover px-1 py-0.5 rounded">private_key.key</code>) en los campos de arriba y guardá.</li>
+  </ol>
+</div>

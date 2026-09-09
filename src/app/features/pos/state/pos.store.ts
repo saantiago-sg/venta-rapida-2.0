@@ -23,7 +23,6 @@ export class PosStore {
   private readonly _customerId = signal<string | null>(null);
   private readonly _cashReceived = signal<number | null>(null);
   private readonly _processing = signal(false);
-  private readonly _invoiceNotice = signal<string | null>(null);
 
   readonly cart = this._cart.asReadonly();
   readonly paymentMethodId = this._paymentMethodId.asReadonly();
@@ -31,9 +30,6 @@ export class PosStore {
   readonly customerId = this._customerId.asReadonly();
   readonly cashReceived = this._cashReceived.asReadonly();
   readonly processing = this._processing.asReadonly();
-  // Aviso liviano post-venta (ej. "no se pudo facturar") -- nunca bloquea el checkout, la venta
-  // ya quedo guardada antes de que esto se dispare. null cuando no hay nada para mostrar.
-  readonly invoiceNotice = this._invoiceNotice.asReadonly();
 
   readonly subtotal = computed(() =>
     this._cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
@@ -168,7 +164,6 @@ export class PosStore {
       this._cart.set([]);
       this._cashReceived.set(null);
       this._customerId.set(null);
-      this.triggerInvoicing(result.id);
       return result;
     } catch (err) {
       if (!isNetworkError(err)) throw err;
@@ -200,22 +195,5 @@ export class PosStore {
     this._cashReceived.set(null);
     this._customerId.set(null);
     return result;
-  }
-
-  // Se dispara sin esperar (no bloquea el ticket/la confirmacion en pantalla) -- si falla o esta
-  // deshabilitada, se resuelve en silencio salvo error real, que se muestra como aviso liviano.
-  private triggerInvoicing(saleId: string): void {
-    this._invoiceNotice.set(null);
-    this.saleRepository
-      .invoiceSale(saleId)
-      .then((res) => {
-        if (res.skipped || res.invoiced) return;
-        this._invoiceNotice.set('No se pudo facturar la venta. Podés reintentar desde Ventas.');
-      })
-      .catch(() => this._invoiceNotice.set('No se pudo facturar la venta. Podés reintentar desde Ventas.'));
-  }
-
-  dismissInvoiceNotice(): void {
-    this._invoiceNotice.set(null);
   }
 }

@@ -150,7 +150,6 @@
       <th class="text-right">Ganancia</th>
       <th class="text-right">Margen</th>
       <th class="w-32">Estado</th>
-      <th class="w-32">Factura</th>
       <th class="w-16"></th>
     </tr>
   </ng-template>
@@ -183,28 +182,6 @@
           <p-tag severity="success" value="Completada" />
         } @else {
           <p-tag severity="danger" value="Cancelada" />
-        }
-      </td>
-      <td>
-        @switch (sale.invoice?.status) {
-          @case ('issued') {
-            <p-tag severity="success" value="Emitida" />
-          }
-          @case ('queued') {
-            <p-tag severity="info" value="Facturando" />
-          }
-          @case ('error') {
-            <p-tag severity="danger" value="Error" />
-          }
-          @case ('credit_note_pending') {
-            <p-tag severity="warn" value="Falta NC" />
-          }
-          @case ('credit_note_issued') {
-            <p-tag severity="secondary" value="NC emitida" />
-          }
-          @default {
-            <span class="text-xs text-text-secondary">—</span>
-          }
         }
       </td>
       <td>
@@ -356,31 +333,6 @@
       </div>
 
       <p-button label="Reimprimir Ticket" icon="pi pi-print" styleClass="w-full" (onClick)="onPrint()" />
-
-      @if (sale.invoice; as invoice) {
-        @switch (invoice.status) {
-          @case ('issued') {
-            <p-button label="Ver factura AFIP" icon="pi pi-external-link" [outlined]="true" styleClass="w-full" (onClick)="onViewInvoice(sale)" />
-          }
-          @case ('credit_note_issued') {
-            <p-button label="Ver factura AFIP" icon="pi pi-external-link" [outlined]="true" styleClass="w-full" (onClick)="onViewInvoice(sale)" />
-          }
-          @case ('queued') {
-            <p class="text-xs text-text-secondary text-center">Facturando con AFIP…</p>
-          }
-          @case ('error') {
-            <div class="flex flex-col gap-2">
-              <p class="text-sm text-error">{{ invoice.errorMessage || 'No se pudo facturar esta venta.' }}</p>
-              <p-button label="Reintentar factura" icon="pi pi-refresh" [outlined]="true" [loading]="retryingInvoice()" styleClass="w-full" (onClick)="onRetryInvoice()" />
-            </div>
-          }
-          @case ('credit_note_pending') {
-            <p class="text-xs text-warning">
-              Esta venta ya fue facturada — hay que emitir una Nota de Crédito en TusFacturasAPP.
-            </p>
-          }
-        }
-      }
 
       @if (sale.status === 'cancelled') {
         <p class="text-sm text-error">Cancelada{{ sale.cancelReason ? ': ' + sale.cancelReason : '' }}</p>

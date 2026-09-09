@@ -74,8 +74,12 @@
           @for (method of activePaymentMethods(); track method.id) {
             <button
               type="button"
+              [disabled]="method.isCash && cashPaymentBlocked()"
               (click)="onSelectMethod(method.id)"
-              class="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-xl transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_8px_20px_-8px_rgba(36,30,24,0.15)]"
+              class="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-xl transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_8px_20px_-8px_rgba(36,30,24,0.15)] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:border-border disabled:hover:shadow-none disabled:cursor-not-allowed"
+              pTooltip="Abrí la caja para cobrar en efectivo"
+              tooltipPosition="bottom"
+              [tooltipDisabled]="!method.isCash || !cashPaymentBlocked()"
             >
               <span class="flex items-center justify-center w-10 h-10 rounded-full bg-brand/10 text-brand">
                 <i class="pi text-lg" [class]="method.isCash ? 'pi-wallet' : 'pi-credit-card'"></i>

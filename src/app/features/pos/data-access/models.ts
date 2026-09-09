@@ -37,9 +37,3 @@ export interface SaleResult {
   // saleNumber es un valor de relleno (0), el numero real se asigna recien al sincronizar.
   pending?: boolean;
 }
-
-export interface InvoiceSaleResult {
-  invoiced?: boolean;
-  skipped?: boolean;
-  error?: string;
-}
