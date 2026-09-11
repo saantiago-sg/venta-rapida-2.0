@@ -80,11 +80,13 @@ begin
 
   delete from public.businesses where id = p_business_id;
 
+  -- vault.secrets es una tabla comun (no hay una funcion vault.delete_secret) -- se borra
+  -- con un DELETE directo, igual que cualquier otra fila.
   if v_fiscal.arca_cert_secret_id is not null then
-    perform vault.delete_secret(v_fiscal.arca_cert_secret_id);
+    delete from vault.secrets where id = v_fiscal.arca_cert_secret_id;
   end if;
   if v_fiscal.arca_private_key_secret_id is not null then
-    perform vault.delete_secret(v_fiscal.arca_private_key_secret_id);
+    delete from vault.secrets where id = v_fiscal.arca_private_key_secret_id;
   end if;
 
   return jsonb_build_object('id', v_business.id, 'name', v_business.name);
