@@ -70,4 +70,9 @@ export class SuperAdminStore {
       list.map((b) => (b.id === businessId ? { ...b, subscriptionStatus: status } : b))
     );
   }
+
+  async deleteBusiness(businessId: string): Promise<void> {
+    await this.repository.delete(businessId);
+    this._businesses.update((list) => list.filter((b) => b.id !== businessId));
+  }
 }

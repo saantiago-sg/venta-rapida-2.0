@@ -44,3 +44,5 @@ Thumbs.db
 *.key
 *.csr
 *.pem
+.vercel
+.env*

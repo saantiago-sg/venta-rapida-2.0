@@ -13,6 +13,7 @@
         <th>Nombre</th>
         <th class="w-48">Suscripción</th>
         <th class="w-32 text-center">Activo</th>
+        <th class="w-16"></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-business>
@@ -39,11 +40,20 @@
         <td class="text-center">
           <p-toggleswitch [ngModel]="business.active" (ngModelChange)="onToggleActive(business.id, $event)" />
         </td>
+        <td class="text-center">
+          <button
+            type="button"
+            class="pi pi-trash cursor-pointer text-text-secondary hover:text-error"
+            [class.opacity-50]="deleting() && deleteTarget()?.id === business.id"
+            [disabled]="deleting() && deleteTarget()?.id === business.id"
+            (click)="openDelete(business)"
+          ></button>
+        </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="3">
+        <td colspan="4">
           <div class="flex flex-col items-center gap-2 py-10 text-center">
             <i class="pi pi-building text-2xl text-text-secondary"></i>
             <p class="text-sm text-text-secondary">Todavía no hay negocios.</p>
@@ -84,4 +94,42 @@
 
     <p-button type="submit" label="Crear negocio" [loading]="saving()" styleClass="w-full" />
   </form>
+</p-dialog>
+
+<p-dialog [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '28rem', maxWidth: '92vw' }" header="Eliminar negocio">
+  @if (deleteTarget(); as target) {
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-text-secondary">
+        Esta acción es <strong>irreversible</strong>: se borran para siempre todas las ventas, productos,
+        clientes, movimientos de stock, cajas y demás datos de <strong>{{ target.name }}</strong>. La cuenta de
+        login del dueño no se borra.
+      </p>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-text-secondary">
+          Escribí <strong>{{ target.name }}</strong> para confirmar
+        </label>
+        <input
+          type="text"
+          pInputText
+          [ngModel]="deleteConfirmText()"
+          (ngModelChange)="deleteConfirmText.set($event)"
+          autocomplete="off"
+        />
+      </div>
+
+      @if (deleteError()) {
+        <p class="text-sm text-error">{{ deleteError() }}</p>
+      }
+
+      <p-button
+        label="Eliminar negocio"
+        severity="danger"
+        [disabled]="deleteConfirmText() !== target.name"
+        [loading]="deleting()"
+        styleClass="w-full"
+        (onClick)="confirmDelete()"
+      />
+    </div>
+  }
 </p-dialog>

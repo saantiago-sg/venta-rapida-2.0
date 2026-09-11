@@ -155,4 +155,17 @@ export class BusinessAdminRepository {
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
   }
+
+  // Borrado real (no soft-delete): pasa por Edge Function + service role porque el RPC
+  // admin_delete_business esta revocado para authenticated/anon (ver migracion
+  // 20260911140000_delete_business.sql) -- ni siquiera el owner del propio negocio puede
+  // invocarlo directamente.
+  async delete(businessId: string): Promise<{ id: string; name: string }> {
+    const { data, error } = await this.supabase.functions.invoke('delete-business', {
+      body: { businessId }
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data.business;
+  }
 }

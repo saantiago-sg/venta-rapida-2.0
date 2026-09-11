@@ -7,7 +7,7 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
-import { SubscriptionStatus } from '../../data-access/business-admin.repository';
+import { AdminBusiness, SubscriptionStatus } from '../../data-access/business-admin.repository';
 import { SuperAdminStore } from '../../state/super-admin.store';
 
 const SUBSCRIPTION_STATUS_OPTIONS: { label: string; value: SubscriptionStatus }[] = [
@@ -39,6 +39,12 @@ export class BusinessesPage {
   protected readonly dialogVisible = signal(false);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly deleteDialogVisible = signal(false);
+  protected readonly deleteTarget = signal<AdminBusiness | null>(null);
+  protected readonly deleteConfirmText = signal('');
+  protected readonly deleting = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     businessName: ['', Validators.required],
@@ -82,5 +88,29 @@ export class BusinessesPage {
 
   protected onStatusChange(id: string, status: SubscriptionStatus): void {
     this.store.setSubscriptionStatus(id, status);
+  }
+
+  protected openDelete(business: AdminBusiness): void {
+    this.deleteTarget.set(business);
+    this.deleteConfirmText.set('');
+    this.deleteError.set(null);
+    this.deleteDialogVisible.set(true);
+  }
+
+  protected async confirmDelete(): Promise<void> {
+    const target = this.deleteTarget();
+    if (!target || this.deleteConfirmText() !== target.name) return;
+
+    this.deleting.set(true);
+    this.deleteError.set(null);
+
+    try {
+      await this.store.deleteBusiness(target.id);
+      this.deleteDialogVisible.set(false);
+    } catch (err) {
+      this.deleteError.set(err instanceof Error ? err.message : 'No se pudo eliminar el negocio.');
+    } finally {
+      this.deleting.set(false);
+    }
   }
 }
