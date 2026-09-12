@@ -7,7 +7,7 @@
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
   <div class="overflow-x-auto">
-  <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id">
+  <p-table [value]="store.businesses()" [loading]="store.loading()" dataKey="id" [paginator]="true" [rows]="25" [rowsPerPageOptions]="[25, 50, 100]">
     <ng-template pTemplate="header">
       <tr>
         <th>Nombre</th>
