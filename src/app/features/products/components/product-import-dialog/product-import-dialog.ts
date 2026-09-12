@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -36,6 +36,7 @@ function triggerDownload(blob: Blob, filename: string): void {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-product-import-dialog',
   imports: [DecimalPipe, ButtonModule, DialogModule, ProgressBarModule, TableModule, TagModule],
   templateUrl: './product-import-dialog.html'

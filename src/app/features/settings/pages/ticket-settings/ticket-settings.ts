@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,6 +8,7 @@ import { TicketPaperWidthMm } from '../../data-access/models';
 import { BusinessSettingsStore } from '../../state/business-settings.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-ticket-settings',
   imports: [ReactiveFormsModule, ButtonModule, InputTextModule, ToggleSwitchModule],
   templateUrl: './ticket-settings.html'

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -13,6 +13,7 @@ import { CloseCashSessionResult } from '../../data-access/models';
 import { CashSessionStore } from '../../state/cash-session.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-cash-register-page',
   imports: [DatePipe, DecimalPipe, FormsModule, RouterLink, ButtonModule, DialogModule, InputNumberModule, TableModule, TagModule],
   templateUrl: './cash-register-page.html'

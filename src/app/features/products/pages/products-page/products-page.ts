@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TabsModule } from 'primeng/tabs';
 
 import { CategoryList } from '../category-list/category-list';
 import { ProductList } from '../product-list/product-list';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-products-page',
   imports: [TabsModule, ProductList, CategoryList],
   template: `

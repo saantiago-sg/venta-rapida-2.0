@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { DecimalPipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -16,6 +16,7 @@ import { parseWeightedBarcode } from '../../data-access/weighted-barcode';
 const GRAMS_PER_KG = 1000;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-product-search',
   imports: [DecimalPipe, UpperCasePipe, FormsModule, ButtonModule, DialogModule, InputNumberModule, InputTextModule],
   templateUrl: './product-search.html'

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -23,6 +23,7 @@ import { exportSalesCsv, exportSalesExcel, exportSalesPdf } from '../../data-acc
 import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/sales-history.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sales-history-page',
   imports: [
     DatePipe,

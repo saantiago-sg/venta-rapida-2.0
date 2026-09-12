@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -46,6 +46,7 @@ function paymentMethodRank(name: string): number {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-payment-panel',
   imports: [DecimalPipe, FormsModule, RouterLink, ButtonModule, DialogModule, InputNumberModule, SelectModule, TooltipModule],
   templateUrl: './payment-panel.html'

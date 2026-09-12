@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +17,7 @@ import { COMPROBANTE_TIPO_LABEL, IVA_RATE_OPTIONS, IssueInvoiceResult } from '..
 import { StandaloneInvoicesStore } from '../../state/standalone-invoices.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-invoicer-page',
   imports: [
     DatePipe,

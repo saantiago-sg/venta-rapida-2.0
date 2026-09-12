@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
@@ -11,6 +11,7 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-reset-password-page',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './reset-password-page.html'

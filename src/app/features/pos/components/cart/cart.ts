@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -9,6 +9,7 @@ import { PosStore } from '../../state/pos.store';
 const GRAMS_PER_KG = 1000;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-cart',
   imports: [DecimalPipe, FormsModule, InputNumberModule],
   templateUrl: './cart.html'

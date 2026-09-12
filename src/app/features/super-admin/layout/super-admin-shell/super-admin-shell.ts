@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
 const DESKTOP_BREAKPOINT_PX = 1024;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-super-admin-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './super-admin-shell.html'

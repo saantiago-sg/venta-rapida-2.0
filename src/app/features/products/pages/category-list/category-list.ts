@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -11,6 +11,7 @@ import { AuthStore } from '../../../../core/auth/auth.store';
 import { CategoriesStore } from '../../state/categories.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-category-list',
   imports: [FormsModule, ButtonModule, DialogModule, InputTextModule, TableModule, ToggleSwitchModule, TooltipModule],
   templateUrl: './category-list.html'

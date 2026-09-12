@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +23,7 @@ function extractErrorMessage(err: unknown, fallback: string): string {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-payment-method-list',
   imports: [FormsModule, ButtonModule, ConfirmDialogModule, InputTextModule, TableModule, TagModule, ToggleSwitchModule],
   providers: [ConfirmationService],

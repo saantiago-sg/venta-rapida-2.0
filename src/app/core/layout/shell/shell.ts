@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { filter } from 'rxjs';
@@ -78,6 +78,7 @@ const NAV_SECTIONS: NavSection[] = [
 const DESKTOP_BREAKPOINT_PX = 1024;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TooltipModule],
   templateUrl: './shell.html'

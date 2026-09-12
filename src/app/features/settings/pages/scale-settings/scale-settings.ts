@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -12,6 +12,7 @@ function clampDigits(value: string, length: number): string {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scale-settings',
   imports: [ReactiveFormsModule, ButtonModule, InputNumberModule, InputTextModule, ToggleSwitchModule],
   templateUrl: './scale-settings.html'

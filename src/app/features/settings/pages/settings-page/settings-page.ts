@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { BusinessForm } from '../business-form/business-form';
@@ -40,6 +40,7 @@ const SECTIONS: SettingsSection[] = [
 const SECTION_IDS = SECTIONS.map((s) => s.id);
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-settings-page',
   imports: [
     BusinessForm,

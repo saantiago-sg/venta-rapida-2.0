@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -12,6 +12,7 @@ import { ProductSearch } from '../../components/product-search/product-search';
 import { PosStore } from '../../state/pos.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pos-page',
   imports: [DecimalPipe, DialogModule, ButtonModule, ProductSearch, Cart, PaymentPanel, TicketPrint],
   templateUrl: './pos-page.html'

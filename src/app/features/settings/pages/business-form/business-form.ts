@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -8,6 +8,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { BusinessSettingsStore } from '../../state/business-settings.store';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-business-form',
   imports: [ReactiveFormsModule, ButtonModule, InputNumberModule, InputTextModule, ToggleSwitchModule],
   templateUrl: './business-form.html'

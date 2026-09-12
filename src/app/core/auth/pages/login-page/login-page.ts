@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
@@ -6,6 +6,7 @@ import { AuthStore } from '../../auth.store';
 import { AuthService } from '../../auth.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-login-page',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login-page.html'

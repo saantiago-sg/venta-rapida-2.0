@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 export interface TicketLineItem {
@@ -37,6 +37,7 @@ export interface TicketData {
 // -- window.print() imprime la pagina completa, asi que el aislamiento de "imprimir solo esto"
 // lo hace la regla global en styles.css (".ticket-print-root" + visibility), no este componente.
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-ticket-print',
   imports: [DatePipe, DecimalPipe],
   templateUrl: './ticket-print.html'
