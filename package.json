@@ -32,7 +32,6 @@
     "@angular/router": "^20.3.0",
     "@primeng/themes": "^20.4.0",
     "@supabase/supabase-js": "^2.110.8",
-    "caveman": "^0.1.6",
     "exceljs": "^4.4.0",
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",
