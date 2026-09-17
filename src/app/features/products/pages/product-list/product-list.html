@@ -3,12 +3,14 @@
     <span class="relative w-full sm:flex-1 sm:max-w-md">
       <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
       <input
+        #searchInput
         type="text"
         pInputText
         placeholder="Buscar por nombre o código de barras..."
         [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)"
         class="w-full pl-9 pr-9"
+        autofocus
       />
       @if (searchQuery()) {
         <button
@@ -176,7 +178,8 @@
 </div>
 
 <p-dialog
-  [(visible)]="dialogVisible"
+  [visible]="dialogVisible()"
+  (visibleChange)="onDialogVisibleChange($event)"
   [modal]="true"
   [style]="{ width: '720px', maxWidth: '92vw' }"
   [contentStyle]="{ 'overflow-x': 'hidden' }"

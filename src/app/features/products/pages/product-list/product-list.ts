@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -62,6 +62,8 @@ function normalize(text: string): string {
   templateUrl: './product-list.html'
 })
 export class ProductList {
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+
   protected readonly importDialogVisible = signal(false);
   private readonly fb = inject(FormBuilder);
   private readonly authStore = inject(AuthStore);
@@ -110,6 +112,19 @@ export class ProductList {
   protected onSearchChange(value: string): void {
     this.searchQuery.set(value);
     this.first.set(0);
+  }
+
+  // El input de busqueda tambien sirve para escanear codigos de barra (mismo criterio que
+  // Vender) -- se mantiene el foco ahi salvo cuando el usuario esta activamente escribiendo
+  // en el dialog de alta/edicion, y vuelve solo apenas ese dialog se cierra (guardado,
+  // cancelado con Escape o click afuera).
+  protected onDialogVisibleChange(visible: boolean): void {
+    this.dialogVisible.set(visible);
+    if (!visible) this.refocus();
+  }
+
+  private refocus(): void {
+    setTimeout(() => this.searchInput()?.nativeElement.focus());
   }
 
   protected onCategoryFilterChange(value: string): void {
@@ -257,7 +272,7 @@ export class ProductList {
       } else {
         await this.productsStore.create(formValue);
       }
-      this.dialogVisible.set(false);
+      this.onDialogVisibleChange(false);
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo guardar el producto.');
     } finally {
