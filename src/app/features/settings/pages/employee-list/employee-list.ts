@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -25,6 +26,18 @@ const ROLE_OPTIONS = [
 const ROLE_DEFAULT_PERMISSIONS: Record<'admin' | 'cashier', string[]> = {
   admin: PERMISSION_CATALOG.map((p) => p.key),
   cashier: ['can_manage_cash_movements']
+};
+
+// Texto de ayuda debajo del select de rol al invitar -- describe el preset de permisos
+// de ROLE_DEFAULT_PERMISSIONS en criollo, para que el dueño sepa que esta habilitando
+// antes de invitar (los permisos se pueden ajustar despues, uno por uno, en "Permisos").
+const ROLE_DESCRIPTIONS: Record<'admin' | 'cashier', string> = {
+  cashier:
+    'Por defecto puede: vender y abrir/cerrar caja. No puede: cancelar ventas, gestionar productos, ' +
+    'configuración ni empleados, salvo que le actives esos permisos después en "Permisos".',
+  admin:
+    'Por defecto tiene todos los permisos: vender, cancelar ventas, gestionar productos, configuración ' +
+    'y empleados. Podés sacarle permisos puntuales después en "Permisos".'
 };
 
 @Component({
@@ -76,6 +89,11 @@ export class EmployeeList {
     role: this.fb.nonNullable.control<'admin' | 'cashier'>('cashier'),
     password: ['', [Validators.required, Validators.minLength(8)]]
   });
+
+  private readonly selectedRole = toSignal(this.inviteForm.controls.role.valueChanges, {
+    initialValue: this.inviteForm.controls.role.value
+  });
+  protected readonly selectedRoleDescription = computed(() => ROLE_DESCRIPTIONS[this.selectedRole()]);
 
   constructor() {
     this.store.load();

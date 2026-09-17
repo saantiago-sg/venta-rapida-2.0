@@ -25,13 +25,13 @@
         <div class="flex items-start justify-between gap-2">
           <p class="text-sm font-medium truncate min-w-0">{{ item.product.name }}</p>
           <span class="text-sm font-semibold tabular-nums shrink-0">
-            {{ item.product.price * item.quantity | number: '1.2-2' }}
+            ${{ item.product.price * item.quantity | number: '1.2-2' }}
           </span>
         </div>
 
         <div class="flex items-center justify-between gap-2">
           <p class="text-xs text-text-secondary tabular-nums truncate min-w-0">
-            {{ item.product.price | number: '1.2-2' }} / {{ item.product.saleType === 'weight' ? 'kg' : 'u' }}
+            ${{ item.product.price | number: '1.2-2' }} / {{ item.product.saleType === 'weight' ? 'kg' : 'u' }}
           </p>
 
           <div class="flex items-center gap-2 shrink-0">

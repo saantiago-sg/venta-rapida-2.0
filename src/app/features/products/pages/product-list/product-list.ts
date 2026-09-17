@@ -84,14 +84,38 @@ export class ProductList {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly searchQuery = signal('');
+  protected readonly first = signal(0);
+  // '' = todas las categorias, 'none' = sin categoria, sino el id de la categoria.
+  protected readonly categoryFilter = signal('');
+  protected readonly categoryFilterOptions = computed(() => [
+    { label: 'Todas las categorías', value: '' },
+    ...this.categoriesStore.categories().map((c) => ({ label: c.name, value: c.id })),
+    { label: 'Sin categoría', value: 'none' }
+  ]);
   protected readonly filteredProducts = computed(() => {
     const query = normalize(this.searchQuery().trim());
-    const products = this.productsStore.products();
+    const category = this.categoryFilter();
+    let products = this.productsStore.products();
+    if (category === 'none') {
+      products = products.filter((p) => !p.categoryId);
+    } else if (category) {
+      products = products.filter((p) => p.categoryId === category);
+    }
     if (!query) return products;
     return products.filter(
       (p) => normalize(p.name).includes(query) || (p.barcode && normalize(p.barcode).includes(query))
     );
   });
+
+  protected onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.first.set(0);
+  }
+
+  protected onCategoryFilterChange(value: string): void {
+    this.categoryFilter.set(value);
+    this.first.set(0);
+  }
 
   // Productos elegibles como componente de un combo: activos, que no sean ellos mismos
   // combos (un solo nivel, nada de combos anidados) y sin el producto que se esta editando.

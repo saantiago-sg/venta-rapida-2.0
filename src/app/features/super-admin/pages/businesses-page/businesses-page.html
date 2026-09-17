@@ -11,6 +11,7 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Nombre</th>
+        <th>Email</th>
         <th class="w-48">Suscripción</th>
         <th class="w-32 text-center">Activo</th>
         <th class="w-16"></th>
@@ -26,6 +27,7 @@
             {{ business.name }}
           </div>
         </td>
+        <td class="text-text-secondary">{{ business.email || '—' }}</td>
         <td>
           <p-select
             [ngModel]="business.subscriptionStatus"
@@ -53,7 +55,7 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="4">
+        <td colspan="5">
           <div class="flex flex-col items-center gap-2 py-10 text-center">
             <i class="pi pi-building text-2xl text-text-secondary"></i>
             <p class="text-sm text-text-secondary">Todavía no hay negocios.</p>

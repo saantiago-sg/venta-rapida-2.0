@@ -46,29 +46,11 @@ export class ProductsStore {
     if (!businessId) return;
 
     const previousStock = this._products().find((p) => p.id === id)?.stock ?? 0;
-    await this.repository.update(id, businessId, input, previousStock);
+    const updated = await this.repository.update(id, businessId, input, previousStock);
     if (input.isCombo) {
       await this.load();
     } else {
-      this._products.update((list) =>
-        list.map((p) =>
-          p.id === id
-            ? {
-                ...p,
-                categoryId: input.categoryId,
-                taxId: input.taxId,
-                name: input.name,
-                barcode: input.barcode,
-                saleType: input.saleType,
-                price: input.price,
-                cost: input.cost,
-                stock: input.trackStock ? input.initialStock : p.stock,
-                trackStock: input.trackStock,
-                isCombo: input.isCombo
-              }
-            : p
-        )
-      );
+      this._products.update((list) => list.map((p) => (p.id === id ? updated : p)));
     }
   }
 

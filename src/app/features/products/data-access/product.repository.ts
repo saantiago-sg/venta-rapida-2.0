@@ -103,7 +103,7 @@ export class ProductRepository {
     return product;
   }
 
-  async update(id: string, businessId: string, input: ProductFormValue, previousStock: number): Promise<void> {
+  async update(id: string, businessId: string, input: ProductFormValue, previousStock: number): Promise<Product> {
     const { error } = await this.supabase
       .from('products')
       .update({
@@ -128,6 +128,18 @@ export class ProductRepository {
         await this.adjustStock(businessId, id, delta, 'adjustment', 'Ajuste de stock');
       }
     }
+
+    // Se pide de nuevo la fila (en vez de armar el Product a mano) para traer categoryName/
+    // taxName/taxRate ya resueltos por el join y el stock ya actualizado por adjustStock --
+    // reconstruirlos a mano en el store quedaba desincronizado del join real (ver bug: cambiar
+    // de categoria no actualizaba el nombre mostrado en la tabla).
+    const { data, error: fetchError } = await this.supabase
+      .from('products')
+      .select(SELECT_COLUMNS)
+      .eq('id', id)
+      .single();
+    if (fetchError) throw fetchError;
+    return mapRow(data as unknown as ProductRow);
   }
 
   async setActive(id: string, active: boolean): Promise<void> {

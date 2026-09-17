@@ -7,6 +7,7 @@ export type SubscriptionStatus = 'trial' | 'active' | 'past_due' | 'cancelled';
 export interface AdminBusiness {
   id: string;
   name: string;
+  email: string | null;
   subscriptionStatus: SubscriptionStatus;
   subscriptionPaidUntil: string | null;
   active: boolean;
@@ -53,16 +54,23 @@ interface BusinessRow {
   subscription_status: SubscriptionStatus;
   subscription_paid_until: string | null;
   active: boolean;
+  memberships: { role: string; profiles: { email: string | null } | { email: string | null }[] | null }[] | null;
 }
 
 function first<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
+function ownerEmail(memberships: BusinessRow['memberships']): string | null {
+  const owner = (memberships ?? []).find((m) => m.role === 'owner');
+  return owner ? (first(owner.profiles)?.email ?? null) : null;
+}
+
 function mapRow(row: BusinessRow): AdminBusiness {
   return {
     id: row.id,
     name: row.name,
+    email: ownerEmail(row.memberships),
     subscriptionStatus: row.subscription_status,
     subscriptionPaidUntil: row.subscription_paid_until,
     active: row.active
@@ -76,7 +84,9 @@ export class BusinessAdminRepository {
   async list(): Promise<AdminBusiness[]> {
     const { data, error } = await this.supabase
       .from('businesses')
-      .select('id, name, subscription_status, subscription_paid_until, active')
+      .select(
+        'id, name, subscription_status, subscription_paid_until, active, memberships(role, profiles!user_id(email))'
+      )
       .order('name');
     if (error) throw error;
     return (data as BusinessRow[]).map(mapRow);
@@ -107,7 +117,7 @@ export class BusinessAdminRepository {
     const [usersResult, superAdminsResult] = await Promise.all([
       this.supabase
         .from('profiles')
-        .select('id, full_name, email, created_at, memberships(role, businesses(name))')
+        .select('id, full_name, email, created_at, memberships!user_id(role, businesses(name))')
         .order('created_at', { ascending: false }),
       this.supabase.from('super_admins').select('user_id')
     ]);

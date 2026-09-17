@@ -101,6 +101,7 @@
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Rol</label>
       <p-select formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" styleClass="w-full" />
+      <span class="text-xs text-text-secondary">{{ selectedRoleDescription() }}</span>
     </div>
 
     <div class="flex flex-col gap-1">
