@@ -84,8 +84,12 @@ function cellNumber(value: unknown): number | null {
 // castea con las funciones de arriba. eachRow con includeEmpty:false salta filas totalmente
 // vacias (ej. al final del archivo).
 export async function parseProductImportFile(file: File): Promise<ProductImportRawRow[]> {
-  const { Workbook } = await import('exceljs');
-  const workbook = new Workbook();
+  // exceljs se importa via su build de browser (UMD), que esbuild solo expone como default
+  // export -- destructurar { Workbook } de la promesa del import da undefined y "new Workbook()"
+  // explota en runtime con "X is not a constructor" (el chequeo de tipos no lo detecta porque
+  // los .d.ts de exceljs listan Workbook como named export).
+  const { default: ExcelJS } = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
   const buffer = await file.arrayBuffer();
   await workbook.xlsx.load(buffer);
 
@@ -224,8 +228,8 @@ export function buildProductImportPreview(
 }
 
 export async function buildProductImportTemplate(): Promise<Blob> {
-  const { Workbook } = await import('exceljs');
-  const workbook = new Workbook();
+  const { default: ExcelJS } = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Productos');
 
   const headerRow = sheet.addRow(TEMPLATE_HEADERS);

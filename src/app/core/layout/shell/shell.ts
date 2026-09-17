@@ -8,6 +8,7 @@ import { AuthStore, MembershipRole } from '../../auth/auth.store';
 import { ConnectivityService } from '../../offline/connectivity.service';
 import { OfflineQueueService } from '../../offline/offline-queue.service';
 import { SyncService } from '../../offline/sync.service';
+import { PrinterService } from '../../printer/printer.service';
 import { BusinessSettingsStore } from '../../../features/settings/state/business-settings.store';
 
 const ROLE_STYLES: Record<MembershipRole, { label: string; icon: string }> = {
@@ -88,6 +89,7 @@ export class Shell {
   protected readonly connectivity = inject(ConnectivityService);
   protected readonly offlineQueue = inject(OfflineQueueService);
   protected readonly syncService = inject(SyncService);
+  protected readonly printerService = inject(PrinterService);
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
 
   protected readonly navSections = computed<NavSection[]>(() =>
@@ -169,6 +171,10 @@ export class Shell {
 
   protected roleStyle(role: MembershipRole) {
     return ROLE_STYLES[role];
+  }
+
+  protected pairPrinter(): void {
+    void this.printerService.pair();
   }
 
   protected toggleSidebar(): void {

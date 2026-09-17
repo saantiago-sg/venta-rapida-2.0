@@ -147,6 +147,20 @@
             }
           </span>
         }
+        @if (printerService.supported) {
+          <button
+            type="button"
+            (click)="pairPrinter()"
+            [pTooltip]="printerService.connected() ? 'Impresora conectada' : 'Impresora no conectada · click para conectar'"
+            tooltipPosition="bottom"
+            class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-card transition-colors"
+          >
+            <i
+              class="pi pi-print text-sm"
+              [class]="printerService.connected() ? 'text-success' : 'text-error'"
+            ></i>
+          </button>
+        }
         @if (authStore.activeMembership()?.role; as role) {
           <span class="inline-flex items-center gap-1.5 rounded-full bg-brand/10 text-brand px-2.5 py-1 text-xs font-semibold">
             <i class="pi" [class]="roleStyle(role).icon"></i>

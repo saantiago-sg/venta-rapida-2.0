@@ -76,8 +76,10 @@ export async function exportSalesExcel(
   dateFrom: string | null,
   dateTo: string | null
 ): Promise<void> {
-  const { Workbook } = await import('exceljs');
-  const workbook = new Workbook();
+  // Ver comentario en product-import.ts: exceljs solo expone default export en el bundle de
+  // browser, destructurar { Workbook } directo da undefined.
+  const { default: ExcelJS } = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Ventas');
 
   sheet.mergeCells(1, 1, 1, HEADERS.length);
