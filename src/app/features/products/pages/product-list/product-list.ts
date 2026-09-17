@@ -114,6 +114,13 @@ export class ProductList {
     this.first.set(0);
   }
 
+  // El boton nativo se queda con el foco al clickearlo (comportamiento default del navegador)
+  // -- hay que devolverlo a mano al input.
+  protected onClearSearch(): void {
+    this.onSearchChange('');
+    this.refocus();
+  }
+
   // El input de busqueda tambien sirve para escanear codigos de barra (mismo criterio que
   // Vender) -- se mantiene el foco ahi salvo cuando el usuario esta activamente escribiendo
   // en el dialog de alta/edicion, y vuelve solo apenas ese dialog se cierra (guardado,

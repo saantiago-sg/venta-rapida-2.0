@@ -149,6 +149,14 @@ export class ProductSearch {
     this.weightInput.set(GRAMS_PER_KG);
   }
 
+  // El boton nativo se queda con el foco al clickearlo (comportamiento default del navegador)
+  // -- hay que devolverlo a mano al input.
+  protected onClearSearch(): void {
+    this.query.set('');
+    this.notFound.set(false);
+    this.refocus();
+  }
+
   private refocus(): void {
     setTimeout(() => this.searchInput()?.nativeElement.focus());
   }
