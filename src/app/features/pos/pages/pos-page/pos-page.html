@@ -50,7 +50,8 @@
 </div>
 
 <p-dialog
-  [(visible)]="confirmationVisible"
+  [visible]="confirmationVisible()"
+  (visibleChange)="onConfirmationVisibleChange($event)"
   [modal]="true"
   [style]="{ width: '24rem', maxWidth: '92vw' }"
   header="Venta confirmada"
@@ -70,7 +71,7 @@
       }
       <div class="flex gap-2 mt-2">
         <p-button label="Reimprimir" icon="pi pi-print" [outlined]="true" styleClass="flex-1" (onClick)="onPrint()" />
-        <p-button label="Cerrar" styleClass="flex-1" (onClick)="confirmationVisible.set(false)" />
+        <p-button label="Cerrar" styleClass="flex-1" (onClick)="onConfirmationVisibleChange(false)" />
       </div>
     </div>
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, viewChild } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 const MM_PER_PX = 25.4 / 96;
@@ -36,9 +36,10 @@ export interface TicketData {
   pending?: boolean;
 }
 
-// Se queda siempre montado (oculto en pantalla) y solo se hace visible via CSS de @media print
-// -- window.print() imprime la pagina completa, asi que el aislamiento de "imprimir solo esto"
-// lo hace la regla global en styles.css (".ticket-print-root" + visibility), no este componente.
+// Se queda siempre montado y en display:block, oculto con visibility (no display:none -- ver
+// comentario en el constructor) y fuera de pantalla con position:fixed. window.print() imprime
+// la pagina completa, asi que el aislamiento de "imprimir solo esto" lo hace la regla global en
+// styles.css (".ticket-print-root"), no este componente.
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-ticket-print',
@@ -51,14 +52,17 @@ export class TicketPrint {
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
 
   constructor() {
-    // 'beforeprint' dispara justo cuando el navegador ya aplico los estilos de @media print
-    // (por eso .ticket-print-root ya esta en display:block y offsetHeight da un valor real,
-    // no 0 como daria fuera de esa media query) -- se aprovecha ese momento para decirle a la
-    // pagina que altura real tiene el ticket, en vez de dejar que el driver de la impresora
-    // use su largo de hoja por defecto (ver @page en styles.css: sin esto, "size: 80mm auto"
-    // solo lo respeta "Guardar como PDF", una impresora termica real como una POS-80-Series
-    // ignora el "auto" y tira todo el largo de pagina default en blanco antes de cortar).
-    window.addEventListener('beforeprint', () => this.applyPageSize());
+    // 'beforeprint' NO garantiza que el navegador ya haya aplicado los estilos de @media
+    // print en ese preciso instante -- si .ticket-print-root dependiera de display:none/block
+    // por media query (como tenia antes via las clases de Tailwind "hidden print:block"),
+    // ese offsetHeight podia leerse en 0 y calcular una pagina de ~2mm, partiendo el ticket en
+    // un monton de paginas microscopicas (y como el elemento es position:fixed, se repetia
+    // en cada una). Por eso el elemento se mantiene siempre display:block (solo oculto con
+    // visibility, ver ticket-print.html/styles.css) -- asi offsetHeight es confiable sin
+    // importar el timing exacto de este evento.
+    const handler = () => this.applyPageSize();
+    window.addEventListener('beforeprint', handler);
+    inject(DestroyRef).onDestroy(() => window.removeEventListener('beforeprint', handler));
   }
 
   private applyPageSize(): void {

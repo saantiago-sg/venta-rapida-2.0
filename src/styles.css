@@ -120,6 +120,18 @@ body {
 .enter-fade-d2 { animation: enter-fade 0.5s ease-out both; animation-delay: 200ms; }
 .enter-fade-d3 { animation: enter-fade 0.5s ease-out both; animation-delay: 320ms; }
 
+/* Siempre display:block (nunca display:none) para que ticket-print.ts pueda medir su
+   offsetHeight real en cualquier momento, incluso justo al arrancar a imprimir -- fuera de
+   impresion queda oculto e inofensivo con visibility + position:fixed fuera de pantalla. Ver
+   el comentario en el constructor de TicketPrint sobre por que display:none rompia el calculo
+   del alto de pagina. */
+.ticket-print-root {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  visibility: hidden;
+}
+
 /* window.print() imprime toda la pagina -- esto aisla el comprobante (app-ticket-print) como
    lo unico visible al imprimir, sin importar donde este montado en el DOM. */
 @media print {
@@ -131,8 +143,6 @@ body {
     visibility: visible;
   }
   .ticket-print-root {
-    position: fixed;
-    top: 0;
     left: 0;
   }
 }

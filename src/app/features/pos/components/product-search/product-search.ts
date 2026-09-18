@@ -30,6 +30,7 @@ export class ProductSearch {
 
   protected readonly query = signal('');
   protected readonly notFound = signal(false);
+  private scanTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Los productos por peso no se agregan directo: primero se pide el peso en un popup,
   // asi la linea del carrito ya nace con el kilaje correcto en vez de arrancar en "1 kg"
@@ -67,6 +68,38 @@ export class ProductSearch {
     // pagina -- al volver a esta ruta navegando dentro de la SPA (el componente se recrea)
     // no siempre se re-aplica solo, hay que forzarlo por codigo.
     this.refocus();
+  }
+
+  // Ademas de (keyup.enter), se cubre el caso de una pistola lectora que por config o un hipo
+  // puntual no manda el Enter final: si a los 150ms de la ultima tecla nadie tipeo mas y lo que
+  // quedo matchea un codigo de barras exacto (no un nombre parcial), se busca solo. El guard de
+  // "matchea exacto" evita que esto se dispare mientras el cajero tipea a mano el nombre de un
+  // producto y hace una pausa larga -- onBarcodeEnter() limpia el campo en cada intento, y eso
+  // rompería la busqueda en vivo por nombre si se disparara con cualquier pausa.
+  protected onQueryChange(value: string): void {
+    this.query.set(value);
+    this.notFound.set(false);
+
+    if (this.scanTimeout) clearTimeout(this.scanTimeout);
+    const trimmed = value.trim();
+    if (!trimmed) return;
+
+    this.scanTimeout = setTimeout(() => {
+      if (this.query().trim() === trimmed && this.hasExactBarcodeMatch(trimmed)) this.onBarcodeEnter();
+    }, 150);
+  }
+
+  private hasExactBarcodeMatch(q: string): boolean {
+    const weighted = parseWeightedBarcode(
+      q,
+      this.businessSettingsStore.business()?.weightedBarcode ?? DEFAULT_WEIGHTED_BARCODE_CONFIG
+    );
+    if (weighted) {
+      return this.productsStore
+        .products()
+        .some((p) => p.active && p.saleType === 'weight' && p.barcode === weighted.productBarcode);
+    }
+    return this.productsStore.products().some((p) => p.active && p.barcode === q);
   }
 
   protected onSelect(productId: string): void {
@@ -158,6 +191,13 @@ export class ProductSearch {
   protected onClearSearch(): void {
     this.query.set('');
     this.notFound.set(false);
+    this.refocus();
+  }
+
+  // Llamado desde PosPage al cerrar el dialogo de "Venta confirmada" -- ese dialog atrapa el
+  // foco mientras esta abierto, y al cerrarse el navegador lo manda a <body> si no se lo
+  // devuelve a mano.
+  focusSearch(): void {
     this.refocus();
   }
 

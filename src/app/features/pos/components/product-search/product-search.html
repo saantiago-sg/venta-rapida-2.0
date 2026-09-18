@@ -7,7 +7,7 @@
       pInputText
       placeholder="Buscar por nombre o escanear código de barras..."
       [ngModel]="query()"
-      (ngModelChange)="query.set($event); notFound.set(false)"
+      (ngModelChange)="onQueryChange($event)"
       (keyup.enter)="onBarcodeEnter()"
       class="w-full pl-10 pr-10 py-2.5 bg-card-hover border-transparent rounded-xl transition-shadow focus:bg-card focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
       autofocus

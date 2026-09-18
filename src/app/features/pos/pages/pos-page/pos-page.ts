@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -21,6 +21,7 @@ export class PosPage {
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
   private readonly productsStore = inject(ProductsStore);
   protected readonly posStore = inject(PosStore);
+  private readonly productSearch = viewChild(ProductSearch);
 
   protected readonly lastSale = signal<TicketData | null>(null);
   protected readonly confirmationVisible = signal(false);
@@ -48,5 +49,12 @@ export class PosPage {
 
   protected onPrint(): void {
     window.print();
+  }
+
+  // El dialogo de "Venta confirmada" atrapa el foco mientras esta abierto -- al cerrarse el
+  // navegador lo manda a <body> si no se lo devuelve a mano al buscador.
+  protected onConfirmationVisibleChange(visible: boolean): void {
+    this.confirmationVisible.set(visible);
+    if (!visible) this.productSearch()?.focusSearch();
   }
 }
