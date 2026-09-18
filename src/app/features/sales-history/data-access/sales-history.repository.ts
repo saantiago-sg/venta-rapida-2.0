@@ -40,6 +40,18 @@ function first<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
+export interface SalesHistoryFilters {
+  paymentMethodId: string | null;
+  // Coincide por substring sobre el numero de pedido como texto (mismo criterio que el
+  // filtro anterior en el cliente: "12" matchea el pedido #12, #120, #512, etc.).
+  orderNumberQuery: string;
+}
+
+export interface SalesHistoryPage {
+  items: SaleListItem[];
+  totalCount: number;
+}
+
 // Mismo criterio que get_sales_summary (RPC de reportes): ganancia = suma de
 // (precio - costo) * cantidad de cada linea, con precio/costo ya "congelados" al momento
 // de la venta (sale_items.unit_price/unit_cost son snapshots, no el precio actual).
@@ -73,21 +85,35 @@ function mapSale(row: SaleRow): SaleListItem {
 export class SalesHistoryRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
-  async list(businessId: string, dateFrom?: Date, dateTo?: Date): Promise<SaleListItem[]> {
+  // Sin "page", trae todo lo que matchee los filtros (usado para exportar: el export tiene
+  // que reflejar todo lo filtrado, no solo la pagina que esta viendo el usuario en pantalla).
+  // Con "page", trae solo esa tanda + el total real de filas que matchean (para el paginador).
+  async list(
+    businessId: string,
+    dateFrom: Date | undefined,
+    dateTo: Date | undefined,
+    filters: SalesHistoryFilters,
+    page?: { first: number; rows: number }
+  ): Promise<SalesHistoryPage> {
     let query = this.supabase
       .from('sales')
       .select(
-        'id, sale_number, status, subtotal, discount_amount, tax_amount, total, created_at, cancel_reason, payment_method_id, customers(name), employee:profiles!sales_employee_id_fkey(email), payment_methods(name, is_cash), delivery_types(name), sale_items(quantity, unit_price, unit_cost)'
+        'id, sale_number, status, subtotal, discount_amount, tax_amount, total, created_at, cancel_reason, payment_method_id, customers(name), employee:profiles!sales_employee_id_fkey(email), payment_methods(name, is_cash), delivery_types(name), sale_items(quantity, unit_price, unit_cost)',
+        { count: 'exact' }
       )
       .eq('business_id', businessId)
       .order('created_at', { ascending: false });
 
     if (dateFrom) query = query.gte('created_at', dateFrom.toISOString());
     if (dateTo) query = query.lt('created_at', dateTo.toISOString());
+    if (filters.paymentMethodId) query = query.eq('payment_method_id', filters.paymentMethodId);
+    const orderNumberQuery = filters.orderNumberQuery.trim();
+    if (orderNumberQuery) query = query.filter('sale_number::text', 'ilike', `%${orderNumberQuery}%`);
+    if (page) query = query.range(page.first, page.first + page.rows - 1);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw error;
-    return (data as unknown as SaleRow[]).map(mapSale);
+    return { items: (data as unknown as SaleRow[]).map(mapSale), totalCount: count ?? 0 };
   }
 
   async getItems(saleId: string): Promise<SaleItem[]> {

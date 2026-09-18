@@ -9,7 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { SplitButtonModule } from 'primeng/splitbutton';
-import { TableModule } from 'primeng/table';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
@@ -120,9 +120,15 @@ export class SalesHistoryPage {
   });
 
   constructor() {
-    this.store.load();
+    // El store.load() inicial de la lista de ventas NO va acá -- lo dispara solo el propio
+    // p-table via (onLazyLoad) al montar (lazyLoadOnInit, default true de PrimeNG). Si se
+    // llamara tambien acá, se pediria la primera pagina dos veces.
     this.paymentMethodsStore.load();
     this.businessSettingsStore.load();
+  }
+
+  protected onLazyLoad(event: TableLazyLoadEvent): void {
+    this.store.setPage(event.first ?? 0, event.rows ?? 25);
   }
 
   protected marginPercent(sale: SaleListItem): number {
@@ -151,16 +157,25 @@ export class SalesHistoryPage {
     window.print();
   }
 
-  // Los tres exports toman store.sales() tal cual esta filtrado en pantalla (fecha, medio de
-  // pago, N de pedido) -- lo que ve el usuario es lo que se exporta, sin excepciones.
-  protected onExportCsv(): void {
-    exportSalesCsv(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+  // Los tres exports toman TODO lo que matchea los filtros actuales (fecha, medio de pago, N
+  // de pedido), no solo la pagina que esta viendo el usuario en la tabla -- lo que ve el
+  // usuario filtrado es lo que se exporta, sin excepciones, independiente de cuantas paginas
+  // sean. Por eso piden su propia carga (store.loadAllForExport()) en vez de leer store.sales().
+  protected async onExportCsv(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      const sales = await this.store.loadAllForExport();
+      exportSalesCsv(sales, this.store.dateFrom(), this.store.dateTo());
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   protected async onExportExcel(): Promise<void> {
     this.exporting.set(true);
     try {
-      await exportSalesExcel(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+      const sales = await this.store.loadAllForExport();
+      await exportSalesExcel(sales, this.store.dateFrom(), this.store.dateTo());
     } finally {
       this.exporting.set(false);
     }
@@ -169,7 +184,8 @@ export class SalesHistoryPage {
   protected async onExportPdf(): Promise<void> {
     this.exporting.set(true);
     try {
-      await exportSalesPdf(this.store.sales(), this.store.dateFrom(), this.store.dateTo());
+      const sales = await this.store.loadAllForExport();
+      await exportSalesPdf(sales, this.store.dateFrom(), this.store.dateTo());
     } finally {
       this.exporting.set(false);
     }

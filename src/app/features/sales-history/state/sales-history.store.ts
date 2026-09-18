@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ReportsRepository } from '../../reports/data-access/reports.repository';
 import { SalesSummary } from '../../reports/data-access/models';
-import { SalesHistoryRepository } from '../data-access/sales-history.repository';
+import { SalesHistoryFilters, SalesHistoryRepository } from '../data-access/sales-history.repository';
 import { SaleItem, SaleListItem } from '../data-access/models';
 
 // Parseo a mano en vez de "new Date('yyyy-mm-dd')": ese formato lo interpreta como UTC,
@@ -53,6 +53,13 @@ export class SalesHistoryStore {
   private readonly _orderNumberQuery = signal('');
   private readonly _summary = signal<SalesSummary | null>(null);
 
+  // Pago y N° de pedido ahora se filtran en el servidor (junto con la paginacion), no en el
+  // cliente sobre una lista ya traida entera -- ver el comentario en list() del repositorio.
+  private readonly _totalCount = signal(0);
+  private readonly _first = signal(0);
+  private readonly _rows = signal(25);
+  private orderNumberDebounce: ReturnType<typeof setTimeout> | null = null;
+
   readonly loading = this._loading.asReadonly();
   readonly selectedItems = this._selectedItems.asReadonly();
   readonly itemsLoading = this._itemsLoading.asReadonly();
@@ -61,6 +68,10 @@ export class SalesHistoryStore {
   readonly paymentMethodId = this._paymentMethodId.asReadonly();
   readonly orderNumberQuery = this._orderNumberQuery.asReadonly();
   readonly summary = this._summary.asReadonly();
+  readonly sales = this._sales.asReadonly();
+  readonly totalCount = this._totalCount.asReadonly();
+  readonly first = this._first.asReadonly();
+  readonly rows = this._rows.asReadonly();
 
   readonly averageMargin = computed(() => {
     const s = this._summary();
@@ -68,68 +79,98 @@ export class SalesHistoryStore {
     return (s.totalProfit / s.totalSales) * 100;
   });
 
-  // Pago y N° de pedido se filtran en el cliente sobre lo que ya trajo el rango de fechas:
-  // son listas chicas por negocio, no vale la pena otra ida y vuelta al servidor por esto.
-  readonly sales = computed(() => {
-    const paymentMethodId = this._paymentMethodId();
-    const query = this._orderNumberQuery().trim();
-    return this._sales().filter((sale) => {
-      if (paymentMethodId && sale.paymentMethodId !== paymentMethodId) return false;
-      if (query && !String(sale.saleNumber).includes(query)) return false;
-      return true;
-    });
-  });
+  private get filters(): SalesHistoryFilters {
+    return { paymentMethodId: this._paymentMethodId(), orderNumberQuery: this._orderNumberQuery() };
+  }
+
+  private get dateRange(): { from: Date; to: Date } {
+    const from = this._dateFrom() ? parseLocalDate(this._dateFrom()!) : EARLIEST_POSSIBLE_SALE;
+    // limite superior exclusivo: "Hasta 6 de agosto" tiene que incluir todo ese dia
+    const to = this._dateTo() ? nextDay(parseLocalDate(this._dateTo()!)) : nextDay(new Date());
+    return { from, to };
+  }
 
   async load(): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
 
-    const from = this._dateFrom() ? parseLocalDate(this._dateFrom()!) : EARLIEST_POSSIBLE_SALE;
-    // limite superior exclusivo: "Hasta 6 de agosto" tiene que incluir todo ese dia
-    const to = this._dateTo() ? nextDay(parseLocalDate(this._dateTo()!)) : nextDay(new Date());
+    const { from, to } = this.dateRange;
 
     this._loading.set(true);
     try {
-      const [sales, summary] = await Promise.all([
-        this.repository.list(businessId, from, to),
+      const [page, summary] = await Promise.all([
+        this.repository.list(businessId, from, to, this.filters, { first: this._first(), rows: this._rows() }),
         this.reportsRepository.getSummary(businessId, from, to)
       ]);
-      this._sales.set(sales);
+      this._sales.set(page.items);
+      this._totalCount.set(page.totalCount);
       this._summary.set(summary);
     } finally {
       this._loading.set(false);
     }
   }
 
+  // Trae TODO lo que matchea los filtros actuales, sin paginar -- para exportar. Lo que se ve
+  // en pantalla es solo una pagina, pero exportar tiene que reflejar todo lo filtrado (ver
+  // comentario en sales-history-page.ts).
+  async loadAllForExport(): Promise<SaleListItem[]> {
+    const businessId = this.authStore.activeBusinessId();
+    if (!businessId) return [];
+
+    const { from, to } = this.dateRange;
+    const page = await this.repository.list(businessId, from, to, this.filters);
+    return page.items;
+  }
+
+  // Llamado desde (onLazyLoad) del p-table -- ahí vive el estado real de pagina/tamaño de
+  // pagina que el usuario esta viendo.
+  setPage(first: number, rows: number): void {
+    this._first.set(first);
+    this._rows.set(rows);
+    this.load();
+  }
+
   setDateFrom(value: string | null): void {
     this._dateFrom.set(value || null);
+    this._first.set(0);
     this.load();
   }
 
   setDateTo(value: string | null): void {
     this._dateTo.set(value || null);
+    this._first.set(0);
     this.load();
   }
 
   setPaymentMethodId(value: string | null): void {
     this._paymentMethodId.set(value || null);
+    this._first.set(0);
+    this.load();
   }
 
+  // Debounced: es un input de texto, tipear caracter a caracter no puede disparar un
+  // request al servidor por cada tecla.
   setOrderNumberQuery(value: string): void {
     this._orderNumberQuery.set(value);
+    this._first.set(0);
+    if (this.orderNumberDebounce) clearTimeout(this.orderNumberDebounce);
+    this.orderNumberDebounce = setTimeout(() => this.load(), 300);
   }
 
   clearDateFilter(): void {
     this._dateFrom.set(null);
     this._dateTo.set(null);
+    this._first.set(0);
     this.load();
   }
 
   clearAllFilters(): void {
+    if (this.orderNumberDebounce) clearTimeout(this.orderNumberDebounce);
     this._dateFrom.set(null);
     this._dateTo.set(null);
     this._paymentMethodId.set(null);
     this._orderNumberQuery.set('');
+    this._first.set(0);
     this.load();
   }
 

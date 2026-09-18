@@ -18,24 +18,36 @@ export class DeliveryTypesStore {
   readonly deliveryTypes = this._deliveryTypes.asReadonly();
   readonly loading = this._loading.asReadonly();
 
-  async load(): Promise<void> {
+  // Cache por negocio activo (ver ProductsStore.load()) -- solo se marca "cargado" cuando la
+  // red responde bien, mismo criterio que PaymentMethodsStore.
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      const types = await this.repository.list(businessId);
-      this._deliveryTypes.set(types);
-      writeCache(CACHE_KEY(businessId), types);
-    } catch (err) {
-      // Sin conexion: se sigue con la ultima lista conocida en vez de dejar al cajero sin
-      // poder elegir tipo de entrega y trabado para cobrar (ver PosStore -- venta offline).
-      const cached = readCache<DeliveryType[]>(CACHE_KEY(businessId));
-      if (!cached) throw err;
-      this._deliveryTypes.set(cached);
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        const types = await this.repository.list(businessId);
+        this._deliveryTypes.set(types);
+        writeCache(CACHE_KEY(businessId), types);
+        this.loadedForBusinessId = businessId;
+      } catch (err) {
+        // Sin conexion: se sigue con la ultima lista conocida en vez de dejar al cajero sin
+        // poder elegir tipo de entrega y trabado para cobrar (ver PosStore -- venta offline).
+        const cached = readCache<DeliveryType[]>(CACHE_KEY(businessId));
+        if (!cached) throw err;
+        this._deliveryTypes.set(cached);
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async create(name: string): Promise<void> {

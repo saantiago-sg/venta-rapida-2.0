@@ -15,16 +15,27 @@ export class EmployeesStore {
   readonly employees = this._employees.asReadonly();
   readonly loading = this._loading.asReadonly();
 
-  async load(): Promise<void> {
+  // Cache por negocio activo (ver ProductsStore.load()).
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      this._employees.set(await this.repository.list(businessId));
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        this._employees.set(await this.repository.list(businessId));
+        this.loadedForBusinessId = businessId;
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async invite(input: InviteEmployeeInput): Promise<void> {
@@ -32,7 +43,7 @@ export class EmployeesStore {
     if (!businessId) return;
 
     await this.repository.invite(businessId, input);
-    await this.load();
+    await this.load(true);
   }
 
   async updateRole(membershipId: string, role: 'admin' | 'cashier'): Promise<void> {

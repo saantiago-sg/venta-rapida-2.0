@@ -18,24 +18,37 @@ export class PaymentMethodsStore {
   readonly paymentMethods = this._paymentMethods.asReadonly();
   readonly loading = this._loading.asReadonly();
 
-  async load(): Promise<void> {
+  // Cache por negocio activo (ver ProductsStore.load()) -- solo se marca "cargado" cuando la
+  // red responde bien, para que si esta vez se cayo al cache offline, el proximo load() sin
+  // forzar reintente contra el servidor en vez de quedarse pegado a ese fallback.
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      const methods = await this.repository.list(businessId);
-      this._paymentMethods.set(methods);
-      writeCache(CACHE_KEY(businessId), methods);
-    } catch (err) {
-      // Sin conexion: se sigue con la ultima lista conocida en vez de dejar el diálogo de
-      // cobro sin medios de pago para elegir (ver PosStore -- venta offline).
-      const cached = readCache<PaymentMethod[]>(CACHE_KEY(businessId));
-      if (!cached) throw err;
-      this._paymentMethods.set(cached);
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        const methods = await this.repository.list(businessId);
+        this._paymentMethods.set(methods);
+        writeCache(CACHE_KEY(businessId), methods);
+        this.loadedForBusinessId = businessId;
+      } catch (err) {
+        // Sin conexion: se sigue con la ultima lista conocida en vez de dejar el diálogo de
+        // cobro sin medios de pago para elegir (ver PosStore -- venta offline).
+        const cached = readCache<PaymentMethod[]>(CACHE_KEY(businessId));
+        if (!cached) throw err;
+        this._paymentMethods.set(cached);
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async create(name: string, isCash: boolean): Promise<void> {

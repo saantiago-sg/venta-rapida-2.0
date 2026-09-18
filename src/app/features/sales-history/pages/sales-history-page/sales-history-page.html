@@ -138,7 +138,19 @@
 
 <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
 <div class="overflow-x-auto">
-<p-table [value]="store.sales()" [loading]="store.loading()" dataKey="id" [rowHover]="true" [paginator]="true" [rows]="25" [rowsPerPageOptions]="[25, 50, 100]">
+<p-table
+  [value]="store.sales()"
+  [loading]="store.loading()"
+  dataKey="id"
+  [rowHover]="true"
+  [paginator]="true"
+  [lazy]="true"
+  [first]="store.first()"
+  [rows]="store.rows()"
+  [totalRecords]="store.totalCount()"
+  [rowsPerPageOptions]="[25, 50, 100]"
+  (onLazyLoad)="onLazyLoad($event)"
+>
   <ng-template pTemplate="header">
     <tr>
       <th class="w-20">#</th>
