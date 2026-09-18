@@ -137,20 +137,13 @@ body {
   }
 }
 
-/* Sin esto, el navegador imprime en el tamaño de pagina por defecto (A4/Carta) o el que haya
-   quedado seleccionado en el dialogo de impresion -- en una impresora termica de rollo continuo
-   eso hace que tire un montón de papel en blanco de mas antes de cortar, porque el driver
-   entiende que la "hoja" mide ~30cm de largo aunque el ticket real ocupe 8cm. El segundo valor
-   "auto" en size le dice a Chrome/Edge que la altura de pagina se ajuste al contenido real
-   (soporte especifico de Chromium para impresoras de bobina, no es CSS estandar pero es el
-   truco usado en la practica para esto). ticket-print.html elige cual de las dos aplicar segun
-   sale.paperWidthMm via [style.page].
-   */
-@page ticket-58mm {
-  size: 58mm auto;
-  margin: 0;
-}
-@page ticket-80mm {
+/* Fallback antes de que corra el JS de ticket-print.ts (evento 'beforeprint'), que calcula el
+   alto real del ticket en mm y pisa este @page con el tamaño exacto -- "auto" en la altura solo
+   lo respeta de forma confiable "Guardar como PDF"; una impresora termica real (ej. una
+   "POS-80-Series" instalada en Windows) lo ignora y usa el largo de hoja por defecto del
+   driver, tirando de mas papel en blanco antes de cortar. Este @page es solo la red de
+   seguridad para el primer instante antes de que ese calculo se aplique. */
+@page {
   size: 80mm auto;
   margin: 0;
 }

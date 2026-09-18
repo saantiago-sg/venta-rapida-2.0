@@ -130,6 +130,12 @@ export class ProductList {
     if (!visible) this.refocus();
   }
 
+  // Llamado desde ProductsPage cuando esta pestaña vuelve a quedar activa (el tab switcher no
+  // destruye/recrea este componente, solo lo oculta con [hidden]).
+  focusSearch(): void {
+    this.refocus();
+  }
+
   private refocus(): void {
     setTimeout(() => this.searchInput()?.nativeElement.focus());
   }

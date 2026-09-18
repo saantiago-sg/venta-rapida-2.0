@@ -1,8 +1,8 @@
 @if (data(); as sale) {
   <div
+    #root
     class="ticket-print-root hidden print:block font-mono text-[11px] leading-snug text-black bg-white p-2"
     [style.width.mm]="sale.paperWidthMm"
-    [style.page]="'ticket-' + sale.paperWidthMm + 'mm'"
   >
     @if (sale.headerText) {
       <div class="text-center">{{ sale.headerText }}</div>

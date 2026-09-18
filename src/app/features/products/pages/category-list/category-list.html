@@ -3,17 +3,19 @@
     <span class="relative w-full max-w-md">
       <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
       <input
+        #searchInput
         type="text"
         pInputText
         placeholder="Buscar categoría..."
         [ngModel]="searchQuery()"
         (ngModelChange)="searchQuery.set($event)"
         class="w-full pl-9 pr-9"
+        autofocus
       />
       @if (searchQuery()) {
         <button
           type="button"
-          (click)="searchQuery.set('')"
+          (click)="onClearSearch()"
           aria-label="Limpiar búsqueda"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
         >
@@ -82,7 +84,14 @@
   </div>
 </div>
 
-<p-dialog [(visible)]="dialogVisible" [modal]="true" appendTo="body" [style]="{ width: '24rem', maxWidth: '92vw' }" header="Nueva categoría">
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="onDialogVisibleChange($event)"
+  [modal]="true"
+  appendTo="body"
+  [style]="{ width: '24rem', maxWidth: '92vw' }"
+  header="Nueva categoría"
+>
   <form (ngSubmit)="onCreate()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm text-text-secondary">Nombre</label>

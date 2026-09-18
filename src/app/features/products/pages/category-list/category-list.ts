@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -17,6 +17,8 @@ import { CategoriesStore } from '../../state/categories.store';
   templateUrl: './category-list.html'
 })
 export class CategoryList {
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+
   protected readonly store = inject(CategoriesStore);
   private readonly authStore = inject(AuthStore);
 
@@ -39,6 +41,9 @@ export class CategoryList {
 
   constructor() {
     this.store.load();
+    // El atributo HTML autofocus solo lo respeta el navegador en la carga inicial de la
+    // pagina -- al volver a esta ruta navegando dentro de la SPA no siempre se re-aplica solo.
+    this.refocus();
   }
 
   protected openCreate(): void {
@@ -53,7 +58,7 @@ export class CategoryList {
     this.saving.set(true);
     try {
       await this.store.create(name);
-      this.dialogVisible.set(false);
+      this.onDialogVisibleChange(false);
     } finally {
       this.saving.set(false);
     }
@@ -61,5 +66,27 @@ export class CategoryList {
 
   protected onToggleActive(id: string, active: boolean): void {
     this.store.setActive(id, active);
+  }
+
+  protected onDialogVisibleChange(visible: boolean): void {
+    this.dialogVisible.set(visible);
+    if (!visible) this.refocus();
+  }
+
+  // El boton nativo se queda con el foco al clickearlo (comportamiento default del navegador)
+  // -- hay que devolverlo a mano al input.
+  protected onClearSearch(): void {
+    this.searchQuery.set('');
+    this.refocus();
+  }
+
+  // Llamado desde ProductsPage cuando esta pestaña vuelve a quedar activa (el tab switcher no
+  // destruye/recrea este componente, solo lo oculta con [hidden]).
+  focusSearch(): void {
+    this.refocus();
+  }
+
+  private refocus(): void {
+    setTimeout(() => this.searchInput()?.nativeElement.focus());
   }
 }
