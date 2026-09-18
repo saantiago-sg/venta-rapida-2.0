@@ -15,16 +15,27 @@ export class BusinessSettingsStore {
   readonly business = this._business.asReadonly();
   readonly loading = this._loading.asReadonly();
 
-  async load(): Promise<void> {
+  // Ver el mismo cache en ProductsStore.load().
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      this._business.set(await this.repository.get(businessId));
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        this._business.set(await this.repository.get(businessId));
+        this.loadedForBusinessId = businessId;
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async update(input: BusinessSettingsFormValue): Promise<void> {

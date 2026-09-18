@@ -16,16 +16,28 @@ export class CategoriesStore {
   readonly loading = this._loading.asReadonly();
   readonly activeCategories = computed(() => this._categories().filter((c) => c.active));
 
-  async load(): Promise<void> {
+  // Ver el mismo cache en ProductsStore.load() -- sin esto, cada pantalla que necesita
+  // categorias (Productos, Categorias, Vender) volvia a pedirlas enteras en cada navegacion.
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      this._categories.set(await this.repository.list(businessId));
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        this._categories.set(await this.repository.list(businessId));
+        this.loadedForBusinessId = businessId;
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async create(name: string): Promise<void> {

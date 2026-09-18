@@ -37,7 +37,9 @@ export class PosPage {
     this.lastSale.set(ticket);
     this.confirmationVisible.set(true);
     this.mobileTab.set('buscar');
-    this.productsStore.load();
+    // Forzado: el stock de los productos vendidos cambio, el cache de load() por si solo no
+    // lo detectaria (mismo negocio activo de siempre).
+    this.productsStore.load(true);
     // Opt-in por negocio (Configuracion > Ticket, default apagado) -- el boton "Reimprimir"
     // del dialogo de confirmacion sigue disponible siempre, este auto-print es solo un atajo.
     if (this.businessSettingsStore.business()?.ticketSettings.autoPrintEnabled) {

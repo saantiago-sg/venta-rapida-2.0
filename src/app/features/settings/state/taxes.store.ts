@@ -16,16 +16,27 @@ export class TaxesStore {
   readonly loading = this._loading.asReadonly();
   readonly activeTaxes = computed(() => this._taxes().filter((t) => t.active));
 
-  async load(): Promise<void> {
+  // Ver el mismo cache en ProductsStore.load().
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      this._taxes.set(await this.repository.list(businessId));
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        this._taxes.set(await this.repository.list(businessId));
+        this.loadedForBusinessId = businessId;
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async create(name: string, rate: number): Promise<void> {

@@ -15,16 +15,31 @@ export class ProductsStore {
   readonly products = this._products.asReadonly();
   readonly loading = this._loading.asReadonly();
 
-  async load(): Promise<void> {
+  // Cada pantalla que necesita productos llama a load() en su constructor -- sin este cache
+  // por negocio, navegar Vender <-> Productos <-> Categorias iba a Supabase de nuevo por la
+  // lista completa cada vez, aunque nada hubiera cambiado. loadedForBusinessId en null (o
+  // distinto al negocio activo) fuerza el refetch; loadPromise dedupe llamadas simultaneas
+  // (ej. ProductSearch y ProductList montando casi al mismo tiempo).
+  private loadedForBusinessId: string | null = null;
+  private loadPromise: Promise<void> | null = null;
+
+  async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
+    if (!force && this.loadedForBusinessId === businessId) return;
+    if (this.loadPromise) return this.loadPromise;
 
-    this._loading.set(true);
-    try {
-      this._products.set(await this.repository.list(businessId));
-    } finally {
-      this._loading.set(false);
-    }
+    this.loadPromise = (async () => {
+      this._loading.set(true);
+      try {
+        this._products.set(await this.repository.list(businessId));
+        this.loadedForBusinessId = businessId;
+      } finally {
+        this._loading.set(false);
+        this.loadPromise = null;
+      }
+    })();
+    return this.loadPromise;
   }
 
   async create(input: ProductFormValue): Promise<void> {
@@ -35,7 +50,7 @@ export class ProductsStore {
     if (input.isCombo) {
       // La receta vive en otra tabla (product_components) -- mas simple y seguro recargar
       // todo que armar a mano el merge optimista con nombres de componentes resueltos.
-      await this.load();
+      await this.load(true);
     } else {
       this._products.update((list) => [...list, product].sort((a, b) => a.name.localeCompare(b.name)));
     }
@@ -48,7 +63,7 @@ export class ProductsStore {
     const previousStock = this._products().find((p) => p.id === id)?.stock ?? 0;
     const updated = await this.repository.update(id, businessId, input, previousStock);
     if (input.isCombo) {
-      await this.load();
+      await this.load(true);
     } else {
       this._products.update((list) => list.map((p) => (p.id === id ? updated : p)));
     }
