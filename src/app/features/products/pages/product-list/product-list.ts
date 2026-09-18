@@ -169,6 +169,10 @@ export class ProductList {
     this.productsStore.load();
     this.categoriesStore.load();
     this.taxesStore.load();
+    // El atributo HTML autofocus solo lo respeta el navegador en la carga inicial de la
+    // pagina -- al volver a esta ruta navegando dentro de la SPA (el componente se recrea)
+    // no siempre se re-aplica solo, hay que forzarlo por codigo.
+    this.refocus();
   }
 
   protected get componentsArray(): FormArray<ComponentFormGroup> {
