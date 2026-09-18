@@ -137,6 +137,24 @@ body {
   }
 }
 
+/* Sin esto, el navegador imprime en el tamaño de pagina por defecto (A4/Carta) o el que haya
+   quedado seleccionado en el dialogo de impresion -- en una impresora termica de rollo continuo
+   eso hace que tire un montón de papel en blanco de mas antes de cortar, porque el driver
+   entiende que la "hoja" mide ~30cm de largo aunque el ticket real ocupe 8cm. El segundo valor
+   "auto" en size le dice a Chrome/Edge que la altura de pagina se ajuste al contenido real
+   (soporte especifico de Chromium para impresoras de bobina, no es CSS estandar pero es el
+   truco usado en la practica para esto). ticket-print.html elige cual de las dos aplicar segun
+   sale.paperWidthMm via [style.page].
+   */
+@page ticket-58mm {
+  size: 58mm auto;
+  margin: 0;
+}
+@page ticket-80mm {
+  size: 80mm auto;
+  margin: 0;
+}
+
 /* Blobs decorativos flotando en el panel del login -- mesh gradient animado en vez de un
    degrade estatico. Movimiento lento y sutil a proposito, no debe competir con el formulario. */
 @keyframes blob-float-a {
