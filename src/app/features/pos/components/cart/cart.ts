@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
 
+import { isExpired, isExpiringSoon } from '../../../../shared/utils/expiration';
 import { CartItem } from '../../data-access/models';
 import { PosStore } from '../../state/pos.store';
 
@@ -32,5 +33,13 @@ export class Cart {
 
   protected onRemove(productId: string): void {
     this.store.removeFromCart(productId);
+  }
+
+  protected isExpired(item: CartItem): boolean {
+    return isExpired(item.product.expirationDate);
+  }
+
+  protected isExpiringSoon(item: CartItem): boolean {
+    return isExpiringSoon(item.product.expirationDate);
   }
 }

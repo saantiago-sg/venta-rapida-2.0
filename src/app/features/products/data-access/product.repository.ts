@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
+import { todayIso } from '../../../shared/utils/date';
+import { expiringSoonLimitIso } from '../../../shared/utils/expiration';
 import { Product, ProductComponent, ProductFormValue } from './models';
 
 interface ProductRow {
@@ -17,6 +19,7 @@ interface ProductRow {
   track_stock: boolean;
   active: boolean;
   is_combo: boolean;
+  expiration_date: string | null;
   categories: { name: string } | { name: string }[] | null;
   taxes: { name: string; rate: number } | { name: string; rate: number }[] | null;
 }
@@ -28,7 +31,7 @@ interface ProductComponentRow {
 }
 
 const SELECT_COLUMNS =
-  'id, business_id, category_id, tax_id, name, barcode, sale_type, price, cost, stock, track_stock, active, is_combo, categories(name), taxes(name, rate)';
+  'id, business_id, category_id, tax_id, name, barcode, sale_type, price, cost, stock, track_stock, active, is_combo, expiration_date, categories(name), taxes(name, rate)';
 
 function first<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
@@ -54,6 +57,7 @@ function mapRow(row: ProductRow): Product {
     trackStock: row.track_stock,
     active: row.active,
     isCombo: row.is_combo,
+    expirationDate: row.expiration_date,
     components: []
   };
 }
@@ -85,7 +89,8 @@ export class ProductRepository {
         price: input.price,
         cost: input.cost,
         track_stock: input.trackStock,
-        is_combo: input.isCombo
+        is_combo: input.isCombo,
+        expiration_date: input.expirationDate
       })
       .select(SELECT_COLUMNS)
       .single();
@@ -115,7 +120,8 @@ export class ProductRepository {
         price: input.price,
         cost: input.cost,
         track_stock: input.trackStock,
-        is_combo: input.isCombo
+        is_combo: input.isCombo,
+        expiration_date: input.expirationDate
       })
       .eq('id', id);
     if (error) throw error;
@@ -145,6 +151,30 @@ export class ProductRepository {
   async setActive(id: string, active: boolean): Promise<void> {
     const { error } = await this.supabase.from('products').update({ active }).eq('id', id);
     if (error) throw error;
+  }
+
+  // Conteos para el aviso del dashboard -- filtrado por count: 'exact', head: true (no trae
+  // filas) en vez de traer todos los productos y filtrar en el cliente.
+  async countExpirationAlerts(businessId: string): Promise<{ expired: number; expiringSoon: number }> {
+    const today = todayIso();
+    const [expired, expiringSoon] = await Promise.all([
+      this.supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .eq('active', true)
+        .lt('expiration_date', today),
+      this.supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .eq('active', true)
+        .gte('expiration_date', today)
+        .lte('expiration_date', expiringSoonLimitIso())
+    ]);
+    if (expired.error) throw expired.error;
+    if (expiringSoon.error) throw expiringSoon.error;
+    return { expired: expired.count ?? 0, expiringSoon: expiringSoon.count ?? 0 };
   }
 
   async adjustStock(

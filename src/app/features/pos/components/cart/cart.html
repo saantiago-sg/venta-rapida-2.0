@@ -29,6 +29,18 @@
           </span>
         </div>
 
+        @if (isExpired(item)) {
+          <span class="inline-flex items-center gap-1 text-xs text-error w-fit">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            Producto vencido
+          </span>
+        } @else if (isExpiringSoon(item)) {
+          <span class="inline-flex items-center gap-1 text-xs text-warning w-fit">
+            <i class="pi pi-clock text-[10px]"></i>
+            Por vencer
+          </span>
+        }
+
         <div class="flex items-center justify-between gap-2">
           <p class="text-xs text-text-secondary tabular-nums truncate min-w-0">
             ${{ item.product.price | number: '1.2-2' }} / {{ item.product.saleType === 'weight' ? 'kg' : 'u' }}

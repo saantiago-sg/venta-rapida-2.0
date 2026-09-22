@@ -77,4 +77,10 @@ export class ProductsStore {
   getComponents(productId: string): Promise<ProductComponent[]> {
     return this.repository.getComponents(productId);
   }
+
+  countExpirationAlerts(): Promise<{ expired: number; expiringSoon: number }> {
+    const businessId = this.authStore.activeBusinessId();
+    if (!businessId) return Promise.resolve({ expired: 0, expiringSoon: 0 });
+    return this.repository.countExpirationAlerts(businessId);
+  }
 }

@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { CountUpDirective } from '../../../../shared/directives/count-up.directive';
+import { ProductsStore } from '../../../products/state/products.store';
 import { ReportsRepository } from '../../../reports/data-access/reports.repository';
 import { SalesSummary, TopProduct } from '../../../reports/data-access/models';
 
@@ -32,6 +33,7 @@ function capitalizeFirst(text: string): string {
 })
 export class DashboardPage {
   private readonly reportsRepository = inject(ReportsRepository);
+  private readonly productsStore = inject(ProductsStore);
   private readonly authStore = inject(AuthStore);
 
   protected readonly today = new Date();
@@ -41,6 +43,8 @@ export class DashboardPage {
   protected readonly loading = signal(true);
   protected readonly summary = signal<SalesSummary | null>(null);
   protected readonly topProducts = signal<TopProduct[]>([]);
+  protected readonly expiredCount = signal(0);
+  protected readonly expiringSoonCount = signal(0);
 
   protected readonly averageTicket = computed(() => {
     const s = this.summary();
@@ -68,12 +72,15 @@ export class DashboardPage {
     try {
       const from = startOfToday();
       const to = startOfTomorrow();
-      const [summary, topProducts] = await Promise.all([
+      const [summary, topProducts, expirationAlerts] = await Promise.all([
         this.reportsRepository.getSummary(businessId, from, to),
-        this.reportsRepository.getTopProducts(businessId, from, to, 20)
+        this.reportsRepository.getTopProducts(businessId, from, to, 20),
+        this.productsStore.countExpirationAlerts()
       ]);
       this.summary.set(summary);
       this.topProducts.set(topProducts);
+      this.expiredCount.set(expirationAlerts.expired);
+      this.expiringSoonCount.set(expirationAlerts.expiringSoon);
     } finally {
       this.loading.set(false);
     }

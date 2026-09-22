@@ -154,6 +154,7 @@ export class ProductImportDialog {
             trackStock: row.trackStock,
             initialStock: row.initialStock,
             isCombo: false,
+            expirationDate: null,
             components: []
           });
           rowResults.push({ rowNumber: row.rowNumber, name: row.name, outcome: 'created', errorMessage: null });
@@ -174,6 +175,7 @@ export class ProductImportDialog {
             trackStock: existing.trackStock,
             initialStock: existing.stock,
             isCombo: false,
+            expirationDate: existing.expirationDate,
             components: []
           });
           rowResults.push({ rowNumber: row.rowNumber, name: row.name, outcome: 'updated', errorMessage: null });

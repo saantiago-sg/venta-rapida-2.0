@@ -70,6 +70,7 @@
         <th class="text-right">Precio</th>
         <th class="text-right">Margen</th>
         <th class="text-right">Stock</th>
+        <th>Vencimiento</th>
         <th class="w-24 text-center">Activo</th>
         <th class="w-16"></th>
       </tr>
@@ -131,6 +132,23 @@
             {{ product.stock }}{{ product.saleType === 'weight' ? ' kg' : '' }}
           }
         </td>
+        <td>
+          @if (!product.expirationDate) {
+            <span class="text-text-secondary">—</span>
+          } @else if (isExpired(product)) {
+            <span class="inline-flex items-center gap-1 rounded-full bg-error/10 text-error px-2 py-0.5 text-xs font-medium whitespace-nowrap">
+              <i class="pi pi-exclamation-circle text-[10px]"></i>
+              Vencido {{ formatExpiration(product) }}
+            </span>
+          } @else if (isExpiringSoon(product)) {
+            <span class="inline-flex items-center gap-1 rounded-full bg-warning/10 text-warning px-2 py-0.5 text-xs font-medium whitespace-nowrap">
+              <i class="pi pi-clock text-[10px]"></i>
+              {{ formatExpiration(product) }}
+            </span>
+          } @else {
+            <span class="text-xs text-text-secondary">{{ formatExpiration(product) }}</span>
+          }
+        </td>
         <td class="text-center">
           <p-toggleswitch
             [ngModel]="product.active"
@@ -157,7 +175,7 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="9">
+        <td colspan="10">
           @if (searchQuery().trim()) {
             <div class="flex flex-col items-center gap-2 py-10 text-center">
               <i class="pi pi-search text-2xl text-text-secondary"></i>
@@ -338,6 +356,22 @@
             formControlName="initialStock"
             locale="es-AR"
             [suffix]="form.controls.saleType.value === 'weight' ? ' kg' : ' u.'"
+            styleClass="w-full"
+          />
+        </div>
+      </div>
+    }
+
+    @if (!form.controls.isCombo.value) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-text-secondary">Vencimiento (opcional)</label>
+          <p-datepicker
+            formControlName="expirationDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            appendTo="body"
             styleClass="w-full"
           />
         </div>

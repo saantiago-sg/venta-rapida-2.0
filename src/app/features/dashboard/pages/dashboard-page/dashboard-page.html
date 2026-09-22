@@ -9,6 +9,29 @@
   </div>
 </div>
 
+@if (!loading() && (expiredCount() > 0 || expiringSoonCount() > 0)) {
+  <div class="flex flex-wrap gap-3 mb-6">
+    @if (expiredCount() > 0) {
+      <a
+        routerLink="/productos"
+        class="flex items-center gap-2 rounded-lg bg-error/10 text-error px-4 py-2.5 text-sm font-medium hover:bg-error/15 transition-colors"
+      >
+        <i class="pi pi-exclamation-circle"></i>
+        {{ expiredCount() }} producto{{ expiredCount() === 1 ? '' : 's' }} vencido{{ expiredCount() === 1 ? '' : 's' }}
+      </a>
+    }
+    @if (expiringSoonCount() > 0) {
+      <a
+        routerLink="/productos"
+        class="flex items-center gap-2 rounded-lg bg-warning/10 text-warning px-4 py-2.5 text-sm font-medium hover:bg-warning/15 transition-colors"
+      >
+        <i class="pi pi-clock"></i>
+        {{ expiringSoonCount() }} producto{{ expiringSoonCount() === 1 ? '' : 's' }} por vencer
+      </a>
+    }
+  </div>
+}
+
 <div class="enter-fade-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
   <div class="surface-card bg-brand rounded-xl p-6 flex flex-col gap-1.5">
     <span class="text-sm text-white/90">Ventas del día</span>

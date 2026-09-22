@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -20,6 +21,8 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { formatLocalDate, parseLocalDate } from '../../../../shared/utils/date';
+import { isExpired, isExpiringSoon } from '../../../../shared/utils/expiration';
 import { TaxesStore } from '../../../settings/state/taxes.store';
 import { ProductImportDialog } from '../../components/product-import-dialog/product-import-dialog';
 import { Product } from '../../data-access/models';
@@ -50,6 +53,7 @@ function normalize(text: string): string {
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
+    DatePickerModule,
     DialogModule,
     InputNumberModule,
     InputTextModule,
@@ -168,6 +172,7 @@ export class ProductList {
     // "corregir" el stock a mano.
     initialStock: [0],
     isCombo: [false],
+    expirationDate: this.fb.control<Date | null>(null),
     components: this.fb.array<ComponentFormGroup>([])
   });
 
@@ -198,6 +203,22 @@ export class ProductList {
     return ((product.price - product.cost) / product.price) * 100;
   }
 
+  protected isExpired(product: Product): boolean {
+    return isExpired(product.expirationDate);
+  }
+
+  protected isExpiringSoon(product: Product): boolean {
+    return isExpiringSoon(product.expirationDate);
+  }
+
+  // Reformatea 'yyyy-mm-dd' a 'dd/mm/yyyy' con un split de texto en vez de DatePipe -- DatePipe
+  // interpreta fechas sin hora como UTC y las corre un dia al mostrarlas en UTC-3.
+  protected formatExpiration(product: Product): string {
+    if (!product.expirationDate) return '';
+    const [year, month, day] = product.expirationDate.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
   protected showInitialStock(): boolean {
     return !this.form.controls.isCombo.value && this.form.controls.trackStock.value;
   }
@@ -216,7 +237,8 @@ export class ProductList {
       cost: 0,
       trackStock: false,
       initialStock: 0,
-      isCombo: false
+      isCombo: false,
+      expirationDate: null
     });
     this.clearComponentsArray();
     this.dialogVisible.set(true);
@@ -236,7 +258,8 @@ export class ProductList {
       cost: product.cost,
       trackStock: product.trackStock,
       initialStock: product.stock,
-      isCombo: product.isCombo
+      isCombo: product.isCombo,
+      expirationDate: product.expirationDate ? parseLocalDate(product.expirationDate) : null
     });
     this.clearComponentsArray();
     this.dialogVisible.set(true);
@@ -280,6 +303,7 @@ export class ProductList {
         trackStock: value.isCombo ? false : value.trackStock,
         initialStock: value.initialStock,
         isCombo: value.isCombo,
+        expirationDate: value.expirationDate ? formatLocalDate(value.expirationDate) : null,
         components: components.map((c) => ({ componentProductId: c.componentProductId as string, quantity: c.quantity }))
       };
 

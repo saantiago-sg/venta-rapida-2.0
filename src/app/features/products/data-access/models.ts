@@ -34,6 +34,8 @@ export interface Product {
   trackStock: boolean;
   active: boolean;
   isCombo: boolean;
+  // 'yyyy-mm-dd' o null si el producto no vence. Ver src/app/shared/utils/expiration.ts.
+  expirationDate: string | null;
   // Solo se completa cuando se pide explicito (ver ProductRepository.getComponents) --
   // list() no lo trae para no cargar el listado con datos que casi nunca hacen falta.
   components: ProductComponent[];
@@ -50,5 +52,6 @@ export interface ProductFormValue {
   trackStock: boolean;
   initialStock: number;
   isCombo: boolean;
+  expirationDate: string | null;
   components: { componentProductId: string; quantity: number }[];
 }

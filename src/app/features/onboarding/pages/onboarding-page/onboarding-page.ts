@@ -85,6 +85,7 @@ export class OnboardingPage {
         trackStock: false,
         initialStock: 0,
         isCombo: false,
+        expirationDate: null,
         components: []
       });
       this.addedCount.update((count) => count + 1);

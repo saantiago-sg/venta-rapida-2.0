@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { isNetworkError } from '../../../core/offline/network-error';
@@ -30,6 +30,22 @@ export class PosStore {
   readonly customerId = this._customerId.asReadonly();
   readonly cashReceived = this._cashReceived.asReadonly();
   readonly processing = this._processing.asReadonly();
+
+  // El carrito/tipo de entrega/medio de pago/cliente son de un negocio puntual -- sin este
+  // reset, cambiar de negocio activo (memberships N:N, ver AuthStore) dejaba el carrito y el
+  // delivery_type_id/payment_method_id del negocio anterior seleccionados, y confirmar la
+  // venta fallaba en el server con "Tipo de entrega invalido" (ese id no pertenece al
+  // business_id nuevo).
+  constructor() {
+    effect(() => {
+      this.authStore.activeBusinessId();
+      this._cart.set([]);
+      this._paymentMethodId.set(null);
+      this._deliveryTypeId.set(null);
+      this._customerId.set(null);
+      this._cashReceived.set(null);
+    });
+  }
 
   readonly subtotal = computed(() =>
     this._cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
