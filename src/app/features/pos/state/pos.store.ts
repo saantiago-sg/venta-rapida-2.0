@@ -4,6 +4,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { isNetworkError } from '../../../core/offline/network-error';
 import { OfflineQueueService } from '../../../core/offline/offline-queue.service';
 import { Product } from '../../products/data-access/models';
+import { ProductsStore } from '../../products/state/products.store';
 import { BusinessSettingsStore } from '../../settings/state/business-settings.store';
 import { PaymentMethodsStore } from '../../settings/state/payment-methods.store';
 import { SaleRepository } from '../data-access/sale.repository';
@@ -16,6 +17,7 @@ export class PosStore {
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
   private readonly paymentMethodsStore = inject(PaymentMethodsStore);
   private readonly offlineQueue = inject(OfflineQueueService);
+  private readonly productsStore = inject(ProductsStore);
 
   private readonly _cart = signal<CartItem[]>([]);
   private readonly _paymentMethodId = signal<string | null>(null);
@@ -154,18 +156,17 @@ export class PosStore {
     // Se genera antes de intentar: si el pedido nunca vuelve (se corta la conexion justo
     // despues de que el server ya guardo todo) sirve para no duplicar la venta al reintentar
     // -- ver idempotencia en process_sale.
+    const soldItems = this._cart().filter((item) => item.quantity > 0);
     const clientReference = crypto.randomUUID();
     const input: ProcessSaleInput = {
       businessId,
-      items: this._cart()
-        .filter((item) => item.quantity > 0)
-        .map((item) => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          unit_price: item.product.price,
-          unit_cost: item.product.cost,
-          tax_rate: item.product.taxRate ?? 0
-        })),
+      items: soldItems.map((item) => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        unit_cost: item.product.cost,
+        tax_rate: item.product.taxRate ?? 0
+      })),
       paymentMethodId,
       deliveryTypeId,
       customerId: this._customerId(),
@@ -177,15 +178,31 @@ export class PosStore {
     try {
       const result = await this.saleRepository.processSale(input);
 
+      this.applySoldStock(soldItems);
       this._cart.set([]);
       this._cashReceived.set(null);
       this._customerId.set(null);
       return result;
     } catch (err) {
       if (!isNetworkError(err)) throw err;
-      return this.confirmSaleOffline(input, clientReference);
+      return this.confirmSaleOffline(input, clientReference, soldItems);
     } finally {
       this._processing.set(false);
+    }
+  }
+
+  // Descuenta el stock vendido en el catalogo ya cargado (ver ProductsStore.applyStockDelta)
+  // en vez de volver a pedirlo entero a Supabase -- eso era lo que hacia lenta la pantalla
+  // justo despues de cobrar. Los combos son la excepcion: no tienen stock propio, así que si
+  // se vendio alguno se dispara un reload en segundo plano (no bloquea el ticket) para que sus
+  // componentes terminen reflejando el descuento real. Sin conexion se omite: el reload fallaria
+  // igual y el catalogo se pone al dia solo cuando vuelva a cargarse con internet.
+  private applySoldStock(soldItems: CartItem[], { allowBackgroundReload = true } = {}): void {
+    this.productsStore.applyStockDelta(
+      soldItems.map((item) => ({ productId: item.product.id, quantity: item.quantity }))
+    );
+    if (allowBackgroundReload && soldItems.some((item) => item.product.isCombo)) {
+      void this.productsStore.load(true).catch(() => {});
     }
   }
 
@@ -194,7 +211,11 @@ export class PosStore {
   // conexion -- nunca lo deja bloqueado en el mostrador esperando el wifi. El total ya sale
   // calculado con el descuento por efectivo vigente porque se lee de los signals de este
   // store antes de vaciar el carrito, no se recalcula de cero.
-  private async confirmSaleOffline(input: ProcessSaleInput, clientReference: string): Promise<SaleResult> {
+  private async confirmSaleOffline(
+    input: ProcessSaleInput,
+    clientReference: string,
+    soldItems: CartItem[]
+  ): Promise<SaleResult> {
     const result: SaleResult = {
       id: clientReference,
       saleNumber: 0,
@@ -207,6 +228,7 @@ export class PosStore {
 
     await this.offlineQueue.enqueue({ clientReference, input, createdAt: new Date().toISOString() });
 
+    this.applySoldStock(soldItems, { allowBackgroundReload: false });
     this._cart.set([]);
     this._cashReceived.set(null);
     this._customerId.set(null);

@@ -98,9 +98,22 @@ export class ProductList {
     ...this.categoriesStore.categories().map((c) => ({ label: c.name, value: c.id })),
     { label: 'Sin categoría', value: 'none' }
   ]);
+  // normalize() (sacar acentos, pasar a minusculas) es la parte cara del filtro -- separarla
+  // en un indice aparte hace que solo se recalcule cuando cambia el catalogo, no en cada tecla
+  // que se tipea en el buscador. Con catalogos chicos no se nota, pero con miles de productos
+  // (ver la importacion masiva desde Excel) recalcularlo por tecla se sentia lento.
+  private readonly normalizedIndex = computed(() => {
+    const index = new Map<string, { name: string; barcode: string | null }>();
+    for (const p of this.productsStore.products()) {
+      index.set(p.id, { name: normalize(p.name), barcode: p.barcode ? normalize(p.barcode) : null });
+    }
+    return index;
+  });
+
   protected readonly filteredProducts = computed(() => {
     const query = normalize(this.searchQuery().trim());
     const category = this.categoryFilter();
+    const index = this.normalizedIndex();
     let products = this.productsStore.products();
     if (category === 'none') {
       products = products.filter((p) => !p.categoryId);
@@ -108,9 +121,10 @@ export class ProductList {
       products = products.filter((p) => p.categoryId === category);
     }
     if (!query) return products;
-    return products.filter(
-      (p) => normalize(p.name).includes(query) || (p.barcode && normalize(p.barcode).includes(query))
-    );
+    return products.filter((p) => {
+      const normalized = index.get(p.id);
+      return !!normalized && (normalized.name.includes(query) || (normalized.barcode?.includes(query) ?? false));
+    });
   });
 
   protected onSearchChange(value: string): void {

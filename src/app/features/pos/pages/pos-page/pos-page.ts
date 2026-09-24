@@ -4,7 +4,6 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 
 import { TicketData, TicketPrint } from '../../../../shared/components/ticket-print/ticket-print';
-import { ProductsStore } from '../../../products/state/products.store';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { Cart } from '../../components/cart/cart';
 import { PaymentPanel } from '../../components/payment-panel/payment-panel';
@@ -19,7 +18,6 @@ import { PosStore } from '../../state/pos.store';
 })
 export class PosPage {
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
-  private readonly productsStore = inject(ProductsStore);
   protected readonly posStore = inject(PosStore);
   private readonly productSearch = viewChild(ProductSearch);
 
@@ -37,9 +35,8 @@ export class PosPage {
     this.lastSale.set(ticket);
     this.confirmationVisible.set(true);
     this.mobileTab.set('buscar');
-    // Forzado: el stock de los productos vendidos cambio, el cache de load() por si solo no
-    // lo detectaria (mismo negocio activo de siempre).
-    this.productsStore.load(true);
+    // El descuento de stock ya se aplica en PosStore.confirmSale() sin pedir el catalogo de
+    // nuevo (ver ProductsStore.applyStockDelta) -- no hace falta nada aca.
     // Opt-in por negocio (Configuracion > Ticket, default apagado) -- el boton "Reimprimir"
     // del dialogo de confirmacion sigue disponible siempre, este auto-print es solo un atajo.
     if (this.businessSettingsStore.business()?.ticketSettings.autoPrintEnabled) {

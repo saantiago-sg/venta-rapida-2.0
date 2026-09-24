@@ -74,6 +74,23 @@ export class ProductsStore {
     this._products.update((list) => list.map((p) => (p.id === id ? { ...p, active } : p)));
   }
 
+  // Descuento optimista tras confirmar una venta (ver PosStore.confirmSale) -- evita volver a
+  // pedir el catalogo entero a Supabase solo para reflejar el stock nuevo, que es justo el
+  // momento donde mas importa la velocidad (el cajero ya esta atendiendo al siguiente cliente).
+  // Los combos no tienen stock propio (se descuenta de sus componentes reales via
+  // stock_movements, ver 20260814181500_combo_products.sql, y este store no tiene la receta
+  // cargada) -- se ignoran aca y quedan desactualizados hasta el proximo load() natural.
+  applyStockDelta(soldItems: { productId: string; quantity: number }[]): void {
+    const sold = new Map(soldItems.map((item) => [item.productId, item.quantity]));
+    this._products.update((list) =>
+      list.map((p) => {
+        const quantity = sold.get(p.id);
+        if (!quantity || !p.trackStock || p.isCombo) return p;
+        return { ...p, stock: Math.max(0, p.stock - quantity) };
+      })
+    );
+  }
+
   getComponents(productId: string): Promise<ProductComponent[]> {
     return this.repository.getComponents(productId);
   }
