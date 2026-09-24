@@ -9,6 +9,14 @@ import { OfflineQueueService } from './offline-queue.service';
 // positivo (wifi "conectado" pero sin salida real a internet).
 const RETRY_INTERVAL_MS = 30000;
 
+// El PostgrestError de Supabase (lo que tira SaleRepository.processSale) es un objeto plano con
+// .message, no una instancia de Error -- sin esto el aviso perdia el motivo real del rechazo
+// (caja cerrada, precio cambiado, sesion vencida, etc.) y solo mostraba el texto generico.
+function errorMessage(err: unknown): string {
+  const message = (err as { message?: unknown } | null)?.message;
+  return typeof message === 'string' && message ? message : 'No se pudo sincronizar una venta pendiente.';
+}
+
 export interface SyncFailure {
   clientReference: string;
   message: string;
@@ -71,7 +79,7 @@ export class SyncService {
             ...failures,
             {
               clientReference: sale.clientReference,
-              message: err instanceof Error ? err.message : 'No se pudo sincronizar una venta pendiente.'
+              message: errorMessage(err)
             }
           ]);
         }
