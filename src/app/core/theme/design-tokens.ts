@@ -16,7 +16,9 @@ export const primitives = {
   cream200: '#E7DFD3',
 
   warmGray900: '#241E18',
-  warmGray600: '#8A7F73',
+  // Antes #8A7F73 (3.9:1 sobre blanco, por debajo del 4.5:1 de WCAG AA para texto normal --
+  // ver el mismo comentario en styles.css, que se mantiene sincronizado a mano con esto).
+  warmGray600: '#756C61',
 
   stone950: '#14100D',
   stone900: '#1C1713',

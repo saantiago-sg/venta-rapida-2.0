@@ -27,7 +27,9 @@
   --color-border: #e7dfd3;
 
   --color-text: #241e18;
-  --color-text-secondary: #8a7f73;
+  /* Antes #8a7f73 (3.9:1 sobre blanco): no llegaba al 4.5:1 de WCAG AA para texto normal --
+     Lighthouse lo marcaba en /pos (precio "/kg", etiquetas chicas). Mismo tono, mas oscuro. */
+  --color-text-secondary: #756c61;
 
   --color-success: #16a34a;
   --color-error: #dc2626;

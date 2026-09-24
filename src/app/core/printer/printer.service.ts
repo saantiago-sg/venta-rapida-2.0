@@ -13,8 +13,18 @@ export class PrinterService {
   private readonly _connected = signal(false);
   readonly connected = this._connected.asReadonly();
 
-  constructor() {
-    if (!navigator.usb) return;
+  // Tocar navigator.usb (aunque sea solo getDevices(), sin pedir permiso) deja la pagina
+  // afuera del back/forward cache de Chrome mientras dure -- por eso NO se arranca a mirar el
+  // puerto en el constructor (que corria en cada carga del Shell, o sea de toda la app). Se
+  // arranca recien cuando el usuario interactua con el indicador de la impresora (hover/foco)
+  // o intenta emparejar -- watchDevices() es idempotente, no pasa nada si se llama de mas.
+  private watching = false;
+
+  // Se llama desde el (mouseenter)/(focus) del boton de estado en el Shell, y tambien antes de
+  // pair() -- asi el primer click ya tiene el estado real, no el valor inicial en false.
+  watchDevices(): void {
+    if (this.watching || !navigator.usb) return;
+    this.watching = true;
 
     void this.refresh();
     navigator.usb.addEventListener('connect', () => this.refresh());
@@ -26,6 +36,7 @@ export class PrinterService {
   // primera vez o si el usuario revoca el permiso desde la configuracion del navegador.
   async pair(): Promise<void> {
     if (!navigator.usb) return;
+    this.watchDevices();
 
     try {
       await navigator.usb.requestDevice({ filters: [] });

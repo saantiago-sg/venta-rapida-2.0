@@ -60,6 +60,7 @@
           pTooltip="Cerrar sesión"
           tooltipPosition="right"
           [tooltipDisabled]="sidebarOpen()"
+          [attr.aria-label]="sidebarOpen() ? null : 'Cerrar sesión'"
           class="flex items-center gap-2 py-2 rounded-lg text-sm text-sidebar-text-secondary hover:bg-sidebar-active hover:text-sidebar-text transition-colors"
           [class]="sidebarOpen() ? 'px-3' : 'justify-center px-0'"
         >
@@ -151,8 +152,11 @@
           <button
             type="button"
             (click)="pairPrinter()"
+            (mouseenter)="printerService.watchDevices()"
+            (focus)="printerService.watchDevices()"
             [pTooltip]="printerService.connected() ? 'Impresora conectada' : 'Impresora no conectada · click para conectar'"
             tooltipPosition="bottom"
+            [attr.aria-label]="printerService.connected() ? 'Impresora conectada' : 'Impresora no conectada, click para conectar'"
             class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-card transition-colors"
           >
             <i
