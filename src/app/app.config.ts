@@ -9,7 +9,7 @@ import {
   provideZoneChangeDetection
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter } from '@angular/router';
+import { PreloadAllModules, provideRouter, withPreloading } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 
 import { routes } from './app.routes';
@@ -24,7 +24,9 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'es-AR' },
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    // Las pantallas son lazy (bundle inicial chico), pero sin precarga la primera entrada a
+    // cada una esperaba la descarga de su chunk. Asi se bajan en segundo plano apenas arranca.
+    provideRouter(routes, withPreloading(PreloadAllModules)),
     provideAnimationsAsync(),
     // Restaura la sesion (si existe) antes de que el router evalue los guards de la ruta inicial.
     provideAppInitializer(() => inject(AuthService).restoreSession()),

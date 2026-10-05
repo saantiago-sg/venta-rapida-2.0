@@ -14,6 +14,7 @@ import { PosStore } from '../../state/pos.store';
 import { parseWeightedBarcode } from '../../data-access/weighted-barcode';
 
 const GRAMS_PER_KG = 1000;
+const RESULTS_PAGE_SIZE = 60;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,14 +53,41 @@ export class ProductSearch {
     return `${kg} kg y ${remainder} g`;
   });
 
-  protected readonly results = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    const products = this.productsStore.products().filter((p) => p.active);
-    if (!q) return products;
-    return products.filter(
-      (p) => p.name.toLowerCase().includes(q) || (p.barcode ?? '').toLowerCase() === q
-    );
+  // Todo lo que depende solo del catalogo (no de lo tipeado) se arma una vez por cambio de
+  // catalogo y no en cada tecla: los nombres en minuscula para filtrar, y un indice por codigo
+  // de barras para que el escaneo sea un lookup directo en vez de recorrer la lista entera.
+  private readonly searchIndex = computed(() =>
+    this.productsStore
+      .products()
+      .filter((p) => p.active)
+      .map((product) => ({ product, name: product.name.toLowerCase(), barcode: product.barcode?.toLowerCase() ?? null }))
+  );
+  private readonly byBarcode = computed(() => {
+    const index = new Map<string, Product>();
+    for (const { product } of this.searchIndex()) {
+      // Con codigos repetidos gana el primero en orden alfabetico, igual que el find() de antes.
+      if (product.barcode && !index.has(product.barcode)) index.set(product.barcode, product);
+    }
+    return index;
   });
+
+  // La grilla dibuja como mucho resultLimit() tarjetas: con el catalogo entero (miles de
+  // productos, cada uno con su animacion de entrada) cada tecla redibujaba todo y tipear se
+  // trababa. Los demas quedan a un "Ver mas" de distancia, y buscar siempre los encuentra.
+  protected readonly resultLimit = signal(RESULTS_PAGE_SIZE);
+
+  private readonly matches = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    const index = this.searchIndex();
+    if (!q) return index;
+    return index.filter((entry) => entry.name.includes(q) || entry.barcode === q);
+  });
+  protected readonly totalResults = computed(() => this.matches().length);
+  protected readonly results = computed(() =>
+    this.matches()
+      .slice(0, this.resultLimit())
+      .map((entry) => entry.product)
+  );
 
   constructor() {
     this.productsStore.load();
@@ -79,6 +107,7 @@ export class ProductSearch {
   protected onQueryChange(value: string): void {
     this.query.set(value);
     this.notFound.set(false);
+    this.resultLimit.set(RESULTS_PAGE_SIZE);
 
     if (this.scanTimeout) clearTimeout(this.scanTimeout);
     const trimmed = value.trim();
@@ -94,12 +123,8 @@ export class ProductSearch {
       q,
       this.businessSettingsStore.business()?.weightedBarcode ?? DEFAULT_WEIGHTED_BARCODE_CONFIG
     );
-    if (weighted) {
-      return this.productsStore
-        .products()
-        .some((p) => p.active && p.saleType === 'weight' && p.barcode === weighted.productBarcode);
-    }
-    return this.productsStore.products().some((p) => p.active && p.barcode === q);
+    if (weighted) return this.byBarcode().get(weighted.productBarcode)?.saleType === 'weight';
+    return this.byBarcode().has(q);
   }
 
   protected onSelect(productId: string): void {
@@ -131,10 +156,8 @@ export class ProductSearch {
       this.businessSettingsStore.business()?.weightedBarcode ?? DEFAULT_WEIGHTED_BARCODE_CONFIG
     );
     if (weighted) {
-      const product = this.productsStore
-        .products()
-        .find((p) => p.active && p.saleType === 'weight' && p.barcode === weighted.productBarcode);
-      if (product) {
+      const product = this.byBarcode().get(weighted.productBarcode);
+      if (product?.saleType === 'weight') {
         this.query.set('');
         this.notFound.set(false);
         this.posStore.addToCart(product, weighted.weightGrams / GRAMS_PER_KG);
@@ -143,7 +166,7 @@ export class ProductSearch {
       }
     }
 
-    const match = this.productsStore.products().find((p) => p.active && p.barcode === q);
+    const match = this.byBarcode().get(q);
     this.query.set('');
     this.notFound.set(!match);
 
@@ -186,11 +209,16 @@ export class ProductSearch {
     this.weightInput.set(GRAMS_PER_KG);
   }
 
+  protected onShowMore(): void {
+    this.resultLimit.update((limit) => limit + RESULTS_PAGE_SIZE);
+  }
+
   // El boton nativo se queda con el foco al clickearlo (comportamiento default del navegador)
   // -- hay que devolverlo a mano al input.
   protected onClearSearch(): void {
     this.query.set('');
     this.notFound.set(false);
+    this.resultLimit.set(RESULTS_PAGE_SIZE);
     this.refocus();
   }
 

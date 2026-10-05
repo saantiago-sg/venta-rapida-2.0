@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
+import { fetchAllPages } from '../../../core/supabase/fetch-all-pages';
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
 import { Customer, CustomerFormValue } from './models';
 
@@ -56,14 +57,18 @@ function toRow(input: CustomerFormValue): Record<string, unknown> {
 export class CustomerRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
+  // Paginado: con una sola consulta, PostgREST cortaba en 1000 clientes sin avisar (ver fetchAllPages).
   async list(businessId: string): Promise<Customer[]> {
-    const { data, error } = await this.supabase
-      .from('customers')
-      .select(SELECT_COLUMNS)
-      .eq('business_id', businessId)
-      .order('name');
-    if (error) throw error;
-    return (data as CustomerRow[]).map(mapRow);
+    const rows = await fetchAllPages((from, to, withCount) =>
+      this.supabase
+        .from('customers')
+        .select(SELECT_COLUMNS, withCount ? { count: 'exact' } : undefined)
+        .eq('business_id', businessId)
+        .order('name')
+        .order('id')
+        .range(from, to)
+    );
+    return (rows as CustomerRow[]).map(mapRow);
   }
 
   async create(businessId: string, input: CustomerFormValue): Promise<Customer> {

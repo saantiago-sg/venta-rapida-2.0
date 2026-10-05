@@ -1,6 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { isNetworkError } from '../../../core/offline/network-error';
+import { readProductCache, writeProductCache } from '../data-access/product-cache';
 import { ProductRepository } from '../data-access/product.repository';
 import { Product, ProductComponent, ProductFormValue } from '../data-access/models';
 
@@ -22,7 +24,14 @@ export class ProductsStore {
   // (ej. ProductSearch y ProductList montando casi al mismo tiempo).
   private loadedForBusinessId: string | null = null;
   private loadPromise: Promise<void> | null = null;
+  // De que negocio es el catalogo que esta hoy en _products (venga de la red o del cache
+  // local) -- distinto de loadedForBusinessId, que solo se marca con una respuesta de la red.
+  private productsBusinessId: string | null = null;
 
+  // Stale-while-revalidate: si hay copia local del catalogo (ver product-cache.ts) se muestra
+  // al instante, sin spinner, y la red la reemplaza apenas responde. Antes cada apertura de la
+  // app esperaba el catalogo entero de Supabase antes de poder vender. Sin conexion, la copia
+  // local queda en pantalla y el proximo load() reintenta contra el servidor.
   async load(force = false): Promise<void> {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
@@ -30,10 +39,16 @@ export class ProductsStore {
     if (this.loadPromise) return this.loadPromise;
 
     this.loadPromise = (async () => {
-      this._loading.set(true);
+      if (this.productsBusinessId !== businessId) {
+        const cached = await readProductCache(businessId);
+        if (cached) this.setProducts(businessId, cached, { persist: false });
+      }
+      this._loading.set(this.productsBusinessId !== businessId);
       try {
-        this._products.set(await this.repository.list(businessId));
+        this.setProducts(businessId, await this.repository.list(businessId));
         this.loadedForBusinessId = businessId;
+      } catch (err) {
+        if (!(isNetworkError(err) && this.productsBusinessId === businessId)) throw err;
       } finally {
         this._loading.set(false);
         this.loadPromise = null;
@@ -52,7 +67,7 @@ export class ProductsStore {
       // todo que armar a mano el merge optimista con nombres de componentes resueltos.
       await this.load(true);
     } else {
-      this._products.update((list) => [...list, product].sort((a, b) => a.name.localeCompare(b.name)));
+      this.updateProducts((list) => [...list, product].sort((a, b) => a.name.localeCompare(b.name)));
     }
   }
 
@@ -65,13 +80,13 @@ export class ProductsStore {
     if (input.isCombo) {
       await this.load(true);
     } else {
-      this._products.update((list) => list.map((p) => (p.id === id ? updated : p)));
+      this.updateProducts((list) => list.map((p) => (p.id === id ? updated : p)));
     }
   }
 
   async setActive(id: string, active: boolean): Promise<void> {
     await this.repository.setActive(id, active);
-    this._products.update((list) => list.map((p) => (p.id === id ? { ...p, active } : p)));
+    this.updateProducts((list) => list.map((p) => (p.id === id ? { ...p, active } : p)));
   }
 
   // Descuento optimista tras confirmar una venta (ver PosStore.confirmSale) -- evita volver a
@@ -82,7 +97,7 @@ export class ProductsStore {
   // cargada) -- se ignoran aca y quedan desactualizados hasta el proximo load() natural.
   applyStockDelta(soldItems: { productId: string; quantity: number }[]): void {
     const sold = new Map(soldItems.map((item) => [item.productId, item.quantity]));
-    this._products.update((list) =>
+    this.updateProducts((list) =>
       list.map((p) => {
         const quantity = sold.get(p.id);
         if (!quantity || !p.trackStock || p.isCombo) return p;
@@ -99,5 +114,18 @@ export class ProductsStore {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return Promise.resolve({ expired: 0, expiringSoon: 0 });
     return this.repository.countExpirationAlerts(businessId);
+  }
+
+  private setProducts(businessId: string, products: Product[], { persist = true } = {}): void {
+    this._products.set(products);
+    this.productsBusinessId = businessId;
+    if (persist) void writeProductCache(businessId, products);
+  }
+
+  // Toda modificacion local (alta, edicion, descuento de stock post-venta) pasa por aca para
+  // que la copia local no quede atras de lo que se ve en pantalla -- ver load().
+  private updateProducts(fn: (list: Product[]) => Product[]): void {
+    this._products.update(fn);
+    if (this.productsBusinessId) void writeProductCache(this.productsBusinessId, this._products());
   }
 }

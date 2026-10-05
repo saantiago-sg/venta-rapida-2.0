@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
+import { fetchAllPages } from '../../../core/supabase/fetch-all-pages';
 import { SupabaseClientService } from '../../../core/supabase/supabase-client.service';
 import { todayIso } from '../../../shared/utils/date';
 import { expiringSoonLimitIso } from '../../../shared/utils/expiration';
@@ -66,14 +67,19 @@ function mapRow(row: ProductRow): Product {
 export class ProductRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
+  // Paginado: con una sola consulta, un negocio con mas de 1000 productos perdia los ultimos
+  // en orden alfabetico (no aparecian en el POS y el escaneo decia "no se encontro").
   async list(businessId: string): Promise<Product[]> {
-    const { data, error } = await this.supabase
-      .from('products')
-      .select(SELECT_COLUMNS)
-      .eq('business_id', businessId)
-      .order('name');
-    if (error) throw error;
-    return (data as unknown as ProductRow[]).map(mapRow);
+    const rows = await fetchAllPages((from, to, withCount) =>
+      this.supabase
+        .from('products')
+        .select(SELECT_COLUMNS, withCount ? { count: 'exact' } : undefined)
+        .eq('business_id', businessId)
+        .order('name')
+        .order('id')
+        .range(from, to)
+    );
+    return (rows as unknown as ProductRow[]).map(mapRow);
   }
 
   async create(businessId: string, input: ProductFormValue): Promise<Product> {

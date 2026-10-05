@@ -68,19 +68,27 @@ export class DashboardPage {
     const businessId = this.authStore.activeBusinessId();
     if (!businessId) return;
 
+    // Los avisos de vencimiento van por separado: antes estaban en el mismo Promise.all y las
+    // tarjetas de ventas esperaban tambien a esos conteos. El aviso aparece cuando llega, y si
+    // falla no tira abajo el resto del dashboard (es un extra, no el dato principal).
+    void this.productsStore
+      .countExpirationAlerts()
+      .then(({ expired, expiringSoon }) => {
+        this.expiredCount.set(expired);
+        this.expiringSoonCount.set(expiringSoon);
+      })
+      .catch(() => {});
+
     this.loading.set(true);
     try {
       const from = startOfToday();
       const to = startOfTomorrow();
-      const [summary, topProducts, expirationAlerts] = await Promise.all([
+      const [summary, topProducts] = await Promise.all([
         this.reportsRepository.getSummary(businessId, from, to),
-        this.reportsRepository.getTopProducts(businessId, from, to, 20),
-        this.productsStore.countExpirationAlerts()
+        this.reportsRepository.getTopProducts(businessId, from, to, 20)
       ]);
       this.summary.set(summary);
       this.topProducts.set(topProducts);
-      this.expiredCount.set(expirationAlerts.expired);
-      this.expiringSoonCount.set(expirationAlerts.expiringSoon);
     } finally {
       this.loading.set(false);
     }

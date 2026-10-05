@@ -62,6 +62,15 @@
         <p class="text-sm text-text-secondary">No se encontraron productos.</p>
       </div>
     }
+    @if (totalResults() > results().length) {
+      <button
+        type="button"
+        (click)="onShowMore()"
+        class="col-span-full py-2.5 text-sm font-medium text-text-secondary border border-dashed border-border rounded-lg transition-colors hover:text-brand hover:border-brand/40 hover:bg-brand/5"
+      >
+        Ver más ({{ totalResults() - results().length }} restantes)
+      </button>
+    }
   </div>
 </div>
 
