@@ -6,7 +6,7 @@ import {
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
-  provideZoneChangeDetection
+  provideZonelessChangeDetection
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { PreloadAllModules, provideRouter, withPreloading } from '@angular/router';
@@ -23,7 +23,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     { provide: LOCALE_ID, useValue: 'es-AR' },
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    // Sin zone.js: todo el estado de pantalla vive en signals y todos los componentes son
+    // OnPush, asi que Angular ya sabe cuando redibujar sin parchear cada setTimeout/fetch/evento
+    // del navegador. Son ~35 kB menos en el arranque y menos chequeos de cambios en cada evento.
+    // Ojo al agregar codigo: un campo comun (no signal) que cambie despues de un await o un
+    // setTimeout NO se refleja en pantalla -- usar signal().
+    provideZonelessChangeDetection(),
     // Las pantallas son lazy (bundle inicial chico), pero sin precarga la primera entrada a
     // cada una esperaba la descarga de su chunk. Asi se bajan en segundo plano apenas arranca.
     provideRouter(routes, withPreloading(PreloadAllModules)),

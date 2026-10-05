@@ -1,18 +1,28 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
-import { ForgotPasswordPage } from './core/auth/pages/forgot-password-page/forgot-password-page';
-import { LoginPage } from './core/auth/pages/login-page/login-page';
-import { ResetPasswordPage } from './core/auth/pages/reset-password-page/reset-password-page';
 import { Shell } from './core/layout/shell/shell';
 import { onboardingGuard } from './features/onboarding/onboarding.guard';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginPage },
-  { path: 'recuperar-contrasena', component: ForgotPasswordPage },
+  // Las pantallas de auth tambien son lazy: el usuario que ya tiene sesion (el caso de todos los
+  // dias) no descarga su codigo al abrir la app. Se precargan igual (ver withPreloading).
+  {
+    path: 'login',
+    loadComponent: () => import('./core/auth/pages/login-page/login-page').then((m) => m.LoginPage)
+  },
+  {
+    path: 'recuperar-contrasena',
+    loadComponent: () =>
+      import('./core/auth/pages/forgot-password-page/forgot-password-page').then((m) => m.ForgotPasswordPage)
+  },
   // Sin authGuard a proposito: se llega desde el link del mail de recuperacion, sin sesion
   // "normal" todavia -- la sesion de recuperacion la arma supabase-js solo (ver AuthService).
-  { path: 'nueva-contrasena', component: ResetPasswordPage },
+  {
+    path: 'nueva-contrasena',
+    loadComponent: () =>
+      import('./core/auth/pages/reset-password-page/reset-password-page').then((m) => m.ResetPasswordPage)
+  },
 
   // Super Admin: fuera del shell de tenant a propósito (mitigación de seguridad de la Fase 1).
   // Ya es su propio lazy chunk por usar loadChildren, y su propio guard (superAdminGuard).
