@@ -1,3 +1,13 @@
+/* Manrope variable (500-800), subset latino -- cubre todo el texto en castellano de la
+   landing. Bajada de Google Fonts (licencia OFL, se puede alojar libremente). */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url('../fonts/manrope-latin.woff2') format('woff2');
+}
+
 :root {
   --brand: #F97316;
   --brand-hover: #EA580C;

@@ -7,9 +7,9 @@
   <meta name="description" content="VentaRapida es el punto de venta para tu negocio. Escaneás, cobrás y listo: sin cola, sin planillas y sin sorpresas con el stock." />
 
   <link rel="icon" href="favicon.ico" sizes="any" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Manrope alojada en el sitio (antes Google Fonts): sin las 2 conexiones extra a
+       googleapis/gstatic ni su CSS bloqueante. Preload para que baje en paralelo al CSS. -->
+  <link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -17,7 +17,10 @@
   <header class="nav">
     <div class="wrap nav-inner">
       <a href="#" class="nav-logo" aria-label="VentaRapida">
-        <img src="images/logovr-nav.png" alt="VentaRapida" width="442" height="100" />
+        <picture>
+          <source srcset="images/logovr-nav.webp" type="image/webp" />
+          <img src="images/logovr-nav.png" alt="VentaRapida" width="442" height="100" />
+        </picture>
       </a>
 
       <nav class="nav-links" id="nav-links">
@@ -49,7 +52,10 @@
     <div class="wrap hero-inner">
       <span class="eyebrow">Punto de venta para comercios</span>
       <h1 class="hero-brand">
-        <img src="images/logovr-icon.png" alt="" class="hero-brand-icon" />
+        <picture>
+          <source srcset="images/logovr-icon.webp" type="image/webp" />
+          <img src="images/logovr-icon.png" alt="" class="hero-brand-icon" />
+        </picture>
         Venta Rapida
       </h1>
       <p>
@@ -303,25 +309,31 @@
             <span class="device-dot"></span>
             <span class="device-dot"></span>
           </div>
-          <img
-            src="images/screenshot-desktop.png"
-            alt="Pantalla de Vender de VentaRapida en la computadora, con un pedido cargado y el detalle de ganancia"
-            class="device-screenshot"
-            width="1916"
-            height="989"
-            loading="lazy"
-          />
+          <picture>
+            <source srcset="images/screenshot-desktop.webp" type="image/webp" />
+            <img
+              src="images/screenshot-desktop.png"
+              alt="Pantalla de Vender de VentaRapida en la computadora, con un pedido cargado y el detalle de ganancia"
+              class="device-screenshot"
+              width="1916"
+              height="989"
+              loading="lazy"
+            />
+          </picture>
         </div>
         <div class="device-frame device-frame--phone device-frame--mobile">
           <div class="device-frame-notch"></div>
-          <img
-            src="images/screenshot-mobile.png"
-            alt="La misma pantalla de Vender de VentaRapida en el celular, con el mismo pedido sincronizado"
-            class="device-screenshot"
-            width="357"
-            height="765"
-            loading="lazy"
-          />
+          <picture>
+            <source srcset="images/screenshot-mobile.webp" type="image/webp" />
+            <img
+              src="images/screenshot-mobile.png"
+              alt="La misma pantalla de Vender de VentaRapida en el celular, con el mismo pedido sincronizado"
+              class="device-screenshot"
+              width="357"
+              height="765"
+              loading="lazy"
+            />
+          </picture>
         </div>
       </div>
       <p class="mockup-caption">Mismo pedido, mismo negocio — sincronizado entre la compu y el celular en tiempo real.</p>
@@ -342,14 +354,17 @@
           <span class="device-dot"></span>
           <span class="device-dot"></span>
         </div>
-        <img
-          src="images/screenshot-dashboard.png"
-          alt="Dashboard de VentaRapida con ventas del día, ganancia y ranking de productos más y menos rentables"
-          class="device-screenshot"
-          width="1919"
-          height="881"
-          loading="lazy"
-        />
+        <picture>
+          <source srcset="images/screenshot-dashboard.webp" type="image/webp" />
+          <img
+            src="images/screenshot-dashboard.png"
+            alt="Dashboard de VentaRapida con ventas del día, ganancia y ranking de productos más y menos rentables"
+            class="device-screenshot"
+            width="1919"
+            height="881"
+            loading="lazy"
+          />
+        </picture>
       </div>
       <p class="mockup-caption">El dueño ve, de un vistazo, cuánto vendió y cuánto ganó — sin planillas ni cálculos manuales.</p>
     </div>
@@ -460,7 +475,10 @@
   <footer class="footer">
     <div class="wrap footer-inner">
       <div class="footer-logo">
-        <img src="images/logovr-icon.png" alt="" class="footer-logo-icon" />
+        <picture>
+          <source srcset="images/logovr-icon.webp" type="image/webp" />
+          <img src="images/logovr-icon.png" alt="" class="footer-logo-icon" />
+        </picture>
         <span class="footer-wordmark"><span class="footer-wordmark-venta">Venta</span><span class="footer-wordmark-rapida">Rapida</span></span>
       </div>
       <span class="footer-copy">© 2026 VentaRapida</span>
