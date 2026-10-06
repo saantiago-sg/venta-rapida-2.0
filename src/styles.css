@@ -176,3 +176,16 @@ body {
 .blob-float-b {
   animation: blob-float-b 20s ease-in-out infinite;
 }
+
+/* Suscripcion cancelada (ver Shell.serviceBlocked): el <fieldset disabled> ya deshabilita los
+   controles nativos, pero varios de PrimeNG son <div> clickeables (toggles, selects, filas de
+   tabla) que el fieldset no alcanza. Se les corta el click a todo menos a los links, para que se
+   pueda seguir navegando entre pantallas. */
+.service-blocked * {
+  pointer-events: none;
+}
+
+.service-blocked a,
+.service-blocked a * {
+  pointer-events: auto;
+}

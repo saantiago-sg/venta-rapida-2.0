@@ -124,14 +124,16 @@
             <i class="pi pi-whatsapp"></i>
             Contactar
           </a>
-          <button
-            type="button"
-            (click)="dismissBanner()"
-            class="text-text-secondary hover:text-text transition-colors p-1 -m-1 shrink-0"
-            aria-label="Cerrar aviso"
-          >
-            <i class="pi pi-times text-xs"></i>
-          </button>
+          @if (!serviceBlocked()) {
+            <button
+              type="button"
+              (click)="dismissBanner()"
+              class="text-text-secondary hover:text-text transition-colors p-1 -m-1 shrink-0"
+              aria-label="Cerrar aviso"
+            >
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          }
         </div>
       }
 
@@ -195,14 +197,16 @@
           >
             <i class="pi pi-whatsapp"></i>
           </a>
-          <button
-            type="button"
-            (click)="dismissBanner()"
-            class="text-text-secondary hover:text-text transition-colors p-1 -m-1 shrink-0"
-            aria-label="Cerrar aviso"
-          >
-            <i class="pi pi-times text-xs"></i>
-          </button>
+          @if (!serviceBlocked()) {
+            <button
+              type="button"
+              (click)="dismissBanner()"
+              class="text-text-secondary hover:text-text transition-colors p-1 -m-1 shrink-0"
+              aria-label="Cerrar aviso"
+            >
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          }
         </div>
       </div>
     }
@@ -227,7 +231,18 @@
     }
 
     <main class="flex-1 overflow-auto p-6">
-      <router-outlet />
+      <!-- Suscripcion cancelada (ver serviceBlocked): un <fieldset disabled> deshabilita de una
+           todos los botones/inputs/selects nativos de cualquier pantalla, actual o futura, sin
+           tocar cada componente. Siempre se renderiza (solo cambia [disabled]) para no recrear
+           el router-outlet al cambiar el estado. min-w-0: el fieldset trae min-width:min-content
+           por defecto y desbordaria las pantallas anchas. -->
+      <fieldset
+        class="h-full min-w-0"
+        [disabled]="serviceBlocked()"
+        [class.service-blocked]="serviceBlocked()"
+      >
+        <router-outlet />
+      </fieldset>
     </main>
   </div>
 </div>

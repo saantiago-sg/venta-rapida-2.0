@@ -10,6 +10,7 @@ import { OfflineQueueService } from '../../offline/offline-queue.service';
 import { SyncService } from '../../offline/sync.service';
 import { PrinterService } from '../../printer/printer.service';
 import { BusinessSettingsStore } from '../../../features/settings/state/business-settings.store';
+import { parseLocalDate } from '../../../shared/utils/date';
 
 const ROLE_STYLES: Record<MembershipRole, { label: string; icon: string }> = {
   owner: { label: 'Dueño', icon: 'pi-crown' },
@@ -30,8 +31,10 @@ const BANNER_STYLES: Record<BannerSeverity, { wrap: string; textColor: string; i
   error: { wrap: 'bg-error/10 border-error/20', textColor: 'text-error', iconName: 'pi-times-circle' }
 };
 
+// parseLocalDate y no new Date(): subscription_paid_until es un 'yyyy-mm-dd' sin hora, y
+// new Date() lo toma como medianoche UTC -- en Argentina (UTC-3) mostraba el dia anterior.
 function formatDate(isoDate: string): string {
-  const date = new Date(isoDate);
+  const date = parseLocalDate(isoDate);
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
@@ -143,7 +146,7 @@ export class Shell {
           message: until ? `Tu suscripción venció el ${until}.` : 'Tu suscripción está vencida.'
         };
       case 'cancelled':
-        return { severity: 'error', message: 'Tu suscripción fue cancelada.' };
+        return { severity: 'error', message: 'Suscripción cancelada. Contactanos para reactivarla.' };
       default:
         return null;
     }
@@ -153,8 +156,20 @@ export class Shell {
   // mientras navegues dentro de la app, pero un F5 reinstancia el Shell y vuelve a aparecer.
   private readonly bannerDismissed = signal(false);
 
+  // Suscripcion cancelada: el negocio queda en solo lectura. Se puede navegar y ver la info,
+  // cambiar de negocio y cerrar sesion (todo eso vive en el Shell, fuera del <fieldset>), pero
+  // todo boton/campo de las pantallas queda deshabilitado -- ver el <fieldset> en shell.html y
+  // .service-blocked en styles.css. Es SOLO visual a proposito (decision del dueño, 2026-10-06):
+  // la base no lo bloquea, alguien que llame a Supabase directo podria seguir escribiendo.
+  // Vencida (past_due) no bloquea: solo muestra el aviso.
+  protected readonly serviceBlocked = computed(
+    () => this.authStore.activeMembership()?.subscriptionStatus === 'cancelled'
+  );
+
+  // Con el servicio bloqueado el aviso no se puede cerrar: es la unica explicacion de por que
+  // no anda nada.
   protected readonly visibleBanner = computed(() =>
-    this.bannerDismissed() ? null : this.subscriptionBanner()
+    this.bannerDismissed() && !this.serviceBlocked() ? null : this.subscriptionBanner()
   );
 
   protected bannerStyles(severity: BannerSeverity) {
