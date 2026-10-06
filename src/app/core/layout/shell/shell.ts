@@ -183,7 +183,7 @@ export class Shell {
 
   protected onBusinessChange(event: Event): void {
     const businessId = (event.target as HTMLSelectElement).value;
-    this.authStore.setActiveBusiness(businessId);
+    this.authService.switchBusiness(businessId);
   }
 
   // Cerrar sesion borra las copias locales (ver AuthService.signOut) pero nunca la cola de

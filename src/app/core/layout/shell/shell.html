@@ -88,11 +88,15 @@
         @if (authStore.memberships().length > 1) {
           <select
             class="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-text"
-            [value]="authStore.activeBusinessId()"
             (change)="onBusinessChange($event)"
           >
+            <!-- [selected] por opcion y no [value] en el select: el value del select se aplicaba
+                 antes de que el @for creara las opciones, y el navegador mostraba la primera
+                 aunque el negocio activo fuera otro (se ve al recargar con el 2do negocio activo). -->
             @for (membership of authStore.memberships(); track membership.businessId) {
-              <option [value]="membership.businessId">{{ membership.businessName }}</option>
+              <option [value]="membership.businessId" [selected]="membership.businessId === authStore.activeBusinessId()">
+                {{ membership.businessName }}
+              </option>
             }
           </select>
         } @else {

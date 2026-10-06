@@ -32,17 +32,24 @@ export class AuthService {
     // Cualquier cambio de sesion (login, revalidacion, cambio de negocio desde el Shell) queda
     // en la copia local -- asi la proxima apertura arranca tal cual quedo, incluido el negocio
     // que estaba elegido. signOut() la borra; con userId en null no se escribe nada.
-    effect(() => {
-      const userId = this.authStore.userId();
-      if (!userId) return;
-      writeSessionSnapshot({
-        userId,
-        userEmail: this.authStore.userEmail(),
-        memberships: this.authStore.memberships(),
-        isSuperAdmin: this.authStore.isSuperAdmin(),
-        activeBusinessId: this.authStore.activeBusinessId()
-      });
-    });
+    effect(() => this.persistSnapshot());
+  }
+
+  // Cambio de negocio = recarga completa de la app. Todos los stores (catalogo, medios de pago,
+  // tipos de entrega, clientes, caja, empleados...) son singletons con datos del negocio
+  // anterior, y ninguno se entera del cambio: seguir con ellos mezclaba datos de dos negocios
+  // (ej. el panel de cobro preseleccionaba un tipo de entrega del negocio viejo y process_sale
+  // lo rechazaba con "Tipo de entrega invalido", o Empleados seguia mostrando los del otro).
+  // Recargando, todo arranca limpio en el negocio nuevo, y con la copia local de la sesion la
+  // recarga entra al instante. El carrito se descarta (es de otro negocio); las ventas
+  // pendientes de sincronizar quedan a salvo en IndexedDB.
+  switchBusiness(businessId: string): void {
+    if (businessId === this.authStore.activeBusinessId()) return;
+    this.authStore.setActiveBusiness(businessId);
+    // A mano y no esperar al effect: el effect corre recien en el proximo ciclo, despues del
+    // reload, y la app volveria a arrancar en el negocio anterior.
+    this.persistSnapshot();
+    window.location.reload();
   }
 
   async signIn(email: string, password: string): Promise<void> {
@@ -135,12 +142,31 @@ export class AuthService {
       return;
     }
 
+    const previousBusinessId = this.authStore.activeBusinessId();
     try {
       await this.loadSession(user.id, user.email ?? null);
+      // Le sacaron el acceso al negocio activo y setSession() cayo a otro: mismo caso que
+      // switchBusiness(), hay que recargar para no seguir con datos del negocio anterior.
+      if (this.authStore.activeBusinessId() !== previousBusinessId) {
+        this.persistSnapshot();
+        window.location.reload();
+      }
     } catch {
       // Error de red (o puntual) trayendo memberships: se sigue con la copia local, que es lo
       // ultimo conocido. La proxima apertura vuelve a intentar.
     }
+  }
+
+  private persistSnapshot(): void {
+    const userId = this.authStore.userId();
+    if (!userId) return;
+    writeSessionSnapshot({
+      userId,
+      userEmail: this.authStore.userEmail(),
+      memberships: this.authStore.memberships(),
+      isSuperAdmin: this.authStore.isSuperAdmin(),
+      activeBusinessId: this.authStore.activeBusinessId()
+    });
   }
 
   private async loadSession(userId: string, userEmail: string | null): Promise<void> {
