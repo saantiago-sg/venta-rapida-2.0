@@ -186,7 +186,24 @@ export class Shell {
     this.authStore.setActiveBusiness(businessId);
   }
 
-  protected async onLogout(): Promise<void> {
+  // Cerrar sesion borra las copias locales (ver AuthService.signOut) pero nunca la cola de
+  // ventas pendientes. Igual se avisa: sin sesion no se sincronizan, y quedan esperando a que
+  // alguien vuelva a entrar en este navegador (se mandan con la sesion de quien entre).
+  // confirm() nativo a proposito: el p-confirmdialog de PrimeNG en el Shell sumaba ~110 kB al
+  // bundle inicial (el Shell no es lazy) para un aviso que casi nunca aparece.
+  protected onLogout(): void {
+    const pending = this.offlineQueue.pendingCount();
+    if (pending > 0) {
+      const ventas = pending === 1 ? '1 venta que todavía no se envió' : `${pending} ventas que todavía no se enviaron`;
+      const ok = window.confirm(
+        `Tenés ${ventas} al servidor.\n\nSi cerrás sesión van a quedar guardadas en este navegador y se van a enviar cuando alguien vuelva a entrar acá con conexión.\n\n¿Cerrar sesión igual?`
+      );
+      if (!ok) return;
+    }
+    void this.logout();
+  }
+
+  private async logout(): Promise<void> {
     await this.authService.signOut();
     await this.router.navigateByUrl('/login');
   }

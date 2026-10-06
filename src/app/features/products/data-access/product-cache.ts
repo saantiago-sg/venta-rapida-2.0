@@ -53,3 +53,12 @@ export async function writeProductCache(businessId: string, products: Product[])
     // Ver readProductCache.
   }
 }
+
+// Al cerrar sesion -- ver clearLocalCaches en core/offline/local-cache.ts.
+export async function clearProductCache(): Promise<void> {
+  try {
+    await (await getDb()).clear(STORE_NAME);
+  } catch {
+    // Ver readProductCache.
+  }
+}

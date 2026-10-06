@@ -38,11 +38,21 @@ export class AuthStore {
     () => this._memberships().find((m) => m.businessId === this._activeBusinessId()) ?? null
   );
 
-  setSession(userId: string, memberships: Membership[], isSuperAdmin = false, userEmail: string | null = null): void {
+  // preferredBusinessId: el negocio que ya estaba activo (copia local de la sesion, o la
+  // revalidacion en segundo plano) -- se respeta mientras el usuario siga perteneciendo a el,
+  // asi revalidar no lo cambia de negocio a mitad de una venta. Si ya no esta, cae al primero.
+  setSession(
+    userId: string,
+    memberships: Membership[],
+    isSuperAdmin = false,
+    userEmail: string | null = null,
+    preferredBusinessId: string | null = null
+  ): void {
     this._userId.set(userId);
     this._userEmail.set(userEmail);
     this._memberships.set(memberships);
-    this._activeBusinessId.set(memberships[0]?.businessId ?? null);
+    const keepPreferred = memberships.some((m) => m.businessId === preferredBusinessId);
+    this._activeBusinessId.set(keepPreferred ? preferredBusinessId : (memberships[0]?.businessId ?? null));
     this._isSuperAdmin.set(isSuperAdmin);
   }
 
