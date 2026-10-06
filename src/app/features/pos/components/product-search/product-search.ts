@@ -158,7 +158,7 @@ export class ProductSearch {
     if (weighted) {
       const product = this.byBarcode().get(weighted.productBarcode);
       if (product?.saleType === 'weight') {
-        this.query.set('');
+        this.clearQuery();
         this.notFound.set(false);
         this.posStore.addToCart(product, weighted.weightGrams / GRAMS_PER_KG);
         this.refocus();
@@ -167,7 +167,7 @@ export class ProductSearch {
     }
 
     const match = this.byBarcode().get(q);
-    this.query.set('');
+    this.clearQuery();
     this.notFound.set(!match);
 
     if (!match) {
@@ -216,7 +216,7 @@ export class ProductSearch {
   // El boton nativo se queda con el foco al clickearlo (comportamiento default del navegador)
   // -- hay que devolverlo a mano al input.
   protected onClearSearch(): void {
-    this.query.set('');
+    this.clearQuery();
     this.notFound.set(false);
     this.resultLimit.set(RESULTS_PAGE_SIZE);
     this.refocus();
@@ -227,6 +227,17 @@ export class ProductSearch {
   // devuelve a mano.
   focusSearch(): void {
     this.refocus();
+  }
+
+  // Sin zone.js, Angular junta los cambios y redibuja una vez por cuadro. Una pistola tipea los
+  // 13 digitos + Enter en pocos milisegundos, asi que query pasa de '' a '7790...' y de vuelta a
+  // '' (al agregar el producto) antes del proximo redibujo: el [ngModel] ve '' -> '' y no toca el
+  // input, el codigo escaneado queda escrito y el siguiente escaneo se pega a continuacion ("no
+  // se encontro"). Por eso, ademas del signal, se limpia el input a mano.
+  private clearQuery(): void {
+    this.query.set('');
+    const input = this.searchInput()?.nativeElement;
+    if (input) input.value = '';
   }
 
   private refocus(): void {
