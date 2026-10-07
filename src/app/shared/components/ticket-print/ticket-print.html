@@ -1,8 +1,8 @@
 @if (data(); as sale) {
   <div
     #root
-    class="ticket-print-root font-mono text-[11px] leading-snug text-black bg-white p-2"
-    [style.width.mm]="sale.paperWidthMm"
+    class="ticket-print-root font-mono text-[11px] leading-snug text-black bg-white px-0 py-1"
+    [style.width.mm]="printableWidthMm(sale.paperWidthMm)"
   >
     @if (sale.headerText) {
       <div class="text-center">{{ sale.headerText }}</div>

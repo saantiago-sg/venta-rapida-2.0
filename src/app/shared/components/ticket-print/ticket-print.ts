@@ -2,6 +2,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, inp
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 const MM_PER_PX = 25.4 / 96;
+
+// Ancho que la cabeza termica realmente imprime: un rollo de 80mm imprime ~72mm (576 puntos) y
+// uno de 58mm ~48mm (384 puntos), el resto es borde fisico del papel. Antes el ticket se dibujaba
+// con el ancho total del rollo + padding, y la impresora cortaba la columna de importes de la
+// derecha ("5.60" en vez de "5.600,00", ver foto del 2026-10-07).
+const PRINTABLE_WIDTH_MM: Record<58 | 80, number> = { 80: 72, 58: 48 };
 const PAGE_SIZE_STYLE_ID = 'ticket-print-page-size';
 
 export interface TicketLineItem {
@@ -50,6 +56,10 @@ export class TicketPrint {
   readonly data = input<TicketData | null>(null);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
+
+  protected printableWidthMm(paperWidthMm: 58 | 80): number {
+    return PRINTABLE_WIDTH_MM[paperWidthMm];
+  }
 
   constructor() {
     // 'beforeprint' NO garantiza que el navegador ya haya aplicado los estilos de @media
