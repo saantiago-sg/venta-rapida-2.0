@@ -70,7 +70,7 @@
         </div>
       }
       <div class="flex gap-2 mt-2">
-        <p-button label="Reimprimir" icon="pi pi-print" [outlined]="true" styleClass="flex-1" (onClick)="onPrint()" />
+        <p-button [label]="ticketPrinted() ? 'Reimprimir' : 'Imprimir'" icon="pi pi-print" [outlined]="true" styleClass="flex-1" (onClick)="onPrint()" />
         <p-button label="Cerrar" styleClass="flex-1" (onClick)="onConfirmationVisibleChange(false)" />
       </div>
     </div>

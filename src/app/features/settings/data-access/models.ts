@@ -45,18 +45,17 @@ export const DEFAULT_WEIGHTED_BARCODE_CONFIG: WeightedBarcodeConfig = {
 export type TicketPaperWidthMm = 58 | 80;
 
 // Config opcional de impresion de ticket por negocio -- guardada bajo businesses.settings.ticket
-// (jsonb), mismo criterio que WeightedBarcodeConfig. autoPrintEnabled arranca en false para
-// negocios nuevos a proposito (ver migracion de backfill 20260901120000_ticket_settings_backfill
-// para los negocios que ya existian y dependian del auto-print incondicional de antes).
+// (jsonb), mismo criterio que WeightedBarcodeConfig. No hay impresion automatica a proposito
+// (decision del dueño, 2026-10-07): casi ningun cliente quiere el ticket y gastaba papel; se
+// imprime solo con el boton "Imprimir" del dialogo de venta confirmada. La clave vieja
+// settings.ticket.auto_print_enabled puede seguir en la base de negocios existentes -- se ignora.
 export interface TicketSettings {
-  autoPrintEnabled: boolean;
   paperWidthMm: TicketPaperWidthMm;
   headerText: string | null;
   footerText: string | null;
 }
 
 export const DEFAULT_TICKET_SETTINGS: TicketSettings = {
-  autoPrintEnabled: false,
   paperWidthMm: 80,
   headerText: null,
   footerText: '¡Gracias por su compra!'

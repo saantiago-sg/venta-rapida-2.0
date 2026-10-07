@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { TicketPaperWidthMm } from '../../data-access/models';
 import { BusinessSettingsStore } from '../../state/business-settings.store';
@@ -10,7 +9,7 @@ import { BusinessSettingsStore } from '../../state/business-settings.store';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-ticket-settings',
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, ToggleSwitchModule],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule],
   templateUrl: './ticket-settings.html'
 })
 export class TicketSettingsPage {
@@ -20,7 +19,6 @@ export class TicketSettingsPage {
   protected readonly saving = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
-    autoPrintEnabled: [false],
     paperWidthMm: [80 as TicketPaperWidthMm],
     headerText: [''],
     footerText: ['']
@@ -33,7 +31,6 @@ export class TicketSettingsPage {
       const settings = this.store.business()?.ticketSettings;
       if (settings) {
         this.form.reset({
-          autoPrintEnabled: settings.autoPrintEnabled,
           paperWidthMm: settings.paperWidthMm,
           headerText: settings.headerText ?? '',
           footerText: settings.footerText ?? ''
@@ -51,7 +48,6 @@ export class TicketSettingsPage {
     try {
       const raw = this.form.getRawValue();
       await this.store.updateTicketSettings({
-        autoPrintEnabled: raw.autoPrintEnabled,
         paperWidthMm: raw.paperWidthMm,
         headerText: raw.headerText.trim() || null,
         footerText: raw.footerText.trim() || null

@@ -19,7 +19,6 @@ interface WeightedBarcodeConfigRow {
 }
 
 interface TicketSettingsRow {
-  auto_print_enabled: boolean;
   paper_width_mm: TicketPaperWidthMm;
   header_text: string | null;
   footer_text: string | null;
@@ -61,7 +60,6 @@ function mapWeightedBarcode(row: WeightedBarcodeConfigRow | undefined): Weighted
 function mapTicketSettings(row: TicketSettingsRow | undefined): TicketSettings {
   if (!row) return DEFAULT_TICKET_SETTINGS;
   return {
-    autoPrintEnabled: row.auto_print_enabled,
     paperWidthMm: row.paper_width_mm,
     headerText: row.header_text,
     footerText: row.footer_text
@@ -153,7 +151,6 @@ export class BusinessRepository {
     const settings: BusinessSettingsJson = {
       ...((data as { settings: BusinessSettingsJson | null }).settings ?? {}),
       ticket: {
-        auto_print_enabled: config.autoPrintEnabled,
         paper_width_mm: config.paperWidthMm,
         header_text: config.headerText,
         footer_text: config.footerText
