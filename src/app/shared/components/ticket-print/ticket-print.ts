@@ -71,7 +71,11 @@ export class TicketPrint {
     if (!sale || !element) return;
 
     // +2mm de margen para que el corte automatico de la impresora no se coma la ultima linea.
-    const heightMm = Math.ceil(element.offsetHeight * MM_PER_PX) + 2;
+    // Nunca menos alto que ancho: un ticket corto (ej. 1 producto) medía menos de 80mm de alto,
+    // y una pagina mas ancha que alta el navegador la toma como apaisada -- la impresora la
+    // rotaba 90° (texto a lo largo del rollo) y tiraba papel de mas. Ver foto del 2026-10-07.
+    const contentHeightMm = Math.ceil(element.offsetHeight * MM_PER_PX) + 2;
+    const heightMm = Math.max(contentHeightMm, sale.paperWidthMm + 1);
 
     let style = document.getElementById(PAGE_SIZE_STYLE_ID) as HTMLStyleElement | null;
     if (!style) {
