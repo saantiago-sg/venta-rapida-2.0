@@ -57,6 +57,15 @@
   </div>
 
   <app-product-import-dialog [visible]="importDialogVisible()" (visibleChange)="importDialogVisible.set($event)" />
+  <p-confirmdialog />
+
+  @if (deleteError(); as message) {
+    <div class="flex items-start gap-2 rounded-lg border border-error/30 bg-error/5 px-3 py-2 mb-3 text-sm text-error">
+      <i class="pi pi-exclamation-circle mt-0.5"></i>
+      <span class="flex-1">{{ message }}</span>
+      <button type="button" class="pi pi-times text-xs opacity-70 hover:opacity-100" aria-label="Cerrar" (click)="deleteError.set(null)"></button>
+    </div>
+  }
 
   <div class="surface-card bg-card border border-border rounded-xl overflow-hidden">
   <div class="overflow-x-auto">
@@ -72,7 +81,7 @@
         <th class="text-right">Stock</th>
         <th>Vencimiento</th>
         <th class="w-24 text-center">Activo</th>
-        <th class="w-16"></th>
+        <th class="w-20"></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-product>
@@ -166,6 +175,23 @@
             [class.cursor-not-allowed]="!canManageProducts()"
             [disabled]="!canManageProducts()"
             (click)="openEdit(product)"
+            pTooltip="No tenés permiso para gestionar productos"
+            tooltipPosition="left"
+            [tooltipDisabled]="canManageProducts()"
+          ></button>
+          <button
+            type="button"
+            class="pi ml-3 text-text-secondary"
+            [class.pi-trash]="deletingId() !== product.id"
+            [class.pi-spinner]="deletingId() === product.id"
+            [class.pi-spin]="deletingId() === product.id"
+            [class.cursor-pointer]="canManageProducts()"
+            [class.hover:text-error]="canManageProducts()"
+            [class.opacity-40]="!canManageProducts()"
+            [class.cursor-not-allowed]="!canManageProducts()"
+            [disabled]="!canManageProducts() || deletingId() !== null"
+            (click)="onDeleteClick(product)"
+            [attr.aria-label]="'Eliminar ' + product.name"
             pTooltip="No tenés permiso para gestionar productos"
             tooltipPosition="left"
             [tooltipDisabled]="canManageProducts()"

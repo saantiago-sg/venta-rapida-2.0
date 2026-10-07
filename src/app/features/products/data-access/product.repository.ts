@@ -34,6 +34,12 @@ interface ProductComponentRow {
 const SELECT_COLUMNS =
   'id, business_id, category_id, tax_id, name, barcode, sale_type, price, cost, stock, track_stock, active, is_combo, expiration_date, categories(name), taxes(name, rate)';
 
+export class ProductInComboError extends Error {
+  constructor(readonly comboName: string) {
+    super(`Es parte del combo "${comboName}"`);
+  }
+}
+
 function first<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
@@ -75,6 +81,7 @@ export class ProductRepository {
         .from('products')
         .select(SELECT_COLUMNS, withCount ? { count: 'exact' } : undefined)
         .eq('business_id', businessId)
+        .is('deleted_at', null)
         .order('name')
         .order('id')
         .range(from, to)
@@ -157,6 +164,43 @@ export class ProductRepository {
   async setActive(id: string, active: boolean): Promise<void> {
     const { error } = await this.supabase.from('products').update({ active }).eq('id', id);
     if (error) throw error;
+  }
+
+  // Dos caminos, para no dejar filas al pedo en la tabla:
+  // - Nunca se vendio: se borra de verdad (sus stock_movements se van en cascada).
+  // - Ya se vendio: sale_items/sale_item_components lo referencian sin "on delete" (el historial
+  //   no puede apuntar a la nada) y Postgres rechaza el borrado con 23503. Entonces se marca
+  //   deleted_at (ver migracion 20261008120000_product_soft_delete) y active = false, que es lo
+  //   que hace que process_sale lo rechace igual que a un inactivo.
+  // Antes de todo: si es componente de un combo vigente no se toca -- el combo se seguiria
+  // vendiendo y descontando stock de un producto que ya no se ve en ningun lado.
+  // .select() en cada escritura para enterarse si la RLS la filtro (sin permiso no hay error,
+  // solo 0 filas afectadas).
+  async delete(id: string): Promise<void> {
+    const { data: usages, error: usageError } = await this.supabase
+      .from('product_components')
+      .select('products!parent_product_id(name, deleted_at)')
+      .eq('component_product_id', id);
+    if (usageError) throw usageError;
+    const activeCombo = (usages as unknown as { products: { name: string; deleted_at: string | null } | null }[])
+      .map((row) => row.products)
+      .find((combo) => combo && !combo.deleted_at);
+    if (activeCombo) throw new ProductInComboError(activeCombo.name);
+
+    const { data, error } = await this.supabase.from('products').delete().eq('id', id).select('id');
+    if (!error) {
+      if (!data?.length) throw new Error('No tenés permiso para eliminar este producto.');
+      return;
+    }
+    if (error.code !== '23503') throw error;
+
+    const { data: softDeleted, error: softError } = await this.supabase
+      .from('products')
+      .update({ deleted_at: new Date().toISOString(), active: false })
+      .eq('id', id)
+      .select('id');
+    if (softError) throw softError;
+    if (!softDeleted?.length) throw new Error('No tenés permiso para eliminar este producto.');
   }
 
   // Conteos para el aviso del dashboard -- filtrado por count: 'exact', head: true (no trae

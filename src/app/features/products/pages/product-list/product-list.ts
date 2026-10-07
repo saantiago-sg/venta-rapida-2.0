@@ -10,7 +10,9 @@ import {
   Validators
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -26,8 +28,19 @@ import { isExpired, isExpiringSoon } from '../../../../shared/utils/expiration';
 import { TaxesStore } from '../../../settings/state/taxes.store';
 import { ProductImportDialog } from '../../components/product-import-dialog/product-import-dialog';
 import { Product } from '../../data-access/models';
+import { ProductInComboError } from '../../data-access/product.repository';
 import { CategoriesStore } from '../../state/categories.store';
 import { ProductsStore } from '../../state/products.store';
+
+// Los productos con ventas se eliminan igual (quedan ocultos, ver ProductRepository.delete); el
+// unico caso que se rechaza es ser componente de un combo vigente.
+function deleteErrorMessage(err: unknown, productName: string): string {
+  if (err instanceof ProductInComboError) {
+    return `No se puede eliminar "${productName}" porque es parte del combo "${err.comboName}". Sacalo del combo (o eliminá el combo) primero.`;
+  }
+  const message = (err as { message?: unknown } | null)?.message;
+  return typeof message === 'string' && message ? message : 'No se pudo eliminar el producto.';
+}
 
 const SALE_TYPE_OPTIONS = [
   { label: 'Por unidad', value: 'unit' },
@@ -61,8 +74,10 @@ function normalize(text: string): string {
     TableModule,
     ToggleSwitchModule,
     TooltipModule,
+    ConfirmDialogModule,
     ProductImportDialog
   ],
+  providers: [ConfirmationService],
   templateUrl: './product-list.html'
 })
 export class ProductList {
@@ -71,6 +86,7 @@ export class ProductList {
   protected readonly importDialogVisible = signal(false);
   private readonly fb = inject(FormBuilder);
   private readonly authStore = inject(AuthStore);
+  private readonly confirmationService = inject(ConfirmationService);
   protected readonly productsStore = inject(ProductsStore);
   protected readonly categoriesStore = inject(CategoriesStore);
   protected readonly taxesStore = inject(TaxesStore);
@@ -88,6 +104,10 @@ export class ProductList {
   protected readonly editingProduct = signal<Product | null>(null);
   protected readonly componentsError = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
+  // Error de borrado: va arriba de la tabla, no en errorMessage (ese vive dentro del dialogo
+  // de edicion, que en el borrado esta cerrado).
+  protected readonly deleteError = signal<string | null>(null);
+  protected readonly deletingId = signal<string | null>(null);
 
   protected readonly searchQuery = signal('');
   protected readonly first = signal(0);
@@ -337,6 +357,32 @@ export class ProductList {
 
   protected onToggleActive(id: string, active: boolean): void {
     this.productsStore.setActive(id, active);
+  }
+
+  protected onDeleteClick(product: Product): void {
+    this.deleteError.set(null);
+    this.confirmationService.confirm({
+      header: 'Eliminar producto',
+      message: `¿Seguro que querés eliminar "${product.name}"? Esta acción no se puede deshacer.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'No',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => void this.deleteProduct(product)
+    });
+  }
+
+  private async deleteProduct(product: Product): Promise<void> {
+    this.deletingId.set(product.id);
+    try {
+      await this.productsStore.delete(product.id);
+    } catch (err) {
+      console.error('No se pudo eliminar el producto', err);
+      this.deleteError.set(deleteErrorMessage(err, product.name));
+    } finally {
+      this.deletingId.set(null);
+    }
   }
 
   private newComponentGroup(componentProductId: string | null = null, quantity = 1): ComponentFormGroup {

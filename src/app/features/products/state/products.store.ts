@@ -84,6 +84,11 @@ export class ProductsStore {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+    this.updateProducts((list) => list.filter((p) => p.id !== id));
+  }
+
   async setActive(id: string, active: boolean): Promise<void> {
     await this.repository.setActive(id, active);
     this.updateProducts((list) => list.map((p) => (p.id === id ? { ...p, active } : p)));
