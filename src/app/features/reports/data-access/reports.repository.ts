@@ -21,12 +21,25 @@ interface TopProductRow {
 export class ReportsRepository {
   private readonly supabase = inject(SupabaseClientService).client;
 
-  async getSummary(businessId: string, dateFrom: Date, dateTo: Date): Promise<SalesSummary> {
+  // filters: los mismos que aplica la tabla del historial de ventas, para que las cards sumen
+  // exactamente las ventas filtradas. El dashboard no los pasa (todo el rango).
+  async getSummary(
+    businessId: string,
+    dateFrom: Date,
+    dateTo: Date,
+    filters?: { paymentMethodId: string | null; orderNumberQuery: string }
+  ): Promise<SalesSummary> {
     const { data, error } = await this.supabase
       .rpc('get_sales_summary', {
         p_business_id: businessId,
         p_date_from: dateFrom.toISOString(),
-        p_date_to: dateTo.toISOString()
+        p_date_to: dateTo.toISOString(),
+        // Solo si vienen: asi la llamada del dashboard queda identica a la de antes de
+        // 20261011120000_sales_summary_filters.sql.
+        ...(filters && {
+          p_payment_method_id: filters.paymentMethodId,
+          p_order_number_query: filters.orderNumberQuery.trim() || null
+        })
       })
       .single();
     if (error) throw error;

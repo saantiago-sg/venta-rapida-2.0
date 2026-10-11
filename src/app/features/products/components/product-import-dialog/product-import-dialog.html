@@ -57,7 +57,7 @@
                 <th class="w-14">Fila</th>
                 <th>Nombre</th>
                 <th class="text-right">Precio</th>
-                <th class="w-28">Acción</th>
+                <th class="w-32">Acción</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-row>
@@ -71,6 +71,9 @@
                   @if (row.errors.length > 0) {
                     <p class="text-xs text-error">{{ row.errors.join(' · ') }}</p>
                   }
+                  @if (row.warnings.length > 0) {
+                    <p class="text-xs text-warning">{{ row.warnings.join(' · ') }}</p>
+                  }
                 </td>
                 <td class="text-right tabular-nums">${{ row.price | number: '1.2-2' }}</td>
                 <td>
@@ -79,7 +82,7 @@
                       <span class="text-xs font-medium text-success">Crear</span>
                     }
                     @case ('update') {
-                      <span class="text-xs font-medium text-info">Actualizar</span>
+                      <span class="text-xs font-medium text-info">{{ row.reactivate ? 'Actualizar (reactivar)' : 'Actualizar' }}</span>
                     }
                     @case ('error') {
                       <span class="text-xs font-medium text-error">Error</span>

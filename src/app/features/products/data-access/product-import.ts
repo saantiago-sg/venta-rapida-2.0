@@ -57,7 +57,11 @@ export interface ProductImportPreviewRow {
   trackStock: boolean;
   action: ProductImportRowAction;
   matchedProductId: string | null;
+  // El producto que coincidio estaba desactivado -- al confirmar se actualiza y se reactiva.
+  reactivate: boolean;
   errors: string[];
+  // No bloquean la fila (se importa igual), solo avisan algo que conviene revisar.
+  warnings: string[];
 }
 
 function cellText(value: unknown): string | null {
@@ -149,6 +153,22 @@ function findTaxId(name: string, taxes: { id: string; name: string }[]): string 
   return match?.id ?? null;
 }
 
+// Para matchear por nombre: "Milanesa  de Pollo " == "milanesa de pollo", "Jamón" == "jamon".
+function normalizeName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+function describeProduct(product: Product): string {
+  const parts = [product.barcode ? `código ${product.barcode}` : 'sin código', `$${product.price}`];
+  if (!product.active) parts.push('desactivado');
+  return `"${product.name}" (${parts.join(', ')})`;
+}
+
 // Construye la previsualizacion: valida cada fila y resuelve categoria/impuesto/match contra
 // el estado actual (categorias, impuestos y productos ya cargados) -- no escribe nada en la
 // base, eso pasa recien al confirmar (ver ProductImportDialog.onConfirm).
@@ -159,9 +179,19 @@ export function buildProductImportPreview(
   taxes: { id: string; name: string }[]
 ): ProductImportPreviewRow[] {
   const seenBarcodes = new Map<string, number>(); // barcode -> primera fila donde aparecio
+  const seenNames = new Map<string, number>(); // nombre normalizado -> primera fila sin codigo donde aparecio
+  const matchedRows = new Map<string, number>(); // producto -> fila que ya lo actualiza
+
+  // Incluye desactivados (list() solo excluye los eliminados) -- si coincide uno, se reactiva.
+  const productsByName = new Map<string, Product[]>();
+  for (const product of products) {
+    const key = normalizeName(product.name);
+    productsByName.set(key, [...(productsByName.get(key) ?? []), product]);
+  }
 
   return rawRows.map((raw) => {
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     const name = raw.name.trim();
     if (!name) errors.push('Falta el nombre');
@@ -187,24 +217,60 @@ export function buildProductImportPreview(
     const taxId = taxName ? findTaxId(taxName, taxes) : null;
 
     const barcode = raw.barcode;
-    let action: ProductImportRowAction = 'create';
-    let matchedProductId: string | null = null;
+    let matched: Product | null = null;
 
+    // 1) Por codigo de barras. 2) Si la fila no trae codigo, o trae uno que no existe, por nombre.
     if (barcode) {
       const firstSeenRow = seenBarcodes.get(barcode);
       if (firstSeenRow !== undefined) {
         errors.push(`Código de barras duplicado en el archivo (ya aparece en la fila ${firstSeenRow})`);
       } else {
         seenBarcodes.set(barcode, raw.rowNumber);
-        const existing = products.find((p) => p.barcode === barcode);
-        if (existing) {
-          action = 'update';
-          matchedProductId = existing.id;
+        matched = products.find((p) => p.barcode === barcode) ?? null;
+      }
+    } else if (name) {
+      const firstSeenRow = seenNames.get(normalizeName(name));
+      if (firstSeenRow !== undefined) {
+        errors.push(`Nombre repetido en el archivo sin código de barras (ya aparece en la fila ${firstSeenRow})`);
+      } else {
+        seenNames.set(normalizeName(name), raw.rowNumber);
+      }
+    }
+
+    if (!matched && name && errors.length === 0) {
+      const candidates = productsByName.get(normalizeName(name)) ?? [];
+      if (candidates.length > 1) {
+        errors.push(
+          `Hay ${candidates.length} productos cargados con este nombre: ${candidates.map(describeProduct).join('; ')}. ` +
+            'Eliminá los duplicados y volvé a importar.'
+        );
+      } else if (candidates.length === 1) {
+        const candidate = candidates[0];
+        if (!candidate.isCombo && barcode && candidate.barcode && candidate.barcode !== barcode) {
+          warnings.push(`Ya existe ${describeProduct(candidate)} con otro código: se creará aparte`);
+        } else {
+          matched = candidate;
         }
       }
     }
 
-    if (errors.length > 0) action = 'error';
+    // El import pisa isCombo/componentes -- un combo se romperia, asi que no se toca desde aca.
+    if (matched?.isCombo) {
+      errors.push(`"${matched.name}" es un combo: los combos se editan a mano desde Productos, no por importación`);
+      matched = null;
+    }
+
+    if (matched && errors.length === 0) {
+      const otherRow = matchedRows.get(matched.id);
+      if (otherRow !== undefined) {
+        errors.push(`La fila ${otherRow} ya actualiza el producto "${matched.name}"`);
+        matched = null;
+      } else {
+        matchedRows.set(matched.id, raw.rowNumber);
+      }
+    }
+
+    const action: ProductImportRowAction = errors.length > 0 ? 'error' : matched ? 'update' : 'create';
 
     return {
       rowNumber: raw.rowNumber,
@@ -221,8 +287,10 @@ export function buildProductImportPreview(
       initialStock,
       trackStock,
       action,
-      matchedProductId,
-      errors
+      matchedProductId: action === 'update' ? matched!.id : null,
+      reactivate: action === 'update' && !matched!.active,
+      errors,
+      warnings
     };
   });
 }

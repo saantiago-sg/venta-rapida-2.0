@@ -168,7 +168,8 @@ export class ProductImportDialog {
             categoryId,
             taxId: row.taxId,
             name: row.name,
-            barcode: row.barcode,
+            // Fila sin codigo (match por nombre): se conserva el que ya tenia el producto.
+            barcode: row.barcode ?? existing.barcode,
             saleType: row.saleType,
             price: row.price,
             cost: row.cost,
@@ -178,6 +179,21 @@ export class ProductImportDialog {
             expirationDate: existing.expirationDate,
             components: []
           });
+
+          if (row.reactivate) {
+            try {
+              await this.productsStore.setActive(row.matchedProductId!, true);
+            } catch (err) {
+              const reason = err instanceof Error ? err.message : 'error desconocido';
+              rowResults.push({
+                rowNumber: row.rowNumber,
+                name: row.name,
+                outcome: 'error',
+                errorMessage: `Se actualizó, pero no se pudo reactivar (sigue desactivado): ${reason}`
+              });
+              continue;
+            }
+          }
           rowResults.push({ rowNumber: row.rowNumber, name: row.name, outcome: 'updated', errorMessage: null });
         }
       } catch (err) {

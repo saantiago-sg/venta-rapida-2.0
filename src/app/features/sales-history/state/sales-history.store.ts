@@ -100,7 +100,7 @@ export class SalesHistoryStore {
     try {
       const [page, summary] = await Promise.all([
         this.repository.list(businessId, from, to, this.filters, { first: this._first(), rows: this._rows() }),
-        this.reportsRepository.getSummary(businessId, from, to)
+        this.reportsRepository.getSummary(businessId, from, to, this.filters)
       ]);
       this._sales.set(page.items);
       this._totalCount.set(page.totalCount);
