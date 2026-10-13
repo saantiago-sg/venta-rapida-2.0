@@ -9,6 +9,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { AdminBusiness, SubscriptionStatus } from '../../data-access/business-admin.repository';
 import { SuperAdminStore } from '../../state/super-admin.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 const SUBSCRIPTION_STATUS_OPTIONS: { label: string; value: SubscriptionStatus }[] = [
   { label: 'Prueba', value: 'trial' },
@@ -77,7 +78,7 @@ export class BusinessesPage {
       await this.store.createBusiness(this.form.getRawValue());
       this.dialogVisible.set(false);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo crear el negocio.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo crear el negocio.'));
     } finally {
       this.saving.set(false);
     }
@@ -109,7 +110,7 @@ export class BusinessesPage {
       await this.store.deleteBusiness(target.id);
       this.deleteDialogVisible.set(false);
     } catch (err) {
-      this.deleteError.set(err instanceof Error ? err.message : 'No se pudo eliminar el negocio.');
+      this.deleteError.set(extractErrorMessage(err, 'No se pudo eliminar el negocio.'));
     } finally {
       this.deleting.set(false);
     }

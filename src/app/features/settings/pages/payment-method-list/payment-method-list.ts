@@ -10,17 +10,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { PaymentMethod } from '../../data-access/models';
 import { PaymentMethodsStore } from '../../state/payment-methods.store';
-
-// Los errores de Supabase (PostgrestError) son objetos planos con .message, no instancias
-// de Error -- si solo se chequea "instanceof Error" el motivo real (RLS, FK, columna
-// invalida, etc.) queda oculto detras de un mensaje generico.
-function extractErrorMessage(err: unknown, fallback: string): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'object' && err !== null && 'message' in err) {
-    return String((err as { message: unknown }).message) || fallback;
-  }
-  return fallback;
-}
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

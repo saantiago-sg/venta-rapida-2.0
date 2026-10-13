@@ -7,6 +7,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { ArcaEnvironment, EMISOR_CONDICION_IVA_OPTIONS, EmisorCondicionIva } from '../../data-access/models';
 import { FiscalSettingsStore } from '../../state/fiscal-settings.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 const ARCA_ENVIRONMENT_OPTIONS: { label: string; value: ArcaEnvironment }[] = [
   { label: 'Homologación (pruebas)', value: 'homologacion' },
@@ -96,7 +97,7 @@ export class FiscalSettingsPage {
       this.pendingCertName.set(null);
       this.pendingKeyName.set(null);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo guardar la configuración.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo guardar la configuración.'));
     } finally {
       this.saving.set(false);
     }

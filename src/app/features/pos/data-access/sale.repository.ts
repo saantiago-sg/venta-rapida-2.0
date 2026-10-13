@@ -24,7 +24,8 @@ export class SaleRepository {
       p_delivery_type_id: input.deliveryTypeId,
       p_customer_id: input.customerId,
       p_cash_received: input.cashReceived,
-      p_client_reference: input.clientReference ?? null
+      p_client_reference: input.clientReference ?? null,
+      p_offline: input.offline !== false
     });
     if (error) throw error;
 

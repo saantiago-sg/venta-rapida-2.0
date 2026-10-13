@@ -13,6 +13,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { Employee, PERMISSION_CATALOG } from '../../data-access/models';
 import { EmployeesStore } from '../../state/employees.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 const ROLE_OPTIONS = [
   { label: 'Administrador', value: 'admin' },
@@ -125,7 +126,7 @@ export class EmployeeList {
       });
       this.inviteDialogVisible.set(false);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo invitar al empleado.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo invitar al empleado.'));
     } finally {
       this.saving.set(false);
     }
@@ -195,7 +196,7 @@ export class EmployeeList {
       // Se deja un momento a la vista antes de cerrar solo, para que le de tiempo a leerlo.
       setTimeout(() => this.resetPasswordDialogVisible.set(false), 1600);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo resetear la contraseña.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo resetear la contraseña.'));
     } finally {
       this.saving.set(false);
     }

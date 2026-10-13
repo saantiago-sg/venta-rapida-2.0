@@ -10,6 +10,12 @@ import { PaymentMethodsStore } from '../../settings/state/payment-methods.store'
 import { SaleRepository } from '../data-access/sale.repository';
 import { CartItem, ProcessSaleInput, SaleResult } from '../data-access/models';
 
+// errcode propio de process_sale para "catalogo desactualizado" (ver
+// 20261013120000_process_sale_stale_catalog_errors.sql).
+function isStaleCatalogError(err: unknown): boolean {
+  return (err as { code?: unknown } | null)?.code === 'VR001';
+}
+
 @Injectable({ providedIn: 'root' })
 export class PosStore {
   private readonly saleRepository = inject(SaleRepository);
@@ -171,7 +177,8 @@ export class PosStore {
       deliveryTypeId,
       customerId: this._customerId(),
       cashReceived: this._cashReceived(),
-      clientReference
+      clientReference,
+      offline: false
     };
 
     this._processing.set(true);
@@ -184,11 +191,36 @@ export class PosStore {
       this._customerId.set(null);
       return result;
     } catch (err) {
+      if (isStaleCatalogError(err)) {
+        await this.refreshCartFromServer();
+        throw new Error(
+          `${(err as { message: string }).message} Actualizamos los precios y productos del carrito: revisá el total y volvé a confirmar.`
+        );
+      }
       if (!isNetworkError(err)) throw err;
       return this.confirmSaleOffline(input, clientReference, soldItems);
     } finally {
       this._processing.set(false);
     }
+  }
+
+  // El server rechazo la venta porque el catalogo cargado quedo viejo (precio/costo cambiado, o
+  // producto desactivado/eliminado desde otra pestaña, otro dispositivo o una importacion).
+  // Recarga el catalogo y reemplaza cada producto del carrito por su version actual -- los que
+  // ya no estan disponibles se sacan. Si la recarga falla, el error original igual se muestra.
+  private async refreshCartFromServer(): Promise<void> {
+    try {
+      await this.productsStore.load(true);
+    } catch {
+      return;
+    }
+    const current = new Map(this.productsStore.products().map((p) => [p.id, p]));
+    this._cart.update((items) =>
+      items.flatMap((item) => {
+        const product = current.get(item.product.id);
+        return product?.active ? [{ ...item, product }] : [];
+      })
+    );
   }
 
   // Descuenta el stock vendido en el catalogo ya cargado (ver ProductsStore.applyStockDelta)
@@ -226,7 +258,11 @@ export class PosStore {
       pending: true
     };
 
-    await this.offlineQueue.enqueue({ clientReference, input, createdAt: new Date().toISOString() });
+    await this.offlineQueue.enqueue({
+      clientReference,
+      input: { ...input, offline: true },
+      createdAt: new Date().toISOString()
+    });
 
     this.applySoldStock(soldItems, { allowBackgroundReload: false });
     this._cart.set([]);

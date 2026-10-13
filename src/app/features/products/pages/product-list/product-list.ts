@@ -31,6 +31,7 @@ import { Product } from '../../data-access/models';
 import { ProductInComboError } from '../../data-access/product.repository';
 import { CategoriesStore } from '../../state/categories.store';
 import { ProductsStore } from '../../state/products.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 // Los productos con ventas se eliminan igual (quedan ocultos, ver ProductRepository.delete); el
 // unico caso que se rechaza es ser componente de un combo vigente.
@@ -349,7 +350,7 @@ export class ProductList {
       }
       this.onDialogVisibleChange(false);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo guardar el producto.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo guardar el producto.'));
     } finally {
       this.saving.set(false);
     }

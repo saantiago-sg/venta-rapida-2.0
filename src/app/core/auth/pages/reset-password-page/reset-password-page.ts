@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth.service';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
@@ -72,7 +73,7 @@ export class ResetPasswordPage {
       await this.authService.signOut();
       setTimeout(() => this.router.navigateByUrl('/login'), 1800);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo actualizar la contraseña.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo actualizar la contraseña.'));
     } finally {
       this.loading.set(false);
     }

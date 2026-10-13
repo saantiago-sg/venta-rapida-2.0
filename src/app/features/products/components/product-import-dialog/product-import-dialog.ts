@@ -16,6 +16,7 @@ import {
 import { CategoriesStore } from '../../state/categories.store';
 import { ProductsStore } from '../../state/products.store';
 import { TaxesStore } from '../../../settings/state/taxes.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 type ImportStep = 'upload' | 'preview' | 'result';
 
@@ -100,7 +101,7 @@ export class ProductImportDialog {
       );
       this.step.set('preview');
     } catch (err) {
-      this.parseErrorMessage.set(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
+      this.parseErrorMessage.set(extractErrorMessage(err, 'No se pudo leer el archivo.'));
     } finally {
       this.parsing.set(false);
       (event.target as HTMLInputElement).value = '';
@@ -184,7 +185,7 @@ export class ProductImportDialog {
             try {
               await this.productsStore.setActive(row.matchedProductId!, true);
             } catch (err) {
-              const reason = err instanceof Error ? err.message : 'error desconocido';
+              const reason = extractErrorMessage(err, 'error desconocido');
               rowResults.push({
                 rowNumber: row.rowNumber,
                 name: row.name,
@@ -201,7 +202,7 @@ export class ProductImportDialog {
           rowNumber: row.rowNumber,
           name: row.name,
           outcome: 'error',
-          errorMessage: err instanceof Error ? err.message : 'No se pudo guardar esta fila.'
+          errorMessage: extractErrorMessage(err, 'No se pudo guardar esta fila.')
         });
       } finally {
         this.commitProgress.update((n) => n + 1);

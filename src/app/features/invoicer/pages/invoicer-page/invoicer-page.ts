@@ -15,6 +15,7 @@ import { EMISOR_CONDICION_IVA_OPTIONS } from '../../../settings/data-access/mode
 import { FiscalSettingsStore } from '../../../settings/state/fiscal-settings.store';
 import { COMPROBANTE_TIPO_LABEL, IVA_RATE_OPTIONS, IssueInvoiceResult } from '../../data-access/models';
 import { StandaloneInvoicesStore } from '../../state/standalone-invoices.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -125,7 +126,7 @@ export class InvoicerPage {
         });
       }
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo facturar.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo facturar.'));
     } finally {
       this.saving.set(false);
     }

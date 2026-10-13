@@ -24,6 +24,9 @@ export interface ProcessSaleInput {
   customerId: string | null;
   cashReceived: number | null;
   clientReference?: string;
+  // false = venta online (precio exacto, ver 20261013130000_process_sale_strict_online_price.sql).
+  // Las ventas encoladas antes de este campo no lo traen y se sincronizan como offline.
+  offline?: boolean;
 }
 
 export interface SaleResult {

@@ -21,6 +21,7 @@ import { PaymentMethodsStore } from '../../../settings/state/payment-methods.sto
 import { SaleListItem } from '../../data-access/models';
 import { exportSalesCsv, exportSalesExcel, exportSalesPdf } from '../../data-access/sales-export';
 import { SalesHistoryStore, formatLocalDate, parseLocalDate } from '../../state/sales-history.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -223,7 +224,7 @@ export class SalesHistoryPage {
       await this.store.cancel(sale.id, this.cancelReason() || null);
       this.detailVisible.set(false);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo cancelar la venta.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo cancelar la venta.'));
     } finally {
       this.cancelling.set(false);
     }

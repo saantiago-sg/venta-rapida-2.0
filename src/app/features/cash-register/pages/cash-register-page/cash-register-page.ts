@@ -11,6 +11,7 @@ import { TagModule } from 'primeng/tag';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { CloseCashSessionResult } from '../../data-access/models';
 import { CashSessionStore } from '../../state/cash-session.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +55,7 @@ export class CashRegisterPage {
       this.openingAmount.set(null);
       await this.store.loadHistory();
     } catch (err) {
-      this.openErrorMessage.set(err instanceof Error ? err.message : 'No se pudo abrir la caja.');
+      this.openErrorMessage.set(extractErrorMessage(err, 'No se pudo abrir la caja.'));
     } finally {
       this.opening.set(false);
     }
@@ -77,7 +78,7 @@ export class CashRegisterPage {
       this.closeResult.set(await this.store.close(amount));
       await this.store.loadHistory();
     } catch (err) {
-      this.closeErrorMessage.set(err instanceof Error ? err.message : 'No se pudo cerrar la caja.');
+      this.closeErrorMessage.set(extractErrorMessage(err, 'No se pudo cerrar la caja.'));
     } finally {
       this.closing.set(false);
     }

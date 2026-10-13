@@ -16,6 +16,7 @@ import { CustomersStore } from '../../../customers/state/customers.store';
 import { DeliveryTypesStore } from '../../../settings/state/delivery-types.store';
 import { PaymentMethodsStore } from '../../../settings/state/payment-methods.store';
 import { PosStore } from '../../state/pos.store';
+import { extractErrorMessage } from '../../../../shared/utils/error-message';
 
 type PayStep = 'method' | 'cash';
 
@@ -177,7 +178,7 @@ export class PaymentPanel {
         changeGiven: result.changeGiven
       });
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'No se pudo confirmar la venta.');
+      this.errorMessage.set(extractErrorMessage(err, 'No se pudo confirmar la venta.'));
     }
   }
 }
