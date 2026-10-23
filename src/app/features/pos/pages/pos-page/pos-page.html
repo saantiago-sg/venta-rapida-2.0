@@ -1,29 +1,33 @@
 <div class="h-full flex flex-col">
-  <h1 class="text-xl font-semibold tracking-tight mb-5">Vender</h1>
+  <!-- Con el teclado del celular abierto se esconden titulo y pestañas: lo poco que queda
+       visible arriba del teclado es para los resultados de la busqueda. -->
+  @if (!viewport.keyboardOpen()) {
+    <h1 class="text-xl font-semibold tracking-tight mb-5">Vender</h1>
 
-  <div class="lg:hidden flex rounded-lg bg-card-hover p-1 mb-4 shrink-0">
-    <button
-      type="button"
-      (click)="mobileTab.set('buscar')"
-      class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
-      [class]="mobileTab() === 'buscar' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
-    >
-      Buscar
-    </button>
-    <button
-      type="button"
-      (click)="mobileTab.set('pedido')"
-      class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
-      [class]="mobileTab() === 'pedido' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
-    >
-      Pedido
-      @if (posStore.cart().length > 0) {
-        <span class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-semibold align-middle">
-          {{ posStore.cart().length }}
-        </span>
-      }
-    </button>
-  </div>
+    <div class="lg:hidden flex rounded-lg bg-card-hover p-1 mb-4 shrink-0">
+      <button
+        type="button"
+        (click)="mobileTab.set('buscar')"
+        class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+        [class]="mobileTab() === 'buscar' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+      >
+        Buscar
+      </button>
+      <button
+        type="button"
+        (click)="mobileTab.set('pedido')"
+        class="flex-1 rounded-md py-2 text-sm font-medium transition-colors"
+        [class]="mobileTab() === 'pedido' ? 'bg-card shadow-sm text-text' : 'text-text-secondary'"
+      >
+        Pedido
+        @if (posStore.cart().length > 0) {
+          <span class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-semibold align-middle">
+            {{ posStore.cart().length }}
+          </span>
+        }
+      </button>
+    </div>
+  }
 
   <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_18rem] gap-5 min-h-0">
     <div

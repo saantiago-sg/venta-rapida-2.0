@@ -9,6 +9,7 @@ import { ConnectivityService } from '../../offline/connectivity.service';
 import { OfflineQueueService } from '../../offline/offline-queue.service';
 import { SyncService } from '../../offline/sync.service';
 import { PrinterService } from '../../printer/printer.service';
+import { ViewportService } from '../viewport.service';
 import { BusinessSettingsStore } from '../../../features/settings/state/business-settings.store';
 import { parseLocalDate } from '../../../shared/utils/date';
 
@@ -118,6 +119,9 @@ export class Shell {
 
   constructor() {
     this.businessSettingsStore.load();
+    // Se inyecta solo para que arranque: publica --app-height, que usa el contenedor raiz de
+    // shell.html para que el teclado del celular no tape el contenido.
+    inject(ViewportService);
 
     // Cerrar el sidebar recien cuando la navegacion termina (no en el click del link) --
     // atarlo al click competia con el propio manejador de RouterLink en el mismo elemento y

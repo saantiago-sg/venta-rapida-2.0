@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 
+import { ViewportService } from '../../../../core/layout/viewport.service';
 import { TicketData, TicketPrint } from '../../../../shared/components/ticket-print/ticket-print';
 import { BusinessSettingsStore } from '../../../settings/state/business-settings.store';
 import { Cart } from '../../components/cart/cart';
@@ -19,6 +20,7 @@ import { PosStore } from '../../state/pos.store';
 export class PosPage {
   private readonly businessSettingsStore = inject(BusinessSettingsStore);
   protected readonly posStore = inject(PosStore);
+  protected readonly viewport = inject(ViewportService);
   private readonly productSearch = viewChild(ProductSearch);
 
   protected readonly lastSale = signal<TicketData | null>(null);
