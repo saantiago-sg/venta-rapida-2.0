@@ -1,0 +1,56 @@
+<div class="fixed inset-0 z-[2000] bg-black flex flex-col" role="dialog" aria-modal="true" aria-label="Escanear código de barras">
+  <video #video class="absolute inset-0 w-full h-full object-cover" playsinline muted></video>
+
+  @if (state() === 'scanning') {
+    <!-- Recuadro guia: el box-shadow gigante oscurece todo lo que queda afuera. -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="w-[80%] max-w-sm h-36 rounded-2xl border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
+    </div>
+    <p class="absolute bottom-24 inset-x-0 px-6 text-center text-sm text-white/90">
+      Apuntá al código de barras del producto
+    </p>
+  } @else {
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center text-white">
+      @switch (state()) {
+        @case ('starting') {
+          <i class="pi pi-spin pi-spinner text-2xl"></i>
+          <p class="text-sm text-white/80">Abriendo la cámara...</p>
+        }
+        @case ('denied') {
+          <i class="pi pi-camera text-3xl text-warning"></i>
+          <p class="font-semibold">No hay permiso para usar la cámara</p>
+          <p class="text-sm text-white/70">
+            Habilitalo en los ajustes del navegador (en iPhone: Ajustes › Safari › Cámara) y volvé a intentar.
+          </p>
+        }
+        @case ('unavailable') {
+          <i class="pi pi-camera text-3xl text-warning"></i>
+          <p class="font-semibold">No se pudo abrir la cámara</p>
+          <p class="text-sm text-white/70">Puede que otra app la esté usando. Cerrala y volvé a intentar.</p>
+        }
+      }
+    </div>
+  }
+
+  <div class="relative mt-auto flex items-center justify-center gap-4 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    @if (torchAvailable()) {
+      <button
+        type="button"
+        (click)="onToggleTorch()"
+        [attr.aria-label]="torchOn() ? 'Apagar linterna' : 'Prender linterna'"
+        class="flex items-center justify-center w-12 h-12 rounded-full transition-colors"
+        [class]="torchOn() ? 'bg-white text-black' : 'bg-white/15 text-white'"
+      >
+        <i class="pi pi-bolt"></i>
+      </button>
+    }
+    <button
+      type="button"
+      (click)="onClose()"
+      class="flex items-center gap-2 h-12 px-6 rounded-full bg-white/15 text-white text-sm font-medium"
+    >
+      <i class="pi pi-times"></i>
+      Cerrar
+    </button>
+  </div>
+</div>

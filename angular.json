@@ -22,6 +22,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "zxing_reader.wasm",
+                "input": "node_modules/zxing-wasm/dist/reader",
+                "output": "zxing"
               }
             ],
             "styles": [
@@ -85,6 +90,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "zxing_reader.wasm",
+                "input": "node_modules/zxing-wasm/dist/reader",
+                "output": "zxing"
               }
             ],
             "styles": [

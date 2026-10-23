@@ -9,7 +9,9 @@
         placeholder="Buscar por nombre o código de barras..."
         [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)"
-        class="w-full pl-9 pr-9"
+        class="w-full pl-9"
+        [class.pr-16]="cameraAvailable"
+        [class.pr-9]="!cameraAvailable"
         autofocus
       />
       @if (searchQuery()) {
@@ -17,9 +19,21 @@
           type="button"
           (click)="onClearSearch()"
           aria-label="Limpiar búsqueda"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+          class="absolute top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+          [class.right-10]="cameraAvailable"
+          [class.right-3]="!cameraAvailable"
         >
           <i class="pi pi-times text-sm"></i>
+        </button>
+      }
+      @if (cameraAvailable) {
+        <button
+          type="button"
+          (click)="scanTarget.set('search')"
+          aria-label="Escanear con la cámara"
+          class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-md text-brand hover:bg-brand/10"
+        >
+          <i class="pi pi-camera"></i>
         </button>
       }
     </span>
@@ -237,13 +251,35 @@
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm text-text-secondary">Código de barras (opcional)</label>
-        <input
-          type="text"
-          pInputText
-          formControlName="barcode"
-          placeholder="Escaneá o escribí a mano"
-          class="w-full"
-        />
+        <span class="relative">
+          <input
+            type="text"
+            pInputText
+            formControlName="barcode"
+            placeholder="Escaneá o escribí a mano"
+            class="w-full"
+            [class.pr-11]="cameraAvailable"
+          />
+          @if (cameraAvailable) {
+            <button
+              type="button"
+              (click)="scanTarget.set('form')"
+              aria-label="Escanear con la cámara"
+              class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-md text-brand hover:bg-brand/10"
+            >
+              <i class="pi pi-camera"></i>
+            </button>
+          }
+        </span>
+        @if (duplicateBarcodeProduct(); as duplicate) {
+          <span class="flex items-center gap-1.5 text-xs text-warning">
+            <i class="pi pi-exclamation-triangle text-[10px]"></i>
+            <span class="min-w-0 truncate">Ya está cargado en <b>{{ duplicate.name }}</b></span>
+            <button type="button" (click)="openEdit(duplicate)" class="shrink-0 font-semibold underline hover:no-underline">
+              Abrir
+            </button>
+          </span>
+        }
       </div>
     </div>
     <span class="text-xs text-text-secondary -mt-1.5">
@@ -411,3 +447,8 @@
     <p-button type="submit" label="Guardar" [loading]="saving()" styleClass="w-full" />
   </form>
 </p-dialog>
+
+<!-- Fuera del p-dialog a proposito: ver el comentario de BarcodeScanner. -->
+@if (scanTarget()) {
+  <app-barcode-scanner (scanned)="onScanned($event)" (closed)="scanTarget.set(null)" />
+}

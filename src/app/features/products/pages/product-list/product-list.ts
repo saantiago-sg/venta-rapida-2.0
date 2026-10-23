@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormBuilder,
@@ -23,6 +24,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { BarcodeScanner, cameraScanAvailable } from '../../../../shared/components/barcode-scanner/barcode-scanner';
 import { formatLocalDate, parseLocalDate } from '../../../../shared/utils/date';
 import { isExpired, isExpiringSoon } from '../../../../shared/utils/expiration';
 import { TaxesStore } from '../../../settings/state/taxes.store';
@@ -41,6 +43,17 @@ function deleteErrorMessage(err: unknown, productName: string): string {
   }
   const message = (err as { message?: unknown } | null)?.message;
   return typeof message === 'string' && message ? message : 'No se pudo eliminar el producto.';
+}
+
+// Ultimo resguardo si el aviso del formulario (duplicateBarcodeProduct) no lo atajo, ej. otro
+// dispositivo cargo el mismo codigo recien: el indice unico products_business_barcode_key
+// rechaza el guardado con un error crudo de Postgres que no dice nada util.
+function saveErrorMessage(err: unknown): string {
+  const code = (err as { code?: unknown } | null)?.code;
+  if (code === '23505' && extractErrorMessage(err, '').includes('barcode')) {
+    return 'Ya hay otro producto con ese código de barras.';
+  }
+  return extractErrorMessage(err, 'No se pudo guardar el producto.');
 }
 
 const SALE_TYPE_OPTIONS = [
@@ -76,7 +89,8 @@ function normalize(text: string): string {
     ToggleSwitchModule,
     TooltipModule,
     ConfirmDialogModule,
-    ProductImportDialog
+    ProductImportDialog,
+    BarcodeScanner
   ],
   providers: [ConfirmationService],
   templateUrl: './product-list.html'
@@ -109,6 +123,10 @@ export class ProductList {
   // de edicion, que en el borrado esta cerrado).
   protected readonly deleteError = signal<string | null>(null);
   protected readonly deletingId = signal<string | null>(null);
+
+  protected readonly cameraAvailable = cameraScanAvailable();
+  // A donde va el codigo que lea la camara: el campo del formulario o el buscador de la lista.
+  protected readonly scanTarget = signal<'form' | 'search' | null>(null);
 
   protected readonly searchQuery = signal('');
   protected readonly first = signal(0);
@@ -179,6 +197,16 @@ export class ProductList {
     setTimeout(() => this.searchInput()?.nativeElement.focus());
   }
 
+  protected onScanned(code: string): void {
+    if (this.scanTarget() === 'form') {
+      this.form.controls.barcode.setValue(code);
+      this.form.controls.barcode.markAsDirty();
+    } else {
+      this.onSearchChange(code);
+    }
+    this.scanTarget.set(null);
+  }
+
   protected onCategoryFilterChange(value: string): void {
     this.categoryFilter.set(value);
     this.first.set(0);
@@ -209,6 +237,26 @@ export class ProductList {
     isCombo: [false],
     expirationDate: this.fb.control<Date | null>(null),
     components: this.fb.array<ComponentFormGroup>([])
+  });
+
+  private readonly barcodeValue = toSignal(this.form.controls.barcode.valueChanges, {
+    initialValue: this.form.controls.barcode.value
+  });
+  private readonly productsByBarcode = computed(() => {
+    const index = new Map<string, Product>();
+    for (const p of this.productsStore.products()) {
+      if (p.barcode) index.set(p.barcode, p);
+    }
+    return index;
+  });
+  // Aviso apenas el campo tiene un codigo ya usado (escaneado, tipeado o con pistola), en vez
+  // de enterarse al guardar. Solo avisa, no bloquea Guardar: la base igual lo rechaza (ver
+  // saveErrorMessage). Los inactivos cuentan -- el indice unico tambien los incluye.
+  protected readonly duplicateBarcodeProduct = computed(() => {
+    const barcode = this.barcodeValue().trim();
+    if (!barcode) return null;
+    const match = this.productsByBarcode().get(barcode);
+    return match && match.id !== this.editingProduct()?.id ? match : null;
   });
 
   constructor() {
@@ -350,7 +398,7 @@ export class ProductList {
       }
       this.onDialogVisibleChange(false);
     } catch (err) {
-      this.errorMessage.set(extractErrorMessage(err, 'No se pudo guardar el producto.'));
+      this.errorMessage.set(saveErrorMessage(err));
     } finally {
       this.saving.set(false);
     }
